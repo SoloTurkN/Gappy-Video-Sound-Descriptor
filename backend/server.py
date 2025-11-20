@@ -144,6 +144,7 @@ async def generate_audio(text: str, output_path: str) -> float:
     """Generate audio from text using OpenAI TTS"""
     try:
         import httpx
+        from mutagen.mp3 import MP3
         
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
@@ -164,15 +165,18 @@ async def generate_audio(text: str, output_path: str) -> float:
                 with open(output_path, 'wb') as f:
                     f.write(response.content)
                 
-                # Calculate audio duration using cv2
-                import wave
-                with wave.open(output_path, 'rb') as audio_file:
-                    frames = audio_file.getnframes()
-                    rate = audio_file.getframerate()
-                    duration = frames / float(rate)
+                # Calculate audio duration for MP3
+                try:
+                    audio = MP3(output_path)
+                    duration = audio.info.length
+                except:
+                    # Fallback: estimate duration (roughly 150 words per minute)
+                    word_count = len(text.split())
+                    duration = (word_count / 150) * 60
+                
                 return duration
             else:
-                logging.error(f"TTS API error: {response.status_code}")
+                logging.error(f"TTS API error: {response.status_code} - {response.text}")
                 return 0.0
     except Exception as e:
         logging.error(f"Error generating audio: {e}")
