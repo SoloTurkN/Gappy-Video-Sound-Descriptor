@@ -373,7 +373,7 @@ async def get_audio(project_id: str, filename: str):
     file_path = UPLOADS_DIR / project_id / filename
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Audio not found")
-    return FileResponse(file_path)
+    return FileResponse(file_path, media_type="audio/mpeg")
 
 @api_router.post("/export/{project_id}")
 async def export_video(project_id: str):
