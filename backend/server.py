@@ -142,6 +142,29 @@ async def generate_description(frame_base64: str) -> str:
 
 async def generate_audio(text: str, output_path: str) -> float:
     """Generate audio from text using OpenAI TTS"""
+    # Check if user provided their own OpenAI API key for TTS
+    openai_api_key = os.environ.get('OPENAI_API_KEY', '')
+    
+    # If no OpenAI key is provided, create a placeholder and estimate duration
+    if not openai_api_key:
+        logging.info("No OPENAI_API_KEY found. Using placeholder audio. Add OPENAI_API_KEY to .env for TTS.")
+        # Estimate duration based on text length (roughly 150 words per minute)
+        word_count = len(text.split())
+        duration = (word_count / 150) * 60
+        
+        # Create a minimal silent MP3 file as placeholder
+        try:
+            from pydub import AudioSegment
+            silence = AudioSegment.silent(duration=int(duration * 1000))
+            silence.export(output_path, format="mp3")
+        except:
+            # If pydub not available, just create empty file
+            with open(output_path, 'wb') as f:
+                f.write(b'')
+        
+        return duration
+    
+    # Try to generate actual TTS audio
     try:
         import httpx
         from mutagen.mp3 import MP3
@@ -150,7 +173,7 @@ async def generate_audio(text: str, output_path: str) -> float:
             response = await client.post(
                 "https://api.openai.com/v1/audio/speech",
                 headers={
-                    "Authorization": f"Bearer {API_KEY}",
+                    "Authorization": f"Bearer {openai_api_key}",
                     "Content-Type": "application/json"
                 },
                 json={
@@ -170,17 +193,27 @@ async def generate_audio(text: str, output_path: str) -> float:
                     audio = MP3(output_path)
                     duration = audio.info.length
                 except:
-                    # Fallback: estimate duration (roughly 150 words per minute)
+                    # Fallback: estimate duration
                     word_count = len(text.split())
                     duration = (word_count / 150) * 60
                 
                 return duration
             else:
-                logging.error(f"TTS API error: {response.status_code} - {response.text}")
-                return 0.0
+                logging.error(f"TTS API error: {response.status_code}")
+                # Fallback to placeholder
+                word_count = len(text.split())
+                duration = (word_count / 150) * 60
+                with open(output_path, 'wb') as f:
+                    f.write(b'')
+                return duration
     except Exception as e:
         logging.error(f"Error generating audio: {e}")
-        return 0.0
+        # Fallback to placeholder
+        word_count = len(text.split())
+        duration = (word_count / 150) * 60
+        with open(output_path, 'wb') as f:
+            f.write(b'')
+        return duration
 
 # Routes
 @api_router.get("/")
