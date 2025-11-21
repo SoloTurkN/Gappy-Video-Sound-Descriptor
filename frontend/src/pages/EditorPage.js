@@ -316,7 +316,7 @@ const EditorPage = () => {
             <p style={styles.modalText}>Choose the output format for your video with audio descriptions:</p>
             
             <div style={styles.formatOptions}>
-              <label style={styles.formatLabel}>
+              <label style={{...styles.formatLabel, opacity: exporting ? 0.5 : 1, cursor: exporting ? 'not-allowed' : 'pointer'}}>
                 <input
                   type="radio"
                   name="format"
@@ -324,6 +324,7 @@ const EditorPage = () => {
                   checked={exportFormat === 'mp4'}
                   onChange={(e) => setExportFormat(e.target.value)}
                   style={styles.radio}
+                  disabled={exporting}
                   data-testid="format-mp4"
                 />
                 <span style={styles.formatText}>
@@ -331,7 +332,7 @@ const EditorPage = () => {
                 </span>
               </label>
               
-              <label style={styles.formatLabel}>
+              <label style={{...styles.formatLabel, opacity: exporting ? 0.5 : 1, cursor: exporting ? 'not-allowed' : 'pointer'}}>
                 <input
                   type="radio"
                   name="format"
@@ -339,6 +340,7 @@ const EditorPage = () => {
                   checked={exportFormat === 'avi'}
                   onChange={(e) => setExportFormat(e.target.value)}
                   style={styles.radio}
+                  disabled={exporting}
                   data-testid="format-avi"
                 />
                 <span style={styles.formatText}>
@@ -346,7 +348,7 @@ const EditorPage = () => {
                 </span>
               </label>
               
-              <label style={styles.formatLabel}>
+              <label style={{...styles.formatLabel, opacity: exporting ? 0.5 : 1, cursor: exporting ? 'not-allowed' : 'pointer'}}>
                 <input
                   type="radio"
                   name="format"
@@ -354,6 +356,7 @@ const EditorPage = () => {
                   checked={exportFormat === 'mov'}
                   onChange={(e) => setExportFormat(e.target.value)}
                   style={styles.radio}
+                  disabled={exporting}
                   data-testid="format-mov"
                 />
                 <span style={styles.formatText}>
@@ -362,12 +365,36 @@ const EditorPage = () => {
               </label>
             </div>
             
+            {exporting && (
+              <div style={{ marginTop: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '14px', color: '#4a5568' }}>Processing video...</span>
+                  <span style={{ fontSize: '14px', color: '#667eea', fontWeight: '600' }}>
+                    {Math.round(exportProgress)}%
+                  </span>
+                </div>
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: `${exportProgress}%` }}></div>
+                </div>
+                {estimatedTime > 0 && exportProgress < 100 && (
+                  <p style={{ fontSize: '13px', color: '#718096', marginTop: '8px' }}>
+                    Estimated time: {Math.max(1, Math.round(estimatedTime * (1 - exportProgress / 100)))}s remaining
+                  </p>
+                )}
+              </div>
+            )}
+            
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <button
                 onClick={handleExport}
                 className="btn-primary"
                 disabled={exporting}
-                style={{ flex: 1, padding: '12px' }}
+                style={{ 
+                  flex: 1, 
+                  padding: '12px',
+                  opacity: exporting ? 0.6 : 1,
+                  cursor: exporting ? 'not-allowed' : 'pointer'
+                }}
                 data-testid="confirm-export-button"
               >
                 {exporting ? (
@@ -386,7 +413,11 @@ const EditorPage = () => {
                 onClick={() => setShowExportDialog(false)}
                 className="btn-secondary"
                 disabled={exporting}
-                style={{ padding: '12px 24px' }}
+                style={{ 
+                  padding: '12px 24px',
+                  opacity: exporting ? 0.6 : 1,
+                  cursor: exporting ? 'not-allowed' : 'pointer'
+                }}
                 data-testid="cancel-export-button"
               >
                 Cancel
