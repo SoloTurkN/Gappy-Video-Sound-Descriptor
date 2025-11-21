@@ -530,43 +530,31 @@ async def export_video(project_id: str, export_req: ExportRequest):
             for segment in segment_files:
                 f.write(f"file '{segment}'\n")
         
-        # Concatenate all segments
+        # Concatenate all segments - ALWAYS re-encode to ensure proper audio sync
+        # When mixing videos with/without audio, copy mode causes audio sync issues
+        
+        # Set codec based on format
+        codec_args = []
+        if output_format == "mp4":
+            codec_args = ["-c:v", "libx264", "-preset", "medium", "-crf", "23", "-c:a", "aac", "-b:a", "192k", "-ar", "44100"]
+        elif output_format == "avi":
+            codec_args = ["-c:v", "libx264", "-c:a", "mp3", "-b:a", "192k", "-ar", "44100"]
+        elif output_format == "mov":
+            codec_args = ["-c:v", "libx264", "-c:a", "aac", "-b:a", "192k", "-ar", "44100"]
+        
         concat_cmd = [
             ffmpeg_path, "-y",
             "-f", "concat",
             "-safe", "0",
-            "-i", str(concat_file),
-            "-c", "copy",
-            str(output_path)
-        ]
+            "-i", str(concat_file)
+        ] + codec_args + [str(output_path)]
         
-        # If copy doesn't work due to codec differences, re-encode
+        logging.info(f"Concatenating with re-encode: {' '.join(concat_cmd)}")
         result = subprocess.run(concat_cmd, capture_output=True, text=True, timeout=300)
         
         if result.returncode != 0:
-            logging.warning("Concat with copy failed, re-encoding...")
-            
-            # Set codec based on format
-            codec_args = []
-            if output_format == "mp4":
-                codec_args = ["-c:v", "libx264", "-preset", "medium", "-crf", "23", "-c:a", "aac", "-b:a", "192k"]
-            elif output_format == "avi":
-                codec_args = ["-c:v", "libx264", "-c:a", "mp3", "-b:a", "192k"]
-            elif output_format == "mov":
-                codec_args = ["-c:v", "libx264", "-c:a", "aac", "-b:a", "192k"]
-            
-            concat_cmd = [
-                ffmpeg_path, "-y",
-                "-f", "concat",
-                "-safe", "0",
-                "-i", str(concat_file)
-            ] + codec_args + [str(output_path)]
-            
-            result = subprocess.run(concat_cmd, capture_output=True, text=True, timeout=300)
-            
-            if result.returncode != 0:
-                logging.error(f"FFmpeg concat error: {result.stderr}")
-                raise HTTPException(status_code=500, detail=f"Video export failed: {result.stderr}")
+            logging.error(f"FFmpeg concat error: {result.stderr}")
+            raise HTTPException(status_code=500, detail=f"Video export failed: {result.stderr}")
         
         # Keep temporary files for debugging (comment out to clean)
         # for segment in segment_files:
