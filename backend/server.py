@@ -417,7 +417,7 @@ class ExportRequest(BaseModel):
 
 @api_router.post("/export/{project_id}")
 async def export_video(project_id: str, export_req: ExportRequest):
-    """Export final video with audio descriptions merged"""
+    """Export final video with audio descriptions - each scene starts with still frame + audio, then continues with video"""
     try:
         import subprocess
         import tempfile
@@ -442,95 +442,137 @@ async def export_video(project_id: str, export_req: ExportRequest):
         # Create output filename
         output_filename = f"exported_{project_id}.{output_format}"
         output_path = UPLOADS_DIR / output_filename
+        project_dir = UPLOADS_DIR / project_id
         
-        # Build FFmpeg filter complex for audio descriptions
-        # We'll create a video that pauses at each scene and plays audio description
-        filter_parts = []
-        audio_inputs = []
-        
-        # Get original video duration
+        # Get video properties
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        video_duration = total_frames / fps
         cap.release()
         
-        # Build FFmpeg command with audio mixing
-        # For each scene, we'll overlay the audio description
-        ffmpeg_inputs = ["-i", video_path]
-        
-        # Add all audio files as inputs
-        for i, scene in enumerate(scenes):
-            if Path(scene['audio_path']).exists():
-                ffmpeg_inputs.extend(["-i", scene['audio_path']])
-                audio_inputs.append(f"[{i+1}:a]")
-        
-        # Create filter for mixing audio
-        if audio_inputs:
-            # Delay audio to match scene timestamps
-            audio_filters = []
-            for i, scene in enumerate(scenes):
-                if Path(scene['audio_path']).exists():
-                    delay_ms = int(scene['timestamp'] * 1000)
-                    audio_filters.append(f"[{i+1}:a]adelay={delay_ms}|{delay_ms}[a{i}]")
-            
-            # Mix all audio tracks
-            if len(audio_inputs) > 1:
-                mix_inputs = "".join([f"[a{i}]" for i in range(len(audio_inputs))])
-                audio_filters.append(f"{mix_inputs}amix=inputs={len(audio_inputs)}:duration=longest[aout]")
-                output_audio = "[aout]"
-            else:
-                output_audio = "[a0]"
-            
-            filter_complex = ";".join(audio_filters)
-        else:
-            filter_complex = None
-            output_audio = "0:a"
-        
-        # Build final FFmpeg command with full path
         ffmpeg_path = "/usr/bin/ffmpeg"
-        cmd = [ffmpeg_path, "-y"] + ffmpeg_inputs
         
-        if filter_complex:
-            cmd.extend(["-filter_complex", filter_complex])
+        # Create segments for each scene
+        segment_files = []
+        concat_file = project_dir / "concat_list.txt"
         
-        # Set codec based on format
-        if output_format == "mp4":
-            cmd.extend([
+        for i, scene in enumerate(scenes):
+            # Determine start and end times for this video segment
+            start_time = scene['timestamp']
+            
+            # End time is either the next scene's timestamp or video end
+            if i < len(scenes) - 1:
+                end_time = scenes[i + 1]['timestamp']
+            else:
+                end_time = video_duration
+            
+            segment_duration = end_time - start_time
+            
+            # Skip if segment is too short
+            if segment_duration < 0.1:
+                continue
+            
+            # Create still frame video from thumbnail (duration = audio description length)
+            still_output = project_dir / f"still_{i}.mp4"
+            still_duration = scene['duration'] if scene['duration'] > 0 else 2.0
+            
+            # Create still frame video with audio description
+            still_cmd = [
+                ffmpeg_path, "-y",
+                "-loop", "1",
+                "-i", scene['thumbnail_path'],
+                "-i", scene['audio_path'],
                 "-c:v", "libx264",
+                "-t", str(still_duration),
+                "-pix_fmt", "yuv420p",
+                "-vf", f"fps={fps},scale=trunc(iw/2)*2:trunc(ih/2)*2",
+                "-c:a", "aac",
+                "-shortest",
+                str(still_output)
+            ]
+            
+            result = subprocess.run(still_cmd, capture_output=True, text=True, timeout=60)
+            if result.returncode != 0:
+                logging.error(f"Still frame creation error: {result.stderr}")
+                continue
+            
+            segment_files.append(str(still_output))
+            
+            # Extract video segment from original (muted, starting from scene timestamp)
+            video_segment_output = project_dir / f"segment_{i}.mp4"
+            
+            segment_cmd = [
+                ffmpeg_path, "-y",
+                "-ss", str(start_time),
+                "-i", video_path,
+                "-t", str(segment_duration),
+                "-c:v", "libx264",
+                "-an",  # Remove audio (mute)
                 "-preset", "medium",
-                "-crf", "23",
-                "-c:a", "aac",
-                "-b:a", "192k"
-            ])
-        elif output_format == "avi":
-            cmd.extend([
-                "-c:v", "libx264",
-                "-c:a", "mp3",
-                "-b:a", "192k"
-            ])
-        elif output_format == "mov":
-            cmd.extend([
-                "-c:v", "libx264",
-                "-c:a", "aac",
-                "-b:a", "192k"
-            ])
+                str(video_segment_output)
+            ]
+            
+            result = subprocess.run(segment_cmd, capture_output=True, text=True, timeout=60)
+            if result.returncode != 0:
+                logging.error(f"Segment extraction error: {result.stderr}")
+                continue
+            
+            segment_files.append(str(video_segment_output))
         
-        # Map video and audio
-        cmd.extend(["-map", "0:v"])
-        if filter_complex:
-            cmd.extend(["-map", output_audio])
-        else:
-            cmd.extend(["-map", "0:a?"])
+        # Create concat file
+        with open(concat_file, 'w') as f:
+            for segment in segment_files:
+                f.write(f"file '{segment}'\n")
         
-        cmd.append(str(output_path))
+        # Concatenate all segments
+        concat_cmd = [
+            ffmpeg_path, "-y",
+            "-f", "concat",
+            "-safe", "0",
+            "-i", str(concat_file),
+            "-c", "copy",
+            str(output_path)
+        ]
         
-        # Run FFmpeg
-        logging.info(f"Running FFmpeg: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        # If copy doesn't work due to codec differences, re-encode
+        result = subprocess.run(concat_cmd, capture_output=True, text=True, timeout=300)
         
         if result.returncode != 0:
-            logging.error(f"FFmpeg error: {result.stderr}")
-            raise HTTPException(status_code=500, detail=f"Video export failed: {result.stderr}")
+            logging.warning("Concat with copy failed, re-encoding...")
+            
+            # Set codec based on format
+            codec_args = []
+            if output_format == "mp4":
+                codec_args = ["-c:v", "libx264", "-preset", "medium", "-crf", "23", "-c:a", "aac", "-b:a", "192k"]
+            elif output_format == "avi":
+                codec_args = ["-c:v", "libx264", "-c:a", "mp3", "-b:a", "192k"]
+            elif output_format == "mov":
+                codec_args = ["-c:v", "libx264", "-c:a", "aac", "-b:a", "192k"]
+            
+            concat_cmd = [
+                ffmpeg_path, "-y",
+                "-f", "concat",
+                "-safe", "0",
+                "-i", str(concat_file)
+            ] + codec_args + [str(output_path)]
+            
+            result = subprocess.run(concat_cmd, capture_output=True, text=True, timeout=300)
+            
+            if result.returncode != 0:
+                logging.error(f"FFmpeg concat error: {result.stderr}")
+                raise HTTPException(status_code=500, detail=f"Video export failed: {result.stderr}")
+        
+        # Clean up temporary files
+        for segment in segment_files:
+            try:
+                Path(segment).unlink()
+            except:
+                pass
+        try:
+            concat_file.unlink()
+        except:
+            pass
         
         # Update project status
         await db.projects.update_one(
