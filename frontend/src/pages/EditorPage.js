@@ -338,7 +338,11 @@ const EditorPage = () => {
 
       {/* Export Dialog */}
       {showExportDialog && (
-        <div style={styles.modalOverlay} onClick={() => !exporting && setShowExportDialog(false)}>
+        <div 
+          style={styles.modalOverlay} 
+          onClick={() => !exporting && setShowExportDialog(false)}
+          data-testid="export-modal-overlay"
+        >
           <div className="glass-card" style={styles.modal} onClick={(e) => e.stopPropagation()} data-testid="export-dialog">
             <h2 style={styles.modalTitle}>Export Video</h2>
             <p style={styles.modalText}>Choose the output format for your video with audio descriptions:</p>
