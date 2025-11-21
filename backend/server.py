@@ -409,10 +409,16 @@ async def get_audio(project_id: str, filename: str):
         raise HTTPException(status_code=404, detail="Audio not found")
     return FileResponse(file_path, media_type="audio/mpeg")
 
+class ExportRequest(BaseModel):
+    format: str = "mp4"  # mp4, avi, mov
+
 @api_router.post("/export/{project_id}")
-async def export_video(project_id: str):
-    """Export final video with audio descriptions"""
+async def export_video(project_id: str, export_req: ExportRequest):
+    """Export final video with audio descriptions merged"""
     try:
+        import subprocess
+        import tempfile
+        
         # Get project and scenes
         project = await db.projects.find_one({"id": project_id}, {"_id": 0})
         if not project:
@@ -423,8 +429,106 @@ async def export_video(project_id: str):
         if not scenes:
             raise HTTPException(status_code=400, detail="No scenes found")
         
-        # This is a placeholder - full video export would require FFmpeg
-        # For MVP, we'll return the scene data for frontend to handle
+        video_path = project['video_path']
+        output_format = export_req.format.lower()
+        
+        # Validate format
+        if output_format not in ['mp4', 'avi', 'mov']:
+            raise HTTPException(status_code=400, detail="Format must be mp4, avi, or mov")
+        
+        # Create output filename
+        output_filename = f"exported_{project_id}.{output_format}"
+        output_path = UPLOADS_DIR / output_filename
+        
+        # Build FFmpeg filter complex for audio descriptions
+        # We'll create a video that pauses at each scene and plays audio description
+        filter_parts = []
+        audio_inputs = []
+        
+        # Get original video duration
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        cap.release()
+        
+        # Build FFmpeg command with audio mixing
+        # For each scene, we'll overlay the audio description
+        ffmpeg_inputs = ["-i", video_path]
+        
+        # Add all audio files as inputs
+        for i, scene in enumerate(scenes):
+            if Path(scene['audio_path']).exists():
+                ffmpeg_inputs.extend(["-i", scene['audio_path']])
+                audio_inputs.append(f"[{i+1}:a]")
+        
+        # Create filter for mixing audio
+        if audio_inputs:
+            # Delay audio to match scene timestamps
+            audio_filters = []
+            for i, scene in enumerate(scenes):
+                if Path(scene['audio_path']).exists():
+                    delay_ms = int(scene['timestamp'] * 1000)
+                    audio_filters.append(f"[{i+1}:a]adelay={delay_ms}|{delay_ms}[a{i}]")
+            
+            # Mix all audio tracks
+            if len(audio_inputs) > 1:
+                mix_inputs = "".join([f"[a{i}]" for i in range(len(audio_inputs))])
+                audio_filters.append(f"{mix_inputs}amix=inputs={len(audio_inputs)}:duration=longest[aout]")
+                output_audio = "[aout]"
+            else:
+                output_audio = "[a0]"
+            
+            filter_complex = ";".join(audio_filters)
+        else:
+            filter_complex = None
+            output_audio = "0:a"
+        
+        # Build final FFmpeg command
+        cmd = ["ffmpeg", "-y"] + ffmpeg_inputs
+        
+        if filter_complex:
+            cmd.extend(["-filter_complex", filter_complex])
+        
+        # Set codec based on format
+        if output_format == "mp4":
+            cmd.extend([
+                "-c:v", "libx264",
+                "-preset", "medium",
+                "-crf", "23",
+                "-c:a", "aac",
+                "-b:a", "192k"
+            ])
+        elif output_format == "avi":
+            cmd.extend([
+                "-c:v", "libx264",
+                "-c:a", "mp3",
+                "-b:a", "192k"
+            ])
+        elif output_format == "mov":
+            cmd.extend([
+                "-c:v", "libx264",
+                "-c:a", "aac",
+                "-b:a", "192k"
+            ])
+        
+        # Map video and audio
+        cmd.extend(["-map", "0:v"])
+        if filter_complex:
+            cmd.extend(["-map", output_audio])
+        else:
+            cmd.extend(["-map", "0:a?"])
+        
+        cmd.append(str(output_path))
+        
+        # Run FFmpeg
+        logging.info(f"Running FFmpeg: {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        
+        if result.returncode != 0:
+            logging.error(f"FFmpeg error: {result.stderr}")
+            raise HTTPException(status_code=500, detail=f"Video export failed: {result.stderr}")
+        
+        # Update project status
         await db.projects.update_one(
             {"id": project_id},
             {"$set": {"status": "completed"}}
@@ -432,12 +536,24 @@ async def export_video(project_id: str):
         
         return {
             "status": "success",
-            "message": "Video export data prepared",
-            "scenes": scenes
+            "message": "Video exported successfully",
+            "download_url": f"/api/download/{project_id}/{output_filename}",
+            "format": output_format
         }
+    except subprocess.TimeoutExpired:
+        logging.error("FFmpeg timeout")
+        raise HTTPException(status_code=500, detail="Video export timeout")
     except Exception as e:
         logging.error(f"Error exporting video: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/download/{project_id}/{filename}")
+async def download_video(project_id: str, filename: str):
+    """Download exported video"""
+    file_path = UPLOADS_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path, filename=filename, media_type="video/mp4")
 
 # Include the router in the main app
 app.include_router(api_router)
