@@ -124,18 +124,21 @@ async def generate_description(frame_base64: str) -> str:
         chat = LlmChat(
             api_key=API_KEY,
             session_id=f"scene_{uuid.uuid4()}",
-            system_message="You are an expert at creating WCAG 1.2.3 Level A compliant audio descriptions. Provide clear, concise descriptions of visual content focusing on important visual information, actions, settings, and scene changes. Keep descriptions under 15 seconds when spoken."
+            system_message="You are an expert at creating WCAG 1.2.3 Level A compliant audio descriptions. Provide ONE SHORT SENTENCE describing the most important visual information. Keep it under 10 words. Be direct and concise."
         ).with_model("openai", "gpt-4o")
         
         image_content = ImageContent(image_base64=frame_base64)
         
         user_message = UserMessage(
-            text="Describe this scene for audio description accessibility. Focus on the environment, people, actions, and important visual details. Be concise and clear.",
+            text="Describe this scene in ONE SHORT SENTENCE (under 10 words). Focus only on the most important visual element.",
             file_contents=[image_content]
         )
         
         response = await chat.send_message(user_message)
-        return response
+        
+        # Extract only the first sentence as a safety measure
+        first_sentence = response.split('.')[0].strip() + '.'
+        return first_sentence
     except Exception as e:
         logging.error(f"Error generating description: {e}")
         return "Scene description unavailable."
