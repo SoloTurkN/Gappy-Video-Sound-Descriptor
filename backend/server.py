@@ -141,78 +141,79 @@ async def generate_description(frame_base64: str) -> str:
         return "Scene description unavailable."
 
 async def generate_audio(text: str, output_path: str) -> float:
-    """Generate audio from text using OpenAI TTS"""
-    # Check if user provided their own OpenAI API key for TTS
+    """Generate audio from text using gTTS (default) or OpenAI TTS (optional)"""
+    # Check if user provided OpenAI API key for premium TTS
     openai_api_key = os.environ.get('OPENAI_API_KEY', '')
     
-    # If no OpenAI key is provided, create a placeholder and estimate duration
-    if not openai_api_key:
-        logging.info("No OPENAI_API_KEY found. Using placeholder audio. Add OPENAI_API_KEY to .env for TTS.")
-        # Estimate duration based on text length (roughly 150 words per minute)
+    # Try OpenAI TTS first if API key is available
+    if openai_api_key:
+        try:
+            import httpx
+            from mutagen.mp3 import MP3
+            
+            logging.info("Using OpenAI TTS")
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/audio/speech",
+                    headers={
+                        "Authorization": f"Bearer {openai_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "tts-1",
+                        "voice": "alloy",
+                        "input": text,
+                        "speed": 1.0
+                    }
+                )
+                
+                if response.status_code == 200:
+                    with open(output_path, 'wb') as f:
+                        f.write(response.content)
+                    
+                    # Calculate audio duration
+                    try:
+                        audio = MP3(output_path)
+                        return audio.info.length
+                    except:
+                        word_count = len(text.split())
+                        return (word_count / 150) * 60
+                else:
+                    logging.warning(f"OpenAI TTS failed: {response.status_code}, falling back to gTTS")
+        except Exception as e:
+            logging.warning(f"OpenAI TTS error: {e}, falling back to gTTS")
+    
+    # Use free gTTS as default
+    try:
+        from gtts import gTTS
+        from mutagen.mp3 import MP3
+        
+        logging.info("Using gTTS for audio generation")
+        tts = gTTS(text=text, lang='en', slow=False)
+        tts.save(output_path)
+        
+        # Calculate audio duration
+        try:
+            audio = MP3(output_path)
+            return audio.info.length
+        except:
+            # Fallback estimation
+            word_count = len(text.split())
+            return (word_count / 150) * 60
+    except Exception as e:
+        logging.error(f"Error generating audio with gTTS: {e}")
+        # Last resort: create silent audio with estimated duration
         word_count = len(text.split())
         duration = (word_count / 150) * 60
         
-        # Create a minimal silent MP3 file as placeholder
         try:
             from pydub import AudioSegment
             silence = AudioSegment.silent(duration=int(duration * 1000))
             silence.export(output_path, format="mp3")
         except:
-            # If pydub not available, just create empty file
             with open(output_path, 'wb') as f:
                 f.write(b'')
         
-        return duration
-    
-    # Try to generate actual TTS audio
-    try:
-        import httpx
-        from mutagen.mp3 import MP3
-        
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                "https://api.openai.com/v1/audio/speech",
-                headers={
-                    "Authorization": f"Bearer {openai_api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "tts-1",
-                    "voice": "alloy",
-                    "input": text,
-                    "speed": 1.0
-                }
-            )
-            
-            if response.status_code == 200:
-                with open(output_path, 'wb') as f:
-                    f.write(response.content)
-                
-                # Calculate audio duration for MP3
-                try:
-                    audio = MP3(output_path)
-                    duration = audio.info.length
-                except:
-                    # Fallback: estimate duration
-                    word_count = len(text.split())
-                    duration = (word_count / 150) * 60
-                
-                return duration
-            else:
-                logging.error(f"TTS API error: {response.status_code}")
-                # Fallback to placeholder
-                word_count = len(text.split())
-                duration = (word_count / 150) * 60
-                with open(output_path, 'wb') as f:
-                    f.write(b'')
-                return duration
-    except Exception as e:
-        logging.error(f"Error generating audio: {e}")
-        # Fallback to placeholder
-        word_count = len(text.split())
-        duration = (word_count / 150) * 60
-        with open(output_path, 'wb') as f:
-            f.write(b'')
         return duration
 
 # Routes
