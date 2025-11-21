@@ -115,7 +115,12 @@ const EditorPage = () => {
       setShowExportDialog(false);
     } catch (error) {
       console.error('Export error:', error);
-      toast.error(error.response?.data?.detail || 'Failed to export video');
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to export video';
+      // Clean up the error message for display
+      const displayMessage = typeof errorMessage === 'string' && errorMessage.length > 100 
+        ? 'Video export failed. Please check if all scenes have valid audio.'
+        : errorMessage;
+      toast.error(displayMessage);
     } finally {
       setExporting(false);
     }
