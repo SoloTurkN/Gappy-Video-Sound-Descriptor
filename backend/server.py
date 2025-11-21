@@ -501,17 +501,22 @@ async def export_video(project_id: str, export_req: ExportRequest):
             
             segment_files.append(str(still_output))
             
-            # Step 2: Extract FULL video segment (muted, playing complete scene duration)
+            # Step 2: Extract FULL video segment with SILENT audio track
             # This plays the entire scene from start to end (or next scene)
+            # We add silent audio so concatenation maintains continuous audio stream
             video_segment_output = project_dir / f"segment_{i}.mp4"
             
             segment_cmd = [
                 ffmpeg_path, "-y",
                 "-ss", str(scene_start_time),
                 "-i", video_path,
+                "-f", "lavfi",
+                "-i", "anullsrc=channel_layout=mono:sample_rate=44100",
                 "-t", str(full_segment_duration),
                 "-c:v", "libx264",
-                "-an",  # Remove audio (mute original audio)
+                "-c:a", "aac",
+                "-b:a", "192k",
+                "-shortest",
                 "-preset", "medium",
                 str(video_segment_output)
             ]
