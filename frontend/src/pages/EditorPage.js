@@ -23,7 +23,24 @@ const EditorPage = () => {
 
   useEffect(() => {
     loadProject();
+    
+    // Cleanup function to stop audio when component unmounts
+    return () => {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+    };
   }, [projectId]);
+  
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (currentAudio) {
+        currentAudio.pause();
+      }
+    };
+  }, [currentAudio]);
 
   const loadProject = async () => {
     try {
