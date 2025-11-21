@@ -408,7 +408,7 @@ const EditorPage = () => {
                 </div>
                 {estimatedTime > 0 && exportProgress < 95 && (
                   <p style={{ fontSize: '13px', color: '#718096', marginTop: '8px' }}>
-                    Estimated time: {Math.max(1, Math.round(estimatedSeconds * (1 - exportProgress / 85)))}s remaining
+                    Estimated time: {Math.max(1, Math.round(estimatedTime * (1 - exportProgress / 85)))}s remaining
                   </p>
                 )}
                 {exportProgress >= 95 && exportProgress < 100 && (
