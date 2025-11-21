@@ -20,6 +20,8 @@ const EditorPage = () => {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportFormat, setExportFormat] = useState('mp4');
   const [currentAudio, setCurrentAudio] = useState(null);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [estimatedTime, setEstimatedTime] = useState(0);
 
   useEffect(() => {
     loadProject();
