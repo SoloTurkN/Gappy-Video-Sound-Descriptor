@@ -394,6 +394,60 @@ const styles = {
     fontFamily: 'Inter, sans-serif',
     resize: 'vertical',
   },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modal: {
+    maxWidth: '500px',
+    width: '90%',
+    padding: '32px',
+  },
+  modalTitle: {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: '#1a202c',
+    marginBottom: '12px',
+  },
+  modalText: {
+    fontSize: '15px',
+    color: '#4a5568',
+    marginBottom: '24px',
+    lineHeight: '1.6',
+  },
+  formatOptions: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  formatLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '16px',
+    border: '2px solid #e0e7ff',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    background: 'white',
+  },
+  radio: {
+    width: '20px',
+    height: '20px',
+    marginRight: '12px',
+    cursor: 'pointer',
+  },
+  formatText: {
+    fontSize: '15px',
+    color: '#2d3748',
+  },
 };
 
 export default EditorPage;
