@@ -396,7 +396,9 @@ const EditorPage = () => {
             {exporting && (
               <div style={{ marginTop: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '14px', color: '#4a5568' }}>Processing video...</span>
+                  <span style={{ fontSize: '14px', color: '#4a5568' }}>
+                    {exportProgress >= 95 ? 'Finalizing export...' : 'Processing video...'}
+                  </span>
                   <span style={{ fontSize: '14px', color: '#667eea', fontWeight: '600' }}>
                     {Math.round(exportProgress)}%
                   </span>
@@ -404,9 +406,14 @@ const EditorPage = () => {
                 <div className="progress-bar">
                   <div className="progress-fill" style={{ width: `${exportProgress}%` }}></div>
                 </div>
-                {estimatedTime > 0 && exportProgress < 100 && (
+                {estimatedTime > 0 && exportProgress < 95 && (
                   <p style={{ fontSize: '13px', color: '#718096', marginTop: '8px' }}>
-                    Estimated time: {Math.max(1, Math.round(estimatedTime * (1 - exportProgress / 100)))}s remaining
+                    Estimated time: {Math.max(1, Math.round(estimatedSeconds * (1 - exportProgress / 85)))}s remaining
+                  </p>
+                )}
+                {exportProgress >= 95 && exportProgress < 100 && (
+                  <p style={{ fontSize: '13px', color: '#718096', marginTop: '8px' }}>
+                    Almost done...
                   </p>
                 )}
               </div>
