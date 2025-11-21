@@ -69,13 +69,30 @@ const EditorPage = () => {
   };
 
   const handleExport = async () => {
+    setExporting(true);
     try {
-      toast.info('Preparing export...');
-      await axios.post(`${API}/export/${projectId}`);
-      toast.success('Video export prepared! Scenes are ready for download.');
+      toast.info(`Exporting video as ${exportFormat.toUpperCase()}...`);
+      const response = await axios.post(`${API}/export/${projectId}`, {
+        format: exportFormat
+      });
+      
+      toast.success('Video exported successfully!');
+      
+      // Download the exported video
+      const downloadUrl = `${BACKEND_URL}${response.data.download_url}`;
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `exported_${project?.original_filename || 'video'}.${exportFormat}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setShowExportDialog(false);
     } catch (error) {
       console.error('Export error:', error);
-      toast.error('Failed to export video');
+      toast.error(error.response?.data?.detail || 'Failed to export video');
+    } finally {
+      setExporting(false);
     }
   };
 
