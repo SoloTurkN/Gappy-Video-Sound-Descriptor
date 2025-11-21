@@ -97,32 +97,61 @@ const EditorPage = () => {
 
   const handleExport = async () => {
     setExporting(true);
+    setExportProgress(0);
+    
+    // Estimate export time based on scenes (roughly 2 seconds per scene + 3 seconds overhead)
+    const estimatedSeconds = (scenes.length * 2) + 3;
+    setEstimatedTime(estimatedSeconds);
+    
+    // Simulate progress bar
+    const progressInterval = setInterval(() => {
+      setExportProgress(prev => {
+        if (prev >= 90) return prev; // Stop at 90% until actual completion
+        return prev + (100 / (estimatedSeconds * 2)); // Increment based on estimate
+      });
+    }, 500);
+    
     try {
       toast.info(`Exporting video as ${exportFormat.toUpperCase()}...`);
       const response = await axios.post(`${API}/export/${projectId}`, {
         format: exportFormat
       });
       
+      // Complete the progress bar
+      clearInterval(progressInterval);
+      setExportProgress(100);
+      
       toast.success('Video exported successfully!');
       
       // Download the exported video
       const downloadUrl = `${BACKEND_URL}${response.data.download_url}`;
+      
+      // Create a temporary link and trigger download
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `exported_${project?.original_filename || 'video'}.${exportFormat}`;
+      link.setAttribute('download', `exported_${project?.original_filename || 'video'}.${exportFormat}`);
+      link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
       
-      setShowExportDialog(false);
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(link);
+        setShowExportDialog(false);
+        setExportProgress(0);
+        setEstimatedTime(0);
+      }, 1000);
+      
     } catch (error) {
+      clearInterval(progressInterval);
       console.error('Export error:', error);
       const errorMessage = error.response?.data?.detail || error.message || 'Failed to export video';
-      // Clean up the error message for display
       const displayMessage = typeof errorMessage === 'string' && errorMessage.length > 100 
         ? 'Video export failed. Please check if all scenes have valid audio.'
         : errorMessage;
       toast.error(displayMessage);
+      setExportProgress(0);
+      setEstimatedTime(0);
     } finally {
       setExporting(false);
     }
