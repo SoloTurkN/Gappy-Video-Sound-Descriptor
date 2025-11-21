@@ -16,6 +16,9 @@ const EditorPage = () => {
   const [editingScene, setEditingScene] = useState(null);
   const [editText, setEditText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportFormat, setExportFormat] = useState('mp4');
 
   useEffect(() => {
     loadProject();
