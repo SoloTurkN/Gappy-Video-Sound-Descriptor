@@ -568,16 +568,17 @@ async def export_video(project_id: str, export_req: ExportRequest):
                 logging.error(f"FFmpeg concat error: {result.stderr}")
                 raise HTTPException(status_code=500, detail=f"Video export failed: {result.stderr}")
         
-        # Clean up temporary files
-        for segment in segment_files:
-            try:
-                Path(segment).unlink()
-            except:
-                pass
-        try:
-            concat_file.unlink()
-        except:
-            pass
+        # Keep temporary files for debugging (comment out to clean)
+        # for segment in segment_files:
+        #     try:
+        #         Path(segment).unlink()
+        #     except:
+        #         pass
+        # try:
+        #     concat_file.unlink()
+        # except:
+        #     pass
+        logging.info(f"Kept segment files for debugging in {project_dir}")
         
         # Update project status
         await db.projects.update_one(
