@@ -33,10 +33,17 @@ A web application that automatically generates WCAG 1.2.3 Level A compliant audi
 The app uses the Emergent LLM Key for:
 - ✅ OpenAI GPT-4o vision analysis
 - ✅ Scene description generation
-- ❌ Text-to-Speech (not supported)
 
-### OpenAI API Key (Optional)
-To enable full Text-to-Speech functionality:
+### Text-to-Speech Options
+
+**Default: gTTS (Google Text-to-Speech)**
+- ✅ Free and open-source
+- ✅ No API key required
+- ✅ Works out of the box
+- Good quality natural-sounding voice
+
+**Optional: OpenAI TTS (Premium)**
+To use premium OpenAI TTS voices:
 1. Get an OpenAI API key from https://platform.openai.com/api-keys
 2. Add it to `backend/.env`:
    ```
@@ -44,7 +51,12 @@ To enable full Text-to-Speech functionality:
    ```
 3. Restart the backend server
 
-**Without OpenAI TTS**: Audio files will be generated as placeholders with estimated durations. Descriptions are still fully functional.
+The app automatically uses OpenAI TTS when the key is available, otherwise falls back to gTTS.
+
+### Video Export Formats
+- **MP4** (H.264): Best compatibility, recommended for web
+- **AVI**: High quality, larger file size
+- **MOV** (QuickTime): Best for Apple devices and Final Cut Pro
 
 ## Usage
 
