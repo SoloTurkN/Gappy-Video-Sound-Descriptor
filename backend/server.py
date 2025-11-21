@@ -483,8 +483,9 @@ async def export_video(project_id: str, export_req: ExportRequest):
             filter_complex = None
             output_audio = "0:a"
         
-        # Build final FFmpeg command
-        cmd = ["ffmpeg", "-y"] + ffmpeg_inputs
+        # Build final FFmpeg command with full path
+        ffmpeg_path = "/usr/bin/ffmpeg"
+        cmd = [ffmpeg_path, "-y"] + ffmpeg_inputs
         
         if filter_complex:
             cmd.extend(["-filter_complex", filter_complex])
