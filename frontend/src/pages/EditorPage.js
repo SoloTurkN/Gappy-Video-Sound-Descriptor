@@ -220,6 +220,94 @@ const EditorPage = () => {
           );
         })}
       </div>
+
+      {/* Export Dialog */}
+      {showExportDialog && (
+        <div style={styles.modalOverlay} onClick={() => !exporting && setShowExportDialog(false)}>
+          <div className="glass-card" style={styles.modal} onClick={(e) => e.stopPropagation()} data-testid="export-dialog">
+            <h2 style={styles.modalTitle}>Export Video</h2>
+            <p style={styles.modalText}>Choose the output format for your video with audio descriptions:</p>
+            
+            <div style={styles.formatOptions}>
+              <label style={styles.formatLabel}>
+                <input
+                  type="radio"
+                  name="format"
+                  value="mp4"
+                  checked={exportFormat === 'mp4'}
+                  onChange={(e) => setExportFormat(e.target.value)}
+                  style={styles.radio}
+                  data-testid="format-mp4"
+                />
+                <span style={styles.formatText}>
+                  <strong>MP4</strong> (H.264) - Best compatibility
+                </span>
+              </label>
+              
+              <label style={styles.formatLabel}>
+                <input
+                  type="radio"
+                  name="format"
+                  value="avi"
+                  checked={exportFormat === 'avi'}
+                  onChange={(e) => setExportFormat(e.target.value)}
+                  style={styles.radio}
+                  data-testid="format-avi"
+                />
+                <span style={styles.formatText}>
+                  <strong>AVI</strong> - High quality, larger file size
+                </span>
+              </label>
+              
+              <label style={styles.formatLabel}>
+                <input
+                  type="radio"
+                  name="format"
+                  value="mov"
+                  checked={exportFormat === 'mov'}
+                  onChange={(e) => setExportFormat(e.target.value)}
+                  style={styles.radio}
+                  data-testid="format-mov"
+                />
+                <span style={styles.formatText}>
+                  <strong>MOV</strong> (QuickTime) - Best for Apple devices
+                </span>
+              </label>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+              <button
+                onClick={handleExport}
+                className="btn-primary"
+                disabled={exporting}
+                style={{ flex: 1, padding: '12px' }}
+                data-testid="confirm-export-button"
+              >
+                {exporting ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="spinner" style={{ width: '16px', height: '16px', margin: '0 8px 0 0' }}></div>
+                    Exporting...
+                  </div>
+                ) : (
+                  <>
+                    <Download size={18} style={{ marginRight: '8px' }} />
+                    Export as {exportFormat.toUpperCase()}
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowExportDialog(false)}
+                className="btn-secondary"
+                disabled={exporting}
+                style={{ padding: '12px 24px' }}
+                data-testid="cancel-export-button"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
