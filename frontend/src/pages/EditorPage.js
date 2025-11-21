@@ -105,10 +105,32 @@ const EditorPage = () => {
   };
 
   const playAudio = (audioPath) => {
+    // Stop any currently playing audio
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+    
     const fileName = audioPath.split('/').pop();
     const audioUrl = `${API}/audio/${projectId}/${fileName}`;
     const audio = new Audio(audioUrl);
-    audio.play();
+    
+    // Set up event listeners
+    audio.onended = () => {
+      setCurrentAudio(null);
+    };
+    
+    audio.onerror = () => {
+      toast.error('Failed to play audio');
+      setCurrentAudio(null);
+    };
+    
+    setCurrentAudio(audio);
+    audio.play().catch(err => {
+      console.error('Audio play error:', err);
+      toast.error('Failed to play audio');
+      setCurrentAudio(null);
+    });
   };
 
   if (loading) {
