@@ -19,6 +19,7 @@ const EditorPage = () => {
   const [exporting, setExporting] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportFormat, setExportFormat] = useState('mp4');
+  const [currentAudio, setCurrentAudio] = useState(null);
 
   useEffect(() => {
     loadProject();
