@@ -131,7 +131,7 @@ const EditorPage = () => {
         </div>
         
         <button
-          onClick={handleExport}
+          onClick={() => setShowExportDialog(true)}
           className="btn-primary"
           style={{ padding: '10px 20px' }}
           data-testid="export-button"
