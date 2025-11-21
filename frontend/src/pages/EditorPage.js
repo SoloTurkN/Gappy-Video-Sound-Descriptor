@@ -43,6 +43,13 @@ const EditorPage = () => {
   };
 
   const handleEditScene = (scene) => {
+    // Stop any playing audio
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setCurrentAudio(null);
+    }
+    
     setEditingScene(scene.id);
     setEditText(scene.description);
   };
