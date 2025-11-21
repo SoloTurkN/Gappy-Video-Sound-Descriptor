@@ -458,33 +458,35 @@ async def export_video(project_id: str, export_req: ExportRequest):
         concat_file = project_dir / "concat_list.txt"
         
         for i, scene in enumerate(scenes):
-            # Determine start and end times for this video segment
-            start_time = scene['timestamp']
+            # Calculate scene boundaries
+            scene_start_time = scene['timestamp']
             
             # End time is either the next scene's timestamp or video end
             if i < len(scenes) - 1:
-                end_time = scenes[i + 1]['timestamp']
+                scene_end_time = scenes[i + 1]['timestamp']
             else:
-                end_time = video_duration
+                scene_end_time = video_duration
             
-            segment_duration = end_time - start_time
+            # Full segment duration (the actual video length for this scene)
+            full_segment_duration = scene_end_time - scene_start_time
             
             # Skip if segment is too short
-            if segment_duration < 0.1:
+            if full_segment_duration < 0.1:
                 continue
             
-            # Create still frame video from thumbnail (duration = audio description length)
-            still_output = project_dir / f"still_{i}.mp4"
-            still_duration = scene['duration'] if scene['duration'] > 0 else 2.0
+            # Audio description duration
+            audio_duration = scene['duration'] if scene['duration'] > 0 else 2.0
             
-            # Create still frame video with audio description
+            # Step 1: Create still frame video with audio description (first frame paused)
+            still_output = project_dir / f"still_{i}.mp4"
+            
             still_cmd = [
                 ffmpeg_path, "-y",
                 "-loop", "1",
                 "-i", scene['thumbnail_path'],
                 "-i", scene['audio_path'],
                 "-c:v", "libx264",
-                "-t", str(still_duration),
+                "-t", str(audio_duration),
                 "-pix_fmt", "yuv420p",
                 "-vf", f"fps={fps},scale=trunc(iw/2)*2:trunc(ih/2)*2",
                 "-c:a", "aac",
@@ -499,16 +501,17 @@ async def export_video(project_id: str, export_req: ExportRequest):
             
             segment_files.append(str(still_output))
             
-            # Extract video segment from original (muted, starting from scene timestamp)
+            # Step 2: Extract FULL video segment (muted, playing complete scene duration)
+            # This plays the entire scene from start to end (or next scene)
             video_segment_output = project_dir / f"segment_{i}.mp4"
             
             segment_cmd = [
                 ffmpeg_path, "-y",
-                "-ss", str(start_time),
+                "-ss", str(scene_start_time),
                 "-i", video_path,
-                "-t", str(segment_duration),
+                "-t", str(full_segment_duration),
                 "-c:v", "libx264",
-                "-an",  # Remove audio (mute)
+                "-an",  # Remove audio (mute original audio)
                 "-preset", "medium",
                 str(video_segment_output)
             ]
@@ -519,6 +522,8 @@ async def export_video(project_id: str, export_req: ExportRequest):
                 continue
             
             segment_files.append(str(video_segment_output))
+            
+            logging.info(f"Scene {i+1}: Still={audio_duration}s + Video={full_segment_duration}s = Total={audio_duration + full_segment_duration}s")
         
         # Create concat file
         with open(concat_file, 'w') as f:
