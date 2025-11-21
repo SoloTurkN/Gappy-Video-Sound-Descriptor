@@ -100,47 +100,75 @@ const EditorPage = () => {
     setExportProgress(0);
     
     // Estimate export time based on scenes (roughly 2 seconds per scene + 3 seconds overhead)
-    const estimatedSeconds = (scenes.length * 2) + 3;
+    const estimatedSeconds = Math.max(5, (scenes.length * 2) + 3);
     setEstimatedTime(estimatedSeconds);
     
-    // Simulate progress bar
+    // More realistic progress simulation
     const progressInterval = setInterval(() => {
       setExportProgress(prev => {
-        if (prev >= 90) return prev; // Stop at 90% until actual completion
-        return prev + (100 / (estimatedSeconds * 2)); // Increment based on estimate
+        if (prev >= 85) {
+          // Slow down near the end
+          return Math.min(prev + 1, 95);
+        }
+        return prev + (85 / (estimatedSeconds * 2)); // Get to 85% based on estimate
       });
     }, 500);
     
     try {
       toast.info(`Exporting video as ${exportFormat.toUpperCase()}...`);
+      
       const response = await axios.post(`${API}/export/${projectId}`, {
         format: exportFormat
       });
       
-      // Complete the progress bar
+      // Complete the progress bar immediately
       clearInterval(progressInterval);
       setExportProgress(100);
       
-      toast.success('Video exported successfully!');
+      // Wait a moment to show 100%
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Download the exported video
+      toast.success('Starting download...');
+      
+      // Download the exported video using fetch to avoid CORS issues
       const downloadUrl = `${BACKEND_URL}${response.data.download_url}`;
       
-      // Create a temporary link and trigger download
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', `exported_${project?.original_filename || 'video'}.${exportFormat}`);
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
+      try {
+        // Fetch the file as a blob
+        const fileResponse = await fetch(downloadUrl);
+        if (!fileResponse.ok) {
+          throw new Error('Download failed');
+        }
+        
+        const blob = await fileResponse.blob();
+        
+        // Create blob URL and trigger download
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `exported_${project?.original_filename || 'video'}.${exportFormat}`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        
+        // Clean up
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+        
+        toast.success('Download started!');
+      } catch (downloadError) {
+        console.error('Download error:', downloadError);
+        toast.error('Download failed. Please try again.');
+      }
       
-      // Clean up
+      // Close dialog after a moment
       setTimeout(() => {
-        document.body.removeChild(link);
         setShowExportDialog(false);
         setExportProgress(0);
         setEstimatedTime(0);
-      }, 1000);
+      }, 1500);
       
     } catch (error) {
       clearInterval(progressInterval);
