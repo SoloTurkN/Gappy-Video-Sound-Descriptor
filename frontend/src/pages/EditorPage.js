@@ -253,11 +253,15 @@ const EditorPage = () => {
                       <button
                         onClick={() => playAudio(scene.audio_path)}
                         className="btn-primary"
-                        style={{ padding: '8px 16px', flex: 1 }}
+                        style={{ 
+                          padding: '8px 16px', 
+                          flex: 1,
+                          opacity: currentAudio && currentAudio.src.includes(scene.audio_path.split('/').pop()) ? 0.7 : 1
+                        }}
                         data-testid={`play-button-${index}`}
                       >
                         <Play size={16} style={{ marginRight: '4px' }} />
-                        Play Audio
+                        {currentAudio && currentAudio.src.includes(scene.audio_path.split('/').pop()) ? 'Playing...' : 'Play Audio'}
                       </button>
                     </div>
                   </div>
