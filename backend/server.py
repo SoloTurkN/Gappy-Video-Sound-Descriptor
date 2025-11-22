@@ -535,26 +535,30 @@ async def export_video(project_id: str, export_req: ExportRequest):
             for segment in segment_files:
                 f.write(f"file '{segment}'\n")
         
-        # Concatenate all segments - ALWAYS re-encode to ensure proper audio sync
-        # When mixing videos with/without audio, copy mode causes audio sync issues
+        # Concatenate all segments using concat protocol
+        # This properly handles audio/video synchronization
         
         # Set codec based on format
         codec_args = []
         if output_format == "mp4":
-            codec_args = ["-c:v", "libx264", "-preset", "medium", "-crf", "23", "-c:a", "aac", "-b:a", "192k", "-ar", "44100"]
+            codec_args = ["-c:v", "libx264", "-preset", "fast", "-crf", "23", "-c:a", "aac", "-b:a", "128k", "-ar", "44100"]
         elif output_format == "avi":
-            codec_args = ["-c:v", "libx264", "-c:a", "mp3", "-b:a", "192k", "-ar", "44100"]
+            codec_args = ["-c:v", "libx264", "-c:a", "mp3", "-b:a", "128k", "-ar", "44100"]
         elif output_format == "mov":
-            codec_args = ["-c:v", "libx264", "-c:a", "aac", "-b:a", "192k", "-ar", "44100"]
+            codec_args = ["-c:v", "libx264", "-c:a", "aac", "-b:a", "128k", "-ar", "44100"]
         
         concat_cmd = [
             ffmpeg_path, "-y",
             "-f", "concat",
             "-safe", "0",
-            "-i", str(concat_file)
-        ] + codec_args + [str(output_path)]
+            "-i", str(concat_file),
+            "-vsync", "vfr"  # Variable frame rate sync
+        ] + codec_args + [
+            "-max_muxing_queue_size", "4096",
+            str(output_path)
+        ]
         
-        logging.info(f"Concatenating with re-encode: {' '.join(concat_cmd)}")
+        logging.info(f"Concatenating: {' '.join(concat_cmd)}")
         result = subprocess.run(concat_cmd, capture_output=True, text=True, timeout=300)
         
         if result.returncode != 0:
