@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Video, FileText } from 'lucide-react';
+import { Upload, Sparkles, Wand2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -69,7 +69,6 @@ const HomePage = () => {
       toast.success('Video uploaded successfully!');
       const projectId = response.data.id;
       
-      // Start analysis
       toast.info('Analyzing video for scene cuts...');
       await axios.post(`${API}/analyze/${projectId}`);
       
@@ -85,101 +84,115 @@ const HomePage = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.hero}>
-        <div style={styles.badge}>
-          <Video size={20} style={{ marginRight: '8px' }} />
-          WCAG 1.2.3 Level A Compliant
-        </div>
-        
-        <h1 style={styles.title} data-testid="main-title">
-          Video Voice Description Generator
-        </h1>
-        
-        <p style={styles.subtitle}>
-          Automatically add audio descriptions to your videos for accessibility compliance.
-          AI-powered scene detection and WCAG-compliant voice descriptions.
-        </p>
+      {/* Decorative Background Blobs */}
+      <div className="decorative-blob" style={{ top: '10%', left: '10%', width: '400px', height: '400px', background: '#FF6B9D' }}></div>
+      <div className="decorative-blob" style={{ bottom: '15%', right: '15%', width: '500px', height: '500px', background: '#4ECDC4', animationDelay: '5s' }}></div>
+      <div className="decorative-blob" style={{ top: '50%', right: '20%', width: '300px', height: '300px', background: '#FFE66D', animationDelay: '10s' }}></div>
 
-        <div style={styles.features}>
-          <div style={styles.feature}>
-            <div style={styles.featureIcon}>
-              <Upload size={24} />
-            </div>
-            <div>
-              <h3 style={styles.featureTitle}>Upload Video</h3>
-              <p style={styles.featureText}>Support for MP4, AVI, MOV formats</p>
-            </div>
-          </div>
-          
-          <div style={styles.feature}>
-            <div style={styles.featureIcon}>
-              <Video size={24} />
-            </div>
-            <div>
-              <h3 style={styles.featureTitle}>AI Scene Detection</h3>
-              <p style={styles.featureText}>Automatic detection of scene cuts</p>
-            </div>
-          </div>
-          
-          <div style={styles.feature}>
-            <div style={styles.featureIcon}>
-              <FileText size={24} />
-            </div>
-            <div>
-              <h3 style={styles.featureTitle}>Voice Descriptions</h3>
-              <p style={styles.featureText}>AI-generated WCAG compliant audio</p>
-            </div>
+      <div style={styles.content}>
+        {/* Header with Logo */}
+        <div style={styles.header} className="fade-in">
+          <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logo} />
+          <div className="badge" style={{ marginTop: '20px' }}>
+            <Sparkles size={18} style={{ marginRight: '8px' }} />
+            WCAG 1.2.3 Level A Compliant
           </div>
         </div>
 
-        <div className="glass-card" style={styles.uploadCard}>
-          <div
-            style={{
-              ...styles.dropzone,
-              ...(dragActive ? styles.dropzoneActive : {}),
-            }}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-            data-testid="upload-dropzone"
-          >
-            <Upload size={48} style={{ color: '#667eea', marginBottom: '16px' }} />
-            <p style={styles.dropzoneText}>
-              {selectedFile ? selectedFile.name : 'Drag and drop your video here'}
-            </p>
-            <p style={styles.dropzoneSubtext}>or</p>
-            <label htmlFor="file-upload" className="btn-secondary" style={{ display: 'inline-block', cursor: 'pointer' }}>
-              Browse Files
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              accept="video/*"
-              onChange={handleFileSelect}
-              style={{ display: 'none' }}
-              data-testid="file-input"
-            />
+        {/* Hero Section */}
+        <div style={styles.hero} className="slide-in-up">
+          <h1 style={styles.title}>
+            Make Your Videos Accessible<br />
+            <span style={{ color: '#FF6B9D' }}>in Minutes</span>
+          </h1>
+          
+          <p style={styles.subtitle}>
+            AI-powered audio descriptions that meet accessibility standards.
+            Upload your video, and we'll add professional voice descriptions automatically.
+          </p>
+
+          {/* Features Grid */}
+          <div style={styles.features}>
+            <div style={styles.featureCard} className="glass-card">
+              <div style={styles.featureIcon}>
+                <Upload size={28} color="#FF6B9D" />
+              </div>
+              <h3 style={styles.featureTitle}>Upload & Detect</h3>
+              <p style={styles.featureText}>AI detects scene changes automatically</p>
+            </div>
+
+            <div style={styles.featureCard} className="glass-card">
+              <div style={styles.featureIcon}>
+                <Wand2 size={28} color="#4ECDC4" />
+              </div>
+              <h3 style={styles.featureTitle}>Smart Descriptions</h3>
+              <p style={styles.featureText}>GPT-4o generates WCAG-compliant text</p>
+            </div>
+
+            <div style={styles.featureCard} className="glass-card">
+              <div style={styles.featureIcon}>
+                <CheckCircle size={28} color="#FFE66D" />
+              </div>
+              <h3 style={styles.featureTitle}>Export Ready</h3>
+              <p style={styles.featureText}>Download in MP4, AVI, or MOV</p>
+            </div>
           </div>
 
-          {selectedFile && (
-            <button
-              className="btn-primary"
-              onClick={handleUpload}
-              disabled={uploading}
-              style={{ marginTop: '24px', width: '100%' }}
-              data-testid="upload-button"
+          {/* Upload Area */}
+          <div className="glass-card" style={styles.uploadCard}>
+            <div
+              style={{
+                ...styles.dropzone,
+                ...(dragActive ? styles.dropzoneActive : {}),
+              }}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              data-testid="upload-dropzone"
             >
-              {uploading ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div className="spinner" style={{ width: '20px', height: '20px', margin: '0 10px 0 0' }}></div>
-                  Processing...
-                </div>
-              ) : (
-                'Upload and Analyze'
-              )}
-            </button>
-          )}
+              <div style={styles.uploadIcon}>
+                <Upload size={64} color="#FF6B9D" />
+              </div>
+              <h3 style={styles.dropzoneTitle}>
+                {selectedFile ? selectedFile.name : 'Drop your video here'}
+              </h3>
+              <p style={styles.dropzoneSubtext}>or click to browse</p>
+              <label htmlFor="file-upload" className="btn-secondary" style={{ marginTop: '20px', display: 'inline-block' }}>
+                Choose File
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                accept="video/*"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+                data-testid="file-input"
+              />
+            </div>
+
+            {selectedFile && (
+              <button
+                className="btn-primary"
+                onClick={handleUpload}
+                disabled={uploading}
+                style={{ marginTop: '24px', width: '100%', fontSize: '18px', padding: '16px' }}
+                data-testid="upload-button"
+              >
+                {uploading ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="spinner" style={{ width: '20px', height: '20px', margin: '0 10px 0 0', borderTopColor: 'white' }}></div>
+                    Processing Magic...
+                  </div>
+                ) : (
+                  <>
+                    <Sparkles size={20} style={{ marginRight: '10px' }} />
+                    Start Making It Accessible
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -190,94 +203,109 @@ const styles = {
   container: {
     minHeight: '100vh',
     padding: '40px 20px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  content: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    position: 'relative',
+    zIndex: 1,
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: '40px',
+  },
+  logo: {
+    height: '120px',
+    width: 'auto',
+    filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.2))',
   },
   hero: {
-    maxWidth: '900px',
-    width: '100%',
-  },
-  badge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    background: 'rgba(102, 126, 234, 0.1)',
-    color: '#667eea',
-    padding: '8px 20px',
-    borderRadius: '50px',
-    fontSize: '14px',
-    fontWeight: '600',
-    marginBottom: '24px',
+    textAlign: 'center',
   },
   title: {
-    fontSize: 'clamp(32px, 5vw, 56px)',
-    fontWeight: '700',
-    color: '#1a202c',
-    marginBottom: '20px',
+    fontSize: 'clamp(36px, 6vw, 64px)',
+    fontWeight: '800',
+    color: 'white',
+    marginBottom: '24px',
     lineHeight: '1.2',
+    textShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
   },
   subtitle: {
-    fontSize: '18px',
-    color: '#4a5568',
-    marginBottom: '48px',
+    fontSize: '20px',
+    color: 'rgba(255, 255, 255, 0.95)',
+    marginBottom: '60px',
     lineHeight: '1.6',
     maxWidth: '700px',
+    margin: '0 auto 60px',
+    textShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
   },
   features: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
     gap: '24px',
-    marginBottom: '48px',
+    marginBottom: '60px',
   },
-  feature: {
-    display: 'flex',
-    gap: '16px',
-    alignItems: 'flex-start',
+  featureCard: {
+    padding: '32px 24px',
+    textAlign: 'center',
+    transition: 'transform 0.3s, box-shadow 0.3s',
+    cursor: 'pointer',
   },
   featureIcon: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
-    padding: '12px',
-    borderRadius: '12px',
+    width: '80px',
+    height: '80px',
+    margin: '0 auto 20px',
+    background: 'white',
+    borderRadius: '20px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
   },
   featureTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#1a202c',
-    marginBottom: '4px',
+    fontSize: '22px',
+    fontWeight: '700',
+    color: '#2d3748',
+    marginBottom: '12px',
   },
   featureText: {
-    fontSize: '14px',
-    color: '#718096',
+    fontSize: '16px',
+    color: '#4a5568',
+    lineHeight: '1.6',
   },
   uploadCard: {
-    marginTop: '32px',
+    maxWidth: '700px',
+    margin: '0 auto',
+    padding: '48px 32px',
   },
   dropzone: {
-    border: '3px dashed #cbd5e0',
-    borderRadius: '16px',
+    border: '3px dashed rgba(255, 107, 157, 0.3)',
+    borderRadius: '24px',
     padding: '60px 20px',
     textAlign: 'center',
     transition: 'all 0.3s',
     cursor: 'pointer',
+    background: 'rgba(255, 255, 255, 0.5)',
   },
   dropzoneActive: {
-    borderColor: '#667eea',
-    background: 'rgba(102, 126, 234, 0.05)',
+    borderColor: '#FF6B9D',
+    background: 'rgba(255, 107, 157, 0.1)',
+    transform: 'scale(1.02)',
   },
-  dropzoneText: {
-    fontSize: '18px',
-    fontWeight: '600',
+  uploadIcon: {
+    marginBottom: '20px',
+  },
+  dropzoneTitle: {
+    fontSize: '24px',
+    fontWeight: '700',
     color: '#2d3748',
     marginBottom: '8px',
   },
   dropzoneSubtext: {
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#718096',
-    margin: '16px 0',
   },
 };
 
