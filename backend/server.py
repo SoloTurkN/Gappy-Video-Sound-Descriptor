@@ -515,9 +515,11 @@ async def export_video(project_id: str, export_req: ExportRequest):
                 "-t", str(full_segment_duration),
                 "-c:v", "libx264",
                 "-c:a", "aac",
-                "-b:a", "192k",
+                "-b:a", "128k",
+                "-ar", "44100",
+                "-ac", "1",
                 "-shortest",
-                "-preset", "medium",
+                "-preset", "fast",
                 str(video_segment_output)
             ]
             
