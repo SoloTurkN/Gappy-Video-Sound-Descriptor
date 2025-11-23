@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Sparkles, Wand2, CheckCircle } from 'lucide-react';
+import { Upload, Video, Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -69,7 +69,7 @@ const HomePage = () => {
       toast.success('Video uploaded successfully!');
       const projectId = response.data.id;
       
-      toast.info('Analyzing video for scene cuts...');
+      toast.info('Analyzing video...');
       await axios.post(`${API}/analyze/${projectId}`);
       
       toast.success('Analysis complete!');
@@ -84,62 +84,35 @@ const HomePage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Decorative Background Blobs */}
-      <div className="decorative-blob" style={{ top: '10%', left: '10%', width: '400px', height: '400px', background: '#FF6B9D' }}></div>
-      <div className="decorative-blob" style={{ bottom: '15%', right: '15%', width: '500px', height: '500px', background: '#4ECDC4', animationDelay: '5s' }}></div>
-      <div className="decorative-blob" style={{ top: '50%', right: '20%', width: '300px', height: '300px', background: '#FFE66D', animationDelay: '10s' }}></div>
+      {/* Navbar */}
+      <nav className="navbar">
+        <div style={styles.navContent}>
+          <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.navLogo} />
+        </div>
+      </nav>
 
-      <div style={styles.content}>
-        {/* Header with Logo */}
-        <div style={styles.header} className="fade-in">
-          <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logo} />
-          <div className="badge" style={{ marginTop: '20px' }}>
-            <Sparkles size={18} style={{ marginRight: '8px' }} />
+      {/* Hero Section */}
+      <section style={styles.hero}>
+        <div style={styles.heroContent} className="fade-in">
+          <div className="badge" style={{ marginBottom: '24px' }}>
+            <Sparkles size={14} style={{ marginRight: '6px' }} />
             WCAG 1.2.3 Level A Compliant
           </div>
-        </div>
-
-        {/* Hero Section */}
-        <div style={styles.hero} className="slide-in-up">
-          <h1 style={styles.title}>
-            Make Your Videos Accessible<br />
-            <span style={{ color: '#FF6B9D' }}>in Minutes</span>
+          
+          <h1 style={styles.heroTitle}>
+            Make Videos Accessible
+            <br />
+            with AI-Powered Descriptions
           </h1>
           
-          <p style={styles.subtitle}>
-            AI-powered audio descriptions that meet accessibility standards.
-            Upload your video, and we'll add professional voice descriptions automatically.
+          <p style={styles.heroSubtitle}>
+            Automatically add professional audio descriptions to your videos.
+            <br />
+            Meet accessibility standards in minutes, not hours.
           </p>
 
-          {/* Features Grid */}
-          <div style={styles.features}>
-            <div style={styles.featureCard} className="glass-card">
-              <div style={styles.featureIcon}>
-                <Upload size={28} color="#FF6B9D" />
-              </div>
-              <h3 style={styles.featureTitle}>Upload & Detect</h3>
-              <p style={styles.featureText}>AI detects scene changes automatically</p>
-            </div>
-
-            <div style={styles.featureCard} className="glass-card">
-              <div style={styles.featureIcon}>
-                <Wand2 size={28} color="#4ECDC4" />
-              </div>
-              <h3 style={styles.featureTitle}>Smart Descriptions</h3>
-              <p style={styles.featureText}>GPT-4o generates WCAG-compliant text</p>
-            </div>
-
-            <div style={styles.featureCard} className="glass-card">
-              <div style={styles.featureIcon}>
-                <CheckCircle size={28} color="#FFE66D" />
-              </div>
-              <h3 style={styles.featureTitle}>Export Ready</h3>
-              <p style={styles.featureText}>Download in MP4, AVI, or MOV</p>
-            </div>
-          </div>
-
-          {/* Upload Area */}
-          <div className="glass-card" style={styles.uploadCard}>
+          {/* Upload Card */}
+          <div className="card" style={styles.uploadCard}>
             <div
               style={{
                 ...styles.dropzone,
@@ -151,15 +124,30 @@ const HomePage = () => {
               onDrop={handleDrop}
               data-testid="upload-dropzone"
             >
-              <div style={styles.uploadIcon}>
-                <Upload size={64} color="#FF6B9D" />
+              <div style={styles.uploadIconWrapper}>
+                {selectedFile ? (
+                  <Video size={40} color="#FF6B9D" />
+                ) : (
+                  <Upload size={40} color="#999999" />
+                )}
               </div>
-              <h3 style={styles.dropzoneTitle}>
-                {selectedFile ? selectedFile.name : 'Drop your video here'}
-              </h3>
-              <p style={styles.dropzoneSubtext}>or click to browse</p>
-              <label htmlFor="file-upload" className="btn-secondary" style={{ marginTop: '20px', display: 'inline-block' }}>
-                Choose File
+              
+              {selectedFile ? (
+                <div>
+                  <p style={styles.fileName}>{selectedFile.name}</p>
+                  <p style={styles.fileSize}>
+                    {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p style={styles.dropzoneText}>Drop your video here</p>
+                  <p style={styles.dropzoneSubtext}>Supports MP4, AVI, MOV</p>
+                </div>
+              )}
+
+              <label htmlFor="file-upload" className="btn-secondary" style={{ marginTop: '20px' }}>
+                {selectedFile ? 'Change File' : 'Choose File'}
               </label>
               <input
                 id="file-upload"
@@ -176,25 +164,99 @@ const HomePage = () => {
                 className="btn-primary"
                 onClick={handleUpload}
                 disabled={uploading}
-                style={{ marginTop: '24px', width: '100%', fontSize: '18px', padding: '16px' }}
+                style={{ marginTop: '24px', width: '100%', padding: '16px', fontSize: '16px' }}
                 data-testid="upload-button"
               >
                 {uploading ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div className="spinner" style={{ width: '20px', height: '20px', margin: '0 10px 0 0', borderTopColor: 'white' }}></div>
-                    Processing Magic...
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                    <div className="spinner"></div>
+                    Processing...
                   </div>
                 ) : (
-                  <>
-                    <Sparkles size={20} style={{ marginRight: '10px' }} />
-                    Start Making It Accessible
-                  </>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    Start Processing
+                    <ArrowRight size={20} />
+                  </div>
                 )}
               </button>
             )}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Features Section */}
+      <section style={styles.features}>
+        <div style={styles.featuresContent}>
+          <h2 style={styles.sectionTitle}>How it works</h2>
+          
+          <div style={styles.stepsGrid}>
+            <div style={styles.step}>
+              <div style={styles.stepNumber}>1</div>
+              <h3 style={styles.stepTitle}>Upload Video</h3>
+              <p style={styles.stepText}>
+                Upload your video file. Our AI automatically detects scene changes.
+              </p>
+            </div>
+
+            <div style={styles.step}>
+              <div style={styles.stepNumber}>2</div>
+              <h3 style={styles.stepTitle}>AI Analysis</h3>
+              <p style={styles.stepText}>
+                GPT-4o generates concise, WCAG-compliant audio descriptions for each scene.
+              </p>
+            </div>
+
+            <div style={styles.step}>
+              <div style={styles.stepNumber}>3</div>
+              <h3 style={styles.stepTitle}>Review & Export</h3>
+              <p style={styles.stepText}>
+                Edit descriptions if needed, then export in MP4, AVI, or MOV format.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section style={styles.benefits}>
+        <div style={styles.benefitsContent}>
+          <h2 style={styles.sectionTitle}>Why Gappy?</h2>
+          
+          <div style={styles.benefitsGrid}>
+            <div style={styles.benefit}>
+              <CheckCircle2 size={24} color="#4ECDC4" />
+              <div>
+                <h4 style={styles.benefitTitle}>WCAG Compliant</h4>
+                <p style={styles.benefitText}>Meets Level A accessibility standards</p>
+              </div>
+            </div>
+
+            <div style={styles.benefit}>
+              <CheckCircle2 size={24} color="#4ECDC4" />
+              <div>
+                <h4 style={styles.benefitTitle}>AI-Powered</h4>
+                <p style={styles.benefitText}>Uses GPT-4o for accurate descriptions</p>
+              </div>
+            </div>
+
+            <div style={styles.benefit}>
+              <CheckCircle2 size={24} color="#4ECDC4" />
+              <div>
+                <h4 style={styles.benefitTitle}>Fast Processing</h4>
+                <p style={styles.benefitText}>Get results in minutes, not hours</p>
+              </div>
+            </div>
+
+            <div style={styles.benefit}>
+              <CheckCircle2 size={24} color="#4ECDC4" />
+              <div>
+                <h4 style={styles.benefitTitle}>Multiple Formats</h4>
+                <p style={styles.benefitText}>Export in MP4, AVI, or MOV</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
@@ -202,110 +264,159 @@ const HomePage = () => {
 const styles = {
   container: {
     minHeight: '100vh',
-    padding: '40px 20px',
-    position: 'relative',
-    overflow: 'hidden',
+    background: '#ffffff',
   },
-  content: {
+  navContent: {
     maxWidth: '1200px',
     margin: '0 auto',
-    position: 'relative',
-    zIndex: 1,
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '40px',
-  },
-  logo: {
-    height: '120px',
-    width: 'auto',
-    filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.2))',
-  },
-  hero: {
-    textAlign: 'center',
-  },
-  title: {
-    fontSize: 'clamp(36px, 6vw, 64px)',
-    fontWeight: '800',
-    color: 'white',
-    marginBottom: '24px',
-    lineHeight: '1.2',
-    textShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
-  },
-  subtitle: {
-    fontSize: '20px',
-    color: 'rgba(255, 255, 255, 0.95)',
-    marginBottom: '60px',
-    lineHeight: '1.6',
-    maxWidth: '700px',
-    margin: '0 auto 60px',
-    textShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-  },
-  features: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '24px',
-    marginBottom: '60px',
-  },
-  featureCard: {
-    padding: '32px 24px',
-    textAlign: 'center',
-    transition: 'transform 0.3s, box-shadow 0.3s',
-    cursor: 'pointer',
-  },
-  featureIcon: {
-    width: '80px',
-    height: '80px',
-    margin: '0 auto 20px',
-    background: 'white',
-    borderRadius: '20px',
+    padding: '0 24px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
   },
-  featureTitle: {
-    fontSize: '22px',
-    fontWeight: '700',
-    color: '#2d3748',
-    marginBottom: '12px',
+  navLogo: {
+    height: '40px',
+    width: 'auto',
   },
-  featureText: {
-    fontSize: '16px',
-    color: '#4a5568',
+  hero: {
+    padding: '80px 24px 100px',
+    textAlign: 'center',
+    background: 'linear-gradient(180deg, #ffffff 0%, #f9fafb 100%)',
+  },
+  heroContent: {
+    maxWidth: '800px',
+    margin: '0 auto',
+  },
+  heroTitle: {
+    fontSize: 'clamp(36px, 5vw, 56px)',
+    fontWeight: '800',
+    color: '#1a1a1a',
+    marginBottom: '24px',
+    lineHeight: '1.2',
+    letterSpacing: '-0.02em',
+  },
+  heroSubtitle: {
+    fontSize: '20px',
+    color: '#666666',
+    marginBottom: '48px',
     lineHeight: '1.6',
   },
   uploadCard: {
-    maxWidth: '700px',
+    maxWidth: '600px',
     margin: '0 auto',
-    padding: '48px 32px',
+    padding: '32px',
   },
   dropzone: {
-    border: '3px dashed rgba(255, 107, 157, 0.3)',
-    borderRadius: '24px',
-    padding: '60px 20px',
+    border: '2px dashed #e5e7eb',
+    borderRadius: '12px',
+    padding: '48px 24px',
     textAlign: 'center',
-    transition: 'all 0.3s',
+    transition: 'all 0.2s ease',
     cursor: 'pointer',
-    background: 'rgba(255, 255, 255, 0.5)',
+    background: '#fafafa',
   },
   dropzoneActive: {
     borderColor: '#FF6B9D',
-    background: 'rgba(255, 107, 157, 0.1)',
-    transform: 'scale(1.02)',
+    background: '#fff5f8',
   },
-  uploadIcon: {
-    marginBottom: '20px',
+  uploadIconWrapper: {
+    marginBottom: '16px',
   },
-  dropzoneTitle: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#2d3748',
-    marginBottom: '8px',
+  dropzoneText: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: '4px',
   },
   dropzoneSubtext: {
+    fontSize: '14px',
+    color: '#999999',
+  },
+  fileName: {
     fontSize: '16px',
-    color: '#718096',
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: '4px',
+  },
+  fileSize: {
+    fontSize: '14px',
+    color: '#999999',
+  },
+  features: {
+    padding: '100px 24px',
+    background: '#ffffff',
+  },
+  featuresContent: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+  },
+  sectionTitle: {
+    fontSize: '36px',
+    fontWeight: '700',
+    color: '#1a1a1a',
+    textAlign: 'center',
+    marginBottom: '60px',
+    letterSpacing: '-0.01em',
+  },
+  stepsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: '48px',
+  },
+  step: {
+    textAlign: 'center',
+  },
+  stepNumber: {
+    width: '56px',
+    height: '56px',
+    background: '#FF6B9D',
+    color: 'white',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '24px',
+    fontWeight: '700',
+    margin: '0 auto 20px',
+  },
+  stepTitle: {
+    fontSize: '22px',
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: '12px',
+  },
+  stepText: {
+    fontSize: '16px',
+    color: '#666666',
+    lineHeight: '1.6',
+  },
+  benefits: {
+    padding: '100px 24px',
+    background: '#f9fafb',
+  },
+  benefitsContent: {
+    maxWidth: '1000px',
+    margin: '0 auto',
+  },
+  benefitsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '32px',
+  },
+  benefit: {
+    display: 'flex',
+    gap: '16px',
+    alignItems: 'flex-start',
+  },
+  benefitTitle: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: '4px',
+  },
+  benefitText: {
+    fontSize: '15px',
+    color: '#666666',
+    lineHeight: '1.5',
   },
 };
 
