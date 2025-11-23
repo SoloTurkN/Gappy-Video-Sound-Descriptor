@@ -490,7 +490,11 @@ async def export_video(project_id: str, export_req: ExportRequest):
                 "-pix_fmt", "yuv420p",
                 "-vf", f"fps={fps},scale=trunc(iw/2)*2:trunc(ih/2)*2",
                 "-c:a", "aac",
+                "-b:a", "128k",
+                "-ar", "44100",
+                "-ac", "1",
                 "-shortest",
+                "-preset", "fast",
                 str(still_output)
             ]
             
