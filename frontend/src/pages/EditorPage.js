@@ -590,6 +590,11 @@ const styles = {
     transition: 'all 0.2s',
     background: 'white',
   },
+  modalActions: {
+    display: 'flex',
+    gap: '12px',
+    marginTop: '24px',
+  },
 };
 
 export default EditorPage;
