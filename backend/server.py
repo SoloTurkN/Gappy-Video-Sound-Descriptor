@@ -613,8 +613,12 @@ async def download_video(project_id: str, filename: str):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path, filename=filename, media_type="video/mp4")
 
+# Import auth routes
+from routes import auth as auth_routes
+
 # Include the router in the main app
 app.include_router(api_router)
+app.include_router(auth_routes.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -630,6 +634,11 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup_db():
+    """Store database instance in app state for dependency injection"""
+    app.state.db = db
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
