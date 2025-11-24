@@ -111,7 +111,64 @@ const SignupPage = () => {
           <h2 style={styles.title}>Create Your Account</h2>
           <p style={styles.subtitle}>Start making your videos accessible today</p>
 
-          <form onSubmit={handleSignup} style={styles.form}>
+          <form onSubmit={handleEmailSignup} style={styles.form}>
+            <div style={styles.inputGroup}>
+              <div style={styles.inputIcon}>
+                <User size={20} color="#6b7280" />
+              </div>
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{ ...styles.input, paddingLeft: '48px' }}
+                required
+              />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <div style={styles.inputIcon}>
+                <Mail size={20} color="#6b7280" />
+              </div>
+              <input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{ ...styles.input, paddingLeft: '48px' }}
+                required
+              />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <div style={styles.inputIcon}>
+                <Lock size={20} color="#6b7280" />
+              </div>
+              <input
+                type="password"
+                placeholder="Password (min 8 chars, 1 uppercase, 1 number)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ ...styles.input, paddingLeft: '48px' }}
+                required
+                minLength="8"
+              />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <div style={styles.inputIcon}>
+                <Lock size={20} color="#6b7280" />
+              </div>
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{ ...styles.input, paddingLeft: '48px' }}
+                required
+              />
+            </div>
+
             <button
               type="submit"
               className="btn-primary"
@@ -121,15 +178,30 @@ const SignupPage = () => {
               {loading ? (
                 <>
                   <img src="/gappy-icon.png" alt="" style={{ width: '20px', height: '20px' }} className="spin-icon" />
-                  Redirecting...
+                  Creating Account...
                 </>
               ) : (
                 <>
-                  <Sparkles size={18} />
-                  Sign up with Google
+                  Get Started Free
                   <ArrowRight size={18} />
                 </>
               )}
+            </button>
+
+            <div style={styles.divider}>
+              <span style={styles.dividerText}>OR</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignup}
+              className="btn-secondary"
+              disabled={loading}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
+              <Sparkles size={18} />
+              Sign up with Google
+              <ArrowRight size={18} />
             </button>
           </form>
 
