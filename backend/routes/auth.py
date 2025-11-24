@@ -17,14 +17,42 @@ from auth_helpers import (
     create_or_update_session,
     get_session_token,
     verify_session,
-    delete_session
+    delete_session,
+    hash_password,
+    verify_password,
+    create_access_token
 )
+from datetime import datetime, timezone, timedelta
+from pydantic import EmailStr, Field, field_validator
+import uuid
 
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
 
 class SessionRequest(BaseModel):
     session_id: str
+
+
+class EmailSignupRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+    
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v):
+        if not any(char.isupper() for char in v):
+            raise ValueError('Password must contain at least one uppercase letter')
+        if not any(char.islower() for char in v):
+            raise ValueError('Password must contain at least one lowercase letter')
+        if not any(char.isdigit() for char in v):
+            raise ValueError('Password must contain at least one number')
+        return v
+
+
+class EmailLoginRequest(BaseModel):
+    email: EmailStr
+    password: str
 
 
 class UserResponse(BaseModel):
