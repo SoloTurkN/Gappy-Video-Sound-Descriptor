@@ -447,14 +447,24 @@ async def export_video(project_id: str, export_req: ExportRequest):
         output_path = UPLOADS_DIR / output_filename
         project_dir = UPLOADS_DIR / project_id
         
+        # Check if FFmpeg is available
+        ffmpeg_path = "/usr/bin/ffmpeg"
+        if not os.path.exists(ffmpeg_path):
+            # Try to find ffmpeg in PATH
+            import shutil
+            ffmpeg_path = shutil.which('ffmpeg')
+            if not ffmpeg_path:
+                raise HTTPException(
+                    status_code=500, 
+                    detail="FFmpeg is not installed. Please contact support to reinstall FFmpeg on the server."
+                )
+        
         # Get video properties
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         video_duration = total_frames / fps
         cap.release()
-        
-        ffmpeg_path = "/usr/bin/ffmpeg"
         
         # Create segments for each scene
         segment_files = []
