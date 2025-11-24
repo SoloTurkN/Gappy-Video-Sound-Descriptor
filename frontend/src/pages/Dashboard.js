@@ -66,10 +66,21 @@ const Dashboard = () => {
               <Video size={18} style={{ marginRight: '6px' }} />
               Projects
             </button>
-            <button onClick={() => toast.info('Settings coming soon!')} style={styles.navButton}>
-              <Settings size={18} />
-            </button>
-            <button onClick={() => { onLogout(); navigate('/'); }} style={styles.navButton}>
+            {user && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginRight: '12px' }}>
+                {user.picture ? (
+                  <img src={user.picture} alt={user.name} style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+                ) : (
+                  <User size={18} />
+                )}
+                <span style={{ fontSize: '14px', color: '#4a5568' }}>{user.name}</span>
+              </div>
+            )}
+            <button onClick={async () => { 
+              await logout(); 
+              toast.success('Logged out successfully');
+              navigate('/'); 
+            }} style={styles.navButton}>
               <LogOut size={18} />
             </button>
           </div>
