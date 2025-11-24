@@ -130,8 +130,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '20px',
-    position: 'relative',
-    overflow: 'hidden',
+    background: '#ffffff',
   },
   content: {
     position: 'relative',
