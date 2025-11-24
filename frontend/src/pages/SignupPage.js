@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Mail, Lock, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 
 const SignupPage = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [processingSession, setProcessingSession] = useState(false);
   const navigate = useNavigate();
-  const { authenticated, processSessionId } = useAuth();
+  const { authenticated, processSessionId, signupWithEmail } = useAuth();
 
   // Check if user is already authenticated
   useEffect(() => {
