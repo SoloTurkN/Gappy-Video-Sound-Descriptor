@@ -1,30 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '../hooks/useAuth';
 
-const SignupPage = ({ onSignup }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const SignupPage = () => {
   const [loading, setLoading] = useState(false);
+  const [processingSession, setProcessingSession] = useState(false);
   const navigate = useNavigate();
+  const { authenticated, processSessionId } = useAuth();
 
-  const handleSignup = async (e) => {
+  // Check if user is already authenticated
+  useEffect(() => {
+    if (authenticated) {
+      navigate('/dashboard');
+    }
+  }, [authenticated, navigate]);
+
+  // Process session_id from URL fragment
+  useEffect(() => {
+    const handleSessionId = async () => {
+      const fragment = window.location.hash;
+      const sessionIdMatch = fragment.match(/session_id=([^&]+)/);
+      
+      if (sessionIdMatch) {
+        const sessionId = sessionIdMatch[1];
+        setProcessingSession(true);
+        
+        try {
+          await processSessionId(sessionId);
+          // Clean URL fragment
+          window.history.replaceState(null, '', window.location.pathname);
+          toast.success('Account created successfully! Welcome to Gappy! 🎉');
+          navigate('/dashboard');
+        } catch (error) {
+          toast.error('Sign up failed. Please try again.');
+          setProcessingSession(false);
+        }
+      }
+    };
+    
+    handleSessionId();
+  }, [processSessionId, navigate]);
+
+  const handleSignup = (e) => {
     e.preventDefault();
     setLoading(true);
-
-    setTimeout(() => {
-      if (name && email && password) {
-        toast.success('Account created successfully!');
-        onSignup();
-        navigate('/dashboard');
-      } else {
-        toast.error('Please fill all fields');
-      }
-      setLoading(false);
-    }, 1000);
+    
+    // Redirect to Emergent Auth
+    const redirectUrl = `${window.location.origin}/signup`;
+    const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    window.location.href = authUrl;
   };
+
+  if (processingSession) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.content}>
+          <div style={styles.logoSection}>
+            <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logo} className="spin-icon" />
+          </div>
+          <div className="card" style={styles.signupCard}>
+            <h2 style={styles.title}>Setting Up Your Account...</h2>
+            <p style={styles.subtitle}>Please wait</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
