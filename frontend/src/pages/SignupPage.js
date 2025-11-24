@@ -81,48 +81,6 @@ const SignupPage = () => {
           <p style={styles.subtitle}>Start making your videos accessible today</p>
 
           <form onSubmit={handleSignup} style={styles.form}>
-            <div style={styles.inputGroup}>
-              <div style={styles.inputIcon}>
-                <User size={20} color="#6b7280" />
-              </div>
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={{ ...styles.input, paddingLeft: '48px' }}
-                required
-              />
-            </div>
-
-            <div style={styles.inputGroup}>
-              <div style={styles.inputIcon}>
-                <Mail size={20} color="#6b7280" />
-              </div>
-              <input
-                type="email"
-                placeholder="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ ...styles.input, paddingLeft: '48px' }}
-                required
-              />
-            </div>
-
-            <div style={styles.inputGroup}>
-              <div style={styles.inputIcon}>
-                <Lock size={20} color="#6b7280" />
-              </div>
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ ...styles.input, paddingLeft: '48px' }}
-                required
-              />
-            </div>
-
             <button
               type="submit"
               className="btn-primary"
@@ -132,11 +90,12 @@ const SignupPage = () => {
               {loading ? (
                 <>
                   <img src="/gappy-icon.png" alt="" style={{ width: '20px', height: '20px' }} className="spin-icon" />
-                  Creating Account...
+                  Redirecting...
                 </>
               ) : (
                 <>
-                  Get Started Free
+                  <Sparkles size={18} />
+                  Sign up with Google
                   <ArrowRight size={18} />
                 </>
               )}
