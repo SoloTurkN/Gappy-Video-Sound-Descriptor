@@ -28,11 +28,6 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <div style={styles.container}>
-      {/* Decorative Background Blobs */}
-      <div className="decorative-blob" style={{ top: '5%', left: '5%', width: '500px', height: '500px', background: '#FF6B9D' }}></div>
-      <div className="decorative-blob" style={{ bottom: '10%', right: '10%', width: '600px', height: '600px', background: '#4ECDC4', animationDelay: '7s' }}></div>
-      <div className="decorative-blob" style={{ top: '40%', right: '15%', width: '400px', height: '400px', background: '#FFE66D', animationDelay: '14s' }}></div>
-
       <div style={styles.content} className="fade-in">
         {/* Logo and Branding */}
         <div style={styles.logoSection} className="bounce">
