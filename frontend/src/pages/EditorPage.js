@@ -120,20 +120,13 @@ const EditorPage = () => {
       
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      toast.success('Starting download...');
+      const fullDownloadUrl = `${BACKEND_URL}${response.data.download_url}`;
+      setDownloadUrl(fullDownloadUrl);
       
-      const downloadUrl = `${BACKEND_URL}${response.data.download_url}`;
-      
+      // Try automatic download
       try {
-        const fileResponse = await fetch(downloadUrl);
-        if (!fileResponse.ok) {
-          throw new Error('Download failed');
-        }
-        
-        const blob = await fileResponse.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = blobUrl;
+        link.href = fullDownloadUrl;
         link.download = `exported_${project?.original_filename || 'video'}.${exportFormat}`;
         link.style.display = 'none';
         document.body.appendChild(link);
@@ -141,20 +134,13 @@ const EditorPage = () => {
         
         setTimeout(() => {
           document.body.removeChild(link);
-          window.URL.revokeObjectURL(blobUrl);
         }, 100);
         
-        toast.success('Download started!');
+        toast.success('Export complete! Download should start automatically. If not, click the Download button below.');
       } catch (downloadError) {
-        console.error('Download error:', downloadError);
-        toast.error('Download failed. Please try again.');
+        console.error('Auto-download error:', downloadError);
+        toast.success('Export complete! Click the Download button below to get your video.');
       }
-      
-      setTimeout(() => {
-        setShowExportDialog(false);
-        setExportProgress(0);
-        setEstimatedTime(0);
-      }, 1500);
       
     } catch (error) {
       clearInterval(progressInterval);
