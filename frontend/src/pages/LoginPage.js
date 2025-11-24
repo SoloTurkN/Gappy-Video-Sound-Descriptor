@@ -103,7 +103,35 @@ const LoginPage = () => {
             <p style={styles.subtitle}>Make your videos accessible with AI ✨</p>
           </div>
 
-          <form onSubmit={handleLogin} style={styles.form}>
+          <form onSubmit={handleEmailLogin} style={styles.form}>
+            <div style={styles.inputGroup}>
+              <div style={styles.inputIcon}>
+                <Mail size={20} color="#FF6B9D" />
+              </div>
+              <input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{ ...styles.input, paddingLeft: '50px' }}
+                required
+              />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <div style={styles.inputIcon}>
+                <Lock size={20} color="#FF6B9D" />
+              </div>
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ ...styles.input, paddingLeft: '50px' }}
+                required
+              />
+            </div>
+
             <button
               type="submit"
               className="btn-primary"
@@ -113,14 +141,31 @@ const LoginPage = () => {
               {loading ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                   <img src="/gappy-icon.png" alt="Loading" style={{ width: '24px', height: '24px' }} className="spin-icon" />
-                  Redirecting...
+                  Logging in...
                 </div>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                   <Sparkles size={20} />
-                  Sign in with Google
+                  Login to Gappy
                 </div>
               )}
+            </button>
+
+            <div style={styles.divider}>
+              <span style={styles.dividerText}>OR</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="btn-secondary"
+              disabled={loading}
+              style={{ width: '100%' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                <Sparkles size={20} />
+                Sign in with Google
+              </div>
             </button>
           </form>
 
