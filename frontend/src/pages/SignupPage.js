@@ -47,7 +47,34 @@ const SignupPage = () => {
     handleSessionId();
   }, [processSessionId, navigate]);
 
-  const handleSignup = (e) => {
+  const handleEmailSignup = async (e) => {
+    e.preventDefault();
+    
+    // Validation
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    
+    if (password.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      await signupWithEmail(name, email, password);
+      toast.success('Account created successfully! Welcome to Gappy! 🎉');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.message || 'Signup failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = (e) => {
     e.preventDefault();
     setLoading(true);
     
