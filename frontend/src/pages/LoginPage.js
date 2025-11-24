@@ -45,7 +45,22 @@ const LoginPage = () => {
     handleSessionId();
   }, [processSessionId, navigate]);
 
-  const handleLogin = (e) => {
+  const handleEmailLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      await loginWithEmail(email, password);
+      toast.success('Welcome back! 🎉');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = (e) => {
     e.preventDefault();
     setLoading(true);
     
