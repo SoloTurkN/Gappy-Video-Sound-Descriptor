@@ -121,11 +121,14 @@ def frame_to_base64(frame):
 async def generate_description(frame_base64: str) -> str:
     """Generate WCAG-compliant audio description for a frame"""
     try:
+        llm_provider = os.environ.get('LLM_PROVIDER', 'openai')
+        llm_model = os.environ.get('LLM_MODEL', 'gpt-4o')
+        
         chat = LlmChat(
             api_key=API_KEY,
             session_id=f"scene_{uuid.uuid4()}",
             system_message="You are an expert at creating WCAG 1.2.3 Level A compliant audio descriptions. Provide ONE SHORT SENTENCE describing the most important visual information. Keep it under 10 words. Be direct and concise."
-        ).with_model("openai", "gpt-4o")
+        ).with_model(llm_provider, llm_model)
         
         image_content = ImageContent(image_base64=frame_base64)
         
