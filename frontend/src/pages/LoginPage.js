@@ -87,34 +87,6 @@ const LoginPage = () => {
           </div>
 
           <form onSubmit={handleLogin} style={styles.form}>
-            <div style={styles.inputGroup}>
-              <div style={styles.inputIcon}>
-                <Mail size={20} color="#FF6B9D" />
-              </div>
-              <input
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ ...styles.input, paddingLeft: '50px' }}
-                required
-              />
-            </div>
-
-            <div style={styles.inputGroup}>
-              <div style={styles.inputIcon}>
-                <Lock size={20} color="#FF6B9D" />
-              </div>
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ ...styles.input, paddingLeft: '50px' }}
-                required
-              />
-            </div>
-
             <button
               type="submit"
               className="btn-primary"
@@ -124,12 +96,12 @@ const LoginPage = () => {
               {loading ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                   <img src="/gappy-icon.png" alt="Loading" style={{ width: '24px', height: '24px' }} className="spin-icon" />
-                  Logging in...
+                  Redirecting...
                 </div>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                   <Sparkles size={20} />
-                  Login to Gappy
+                  Sign in with Google
                 </div>
               )}
             </button>
