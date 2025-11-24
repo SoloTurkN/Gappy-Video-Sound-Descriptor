@@ -22,6 +22,7 @@ const EditorPage = () => {
   const [currentAudio, setCurrentAudio] = useState(null);
   const [exportProgress, setExportProgress] = useState(0);
   const [estimatedTime, setEstimatedTime] = useState(0);
+  const [downloadUrl, setDownloadUrl] = useState(null);
 
   useEffect(() => {
     loadProject();
