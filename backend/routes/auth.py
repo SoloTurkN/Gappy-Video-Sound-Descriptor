@@ -128,6 +128,176 @@ async def process_session(
         )
 
 
+@router.post("/signup/email")
+async def signup_with_email(
+    signup_data: EmailSignupRequest,
+    response: Response,
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """
+    Sign up with email and password
+    
+    Creates a new user account with email/password authentication
+    """
+    try:
+        users_collection = db.users
+        sessions_collection = db.sessions
+        
+        # Check if user already exists
+        existing_user = await users_collection.find_one({"email": signup_data.email}, {"_id": 0})
+        if existing_user:
+            raise HTTPException(
+                status_code=409,
+                detail="Email already registered. Please login instead."
+            )
+        
+        # Create new user
+        user_id = str(uuid.uuid4())
+        hashed_password = hash_password(signup_data.password)
+        
+        user_doc = {
+            "id": user_id,
+            "email": signup_data.email,
+            "name": signup_data.name,
+            "picture": "",
+            "password_hash": hashed_password,
+            "auth_method": "email",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "subscription_tier": "free"
+        }
+        
+        await users_collection.insert_one(user_doc)
+        
+        # Create JWT session token
+        session_token = create_access_token(signup_data.email)
+        
+        # Store session in database
+        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+        session_doc = {
+            "session_token": session_token,
+            "user_email": signup_data.email,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": expires_at.isoformat()
+        }
+        await sessions_collection.insert_one(session_doc)
+        
+        # Set httpOnly cookie
+        response.set_cookie(
+            key="session_token",
+            value=session_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            max_age=7 * 24 * 60 * 60,  # 7 days
+            path="/"
+        )
+        
+        return {
+            "success": True,
+            "user": {
+                "id": user_id,
+                "email": signup_data.email,
+                "name": signup_data.name,
+                "picture": "",
+                "subscription_tier": "free"
+            }
+        }
+        
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Signup failed: {str(e)}"
+        )
+
+
+@router.post("/login/email")
+async def login_with_email(
+    login_data: EmailLoginRequest,
+    response: Response,
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """
+    Login with email and password
+    
+    Authenticates user and creates a session
+    """
+    try:
+        users_collection = db.users
+        sessions_collection = db.sessions
+        
+        # Find user by email
+        user = await users_collection.find_one({"email": login_data.email}, {"_id": 0})
+        
+        if not user:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid email or password"
+            )
+        
+        # Check if user has a password (email auth)
+        if "password_hash" not in user:
+            raise HTTPException(
+                status_code=401,
+                detail="This account uses Google sign-in. Please use 'Sign in with Google' button."
+            )
+        
+        # Verify password
+        if not verify_password(login_data.password, user["password_hash"]):
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid email or password"
+            )
+        
+        # Create JWT session token
+        session_token = create_access_token(login_data.email)
+        
+        # Store session in database
+        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+        session_doc = {
+            "session_token": session_token,
+            "user_email": login_data.email,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": expires_at.isoformat()
+        }
+        await sessions_collection.update_one(
+            {"session_token": session_token},
+            {"$set": session_doc},
+            upsert=True
+        )
+        
+        # Set httpOnly cookie
+        response.set_cookie(
+            key="session_token",
+            value=session_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            max_age=7 * 24 * 60 * 60,  # 7 days
+            path="/"
+        )
+        
+        return {
+            "success": True,
+            "user": {
+                "id": user["id"],
+                "email": user["email"],
+                "name": user["name"],
+                "picture": user.get("picture", ""),
+                "subscription_tier": user.get("subscription_tier", "free")
+            }
+        }
+        
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Login failed: {str(e)}"
+        )
+
+
 @router.get("/me")
 async def get_current_user(
     request: Request,
