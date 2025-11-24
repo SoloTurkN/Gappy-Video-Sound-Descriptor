@@ -1,14 +1,61 @@
 """
-Authentication helper functions for Emergent Auth integration
+Authentication helper functions for Emergent Auth integration and Email/Password auth
 """
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict
 import httpx
+import os
+import secrets
 from fastapi import HTTPException, Request, Cookie
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from passlib.context import CryptContext
+from jose import JWTError, jwt
 
 EMERGENT_AUTH_API = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
 SESSION_EXPIRY_DAYS = 7
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# JWT Configuration
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", secrets.token_urlsafe(32))
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+
+
+# Password Hashing Functions
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt"""
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash"""
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+# JWT Token Functions
+def create_access_token(email: str) -> str:
+    """Create a JWT access token"""
+    expires_delta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + expires_delta
+    
+    to_encode = {
+        "sub": email,
+        "exp": expire
+    }
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def verify_token(token: str) -> Optional[str]:
+    """Verify JWT token and return email"""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        return email
+    except JWTError:
+        return None
 
 
 async def fetch_session_data(session_id: str) -> Dict:
