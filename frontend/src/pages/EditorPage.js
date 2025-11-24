@@ -398,35 +398,63 @@ const EditorPage = () => {
               </div>
             )}
             
-            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-              <button
-                onClick={handleExport}
-                className="btn-primary"
-                disabled={exporting}
-                style={{ flex: 1, padding: '14px' }}
-                data-testid="confirm-export-button"
-              >
-                {exporting ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <div className="spinner" style={{ width: '16px', height: '16px', borderTopColor: 'white' }}></div>
-                    Exporting...
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <div style={styles.modalActions}>
+              {downloadUrl ? (
+                <>
+                  <a
+                    href={downloadUrl}
+                    download
+                    className="btn-primary"
+                    style={{ padding: '14px 32px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    data-testid="download-button"
+                  >
                     <Download size={18} />
-                    Export
-                  </div>
-                )}
-              </button>
-              <button
-                onClick={() => setShowExportDialog(false)}
-                className="btn-secondary"
-                disabled={exporting}
-                style={{ padding: '14px 24px' }}
-                data-testid="cancel-export-button"
-              >
-                Cancel
-              </button>
+                    Download Video
+                  </a>
+                  <button
+                    onClick={() => {
+                      setShowExportDialog(false);
+                      setDownloadUrl(null);
+                      setExportProgress(0);
+                    }}
+                    className="btn-secondary"
+                    style={{ padding: '14px 24px' }}
+                  >
+                    Close
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleExport}
+                    className="btn-primary"
+                    disabled={exporting}
+                    style={{ padding: '14px 32px' }}
+                    data-testid="start-export-button"
+                  >
+                    {exporting ? (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <div className="spinner" style={{ width: '16px', height: '16px', borderTopColor: 'white' }}></div>
+                        Exporting...
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <Download size={18} />
+                        Export
+                      </div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setShowExportDialog(false)}
+                    className="btn-secondary"
+                    disabled={exporting}
+                    style={{ padding: '14px 24px' }}
+                    data-testid="cancel-export-button"
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
