@@ -277,6 +277,20 @@ const styles = {
   input: {
     width: '100%',
   },
+  divider: {
+    display: 'flex',
+    alignItems: 'center',
+    margin: '20px 0',
+    position: 'relative',
+  },
+  dividerText: {
+    flex: 1,
+    textAlign: 'center',
+    color: '#9ca3af',
+    fontSize: '14px',
+    fontWeight: '600',
+    padding: '0 16px',
+  },
   footer: {
     marginTop: '24px',
     paddingTop: '24px',
