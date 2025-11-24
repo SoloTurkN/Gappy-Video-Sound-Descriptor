@@ -59,6 +59,58 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const signupWithEmail = async (name, email, password) => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/signup/email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ name, email, password })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Signup failed');
+      }
+
+      const data = await response.json();
+      setUser(data.user);
+      setAuthenticated(true);
+      return data.user;
+    } catch (error) {
+      console.error('Email signup error:', error);
+      throw error;
+    }
+  };
+
+  const loginWithEmail = async (email, password) => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/login/email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Login failed');
+      }
+
+      const data = await response.json();
+      setUser(data.user);
+      setAuthenticated(true);
+      return data.user;
+    } catch (error) {
+      console.error('Email login error:', error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       await fetch(`${API_URL}/api/auth/logout`, {
@@ -78,6 +130,8 @@ export function AuthProvider({ children }) {
     authenticated,
     loading,
     processSessionId,
+    signupWithEmail,
+    loginWithEmail,
     logout,
     checkAuth
   };
