@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Upload, Video, Clock, CheckCircle, Settings, LogOut, CreditCard } from 'lucide-react';
+import { Upload, Video, Clock, CheckCircle, Settings, LogOut, CreditCard, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '../hooks/useAuth';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const Dashboard = ({ onLogout }) => {
+const Dashboard = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats] = useState({
