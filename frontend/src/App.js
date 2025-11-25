@@ -26,7 +26,7 @@ function ProtectedRoute({ children }) {
   return authenticated ? children : <Navigate to="/login" />;
 }
 
-function HomePage() {
+function RootPage() {
   const { authenticated, loading } = useAuth();
   
   if (loading) {
@@ -43,7 +43,7 @@ function HomePage() {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<RootPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/pricing" element={<PricingPage />} />
