@@ -26,10 +26,24 @@ function ProtectedRoute({ children }) {
   return authenticated ? children : <Navigate to="/login" />;
 }
 
+function HomePage() {
+  const { authenticated, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <img src="/gappy-icon.png" alt="Loading" style={{ width: '60px', height: '60px' }} className="spin-icon" />
+      </div>
+    );
+  }
+  
+  return authenticated ? <Navigate to="/dashboard" /> : <LandingPage />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/pricing" element={<PricingPage />} />
