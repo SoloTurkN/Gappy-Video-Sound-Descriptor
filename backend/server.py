@@ -119,6 +119,40 @@ def frame_to_base64(frame):
     _, buffer = cv2.imencode('.jpg', frame)
     return base64.b64encode(buffer).decode('utf-8')
 
+def ensure_ffmpeg_available() -> str:
+    """
+    Ensures FFmpeg is available and returns its path.
+    Tries multiple detection methods.
+    """
+    # Method 1: Check if in PATH
+    ffmpeg_path = shutil.which('ffmpeg')
+    if ffmpeg_path and os.path.exists(ffmpeg_path):
+        return ffmpeg_path
+    
+    # Method 2: Check common installation paths
+    common_paths = [
+        '/usr/bin/ffmpeg',
+        '/usr/local/bin/ffmpeg',
+        '/bin/ffmpeg',
+    ]
+    
+    for path in common_paths:
+        if os.path.exists(path):
+            return path
+    
+    # Method 3: Try to find it using 'which' command
+    try:
+        result = subprocess.run(['which', 'ffmpeg'], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0 and result.stdout.strip():
+            path = result.stdout.strip()
+            if os.path.exists(path):
+                return path
+    except Exception:
+        pass
+    
+    raise FileNotFoundError("FFmpeg is not installed on this system")
+
+
 async def generate_description(frame_base64: str) -> str:
     """Generate WCAG-compliant audio description for a frame"""
     try:
