@@ -423,7 +423,6 @@ class ExportRequest(BaseModel):
 async def export_video(project_id: str, export_req: ExportRequest):
     """Export final video with audio descriptions - each scene starts with still frame + audio, then continues with video"""
     try:
-        import subprocess
         import tempfile
         
         # Get project and scenes
