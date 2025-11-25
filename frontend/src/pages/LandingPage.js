@@ -31,7 +31,7 @@ const LandingPage = () => {
           <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logo} />
           <div style={styles.navLinks}>
             <a href="#features" style={styles.navLink}>Features</a>
-            <a href="#pricing" style={styles.navLink}>Pricing</a>
+            <button onClick={() => navigate('/pricing')} style={{...styles.navLink, background: 'none', border: 'none', cursor: 'pointer'}}>Pricing</button>
             <button onClick={() => navigate('/login')} className="btn-secondary" style={{ marginRight: '12px', padding: '10px 24px' }}>Log In</button>
             <button onClick={() => navigate('/signup')} className="btn-primary" style={{ padding: '10px 24px' }}>Sign Up</button>
           </div>
