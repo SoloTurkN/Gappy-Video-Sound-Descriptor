@@ -448,12 +448,12 @@ async def export_video(project_id: str, export_req: ExportRequest):
         project_dir = UPLOADS_DIR / project_id
         
         # Check if FFmpeg is available
-        ffmpeg_path = "/usr/bin/ffmpeg"
-        if not os.path.exists(ffmpeg_path):
-            # Try to find ffmpeg in PATH
-            import shutil
-            ffmpeg_path = shutil.which('ffmpeg')
-            if not ffmpeg_path:
+        import shutil
+        ffmpeg_path = shutil.which('ffmpeg')
+        if not ffmpeg_path:
+            # Fallback to common path
+            ffmpeg_path = "/usr/bin/ffmpeg"
+            if not os.path.exists(ffmpeg_path):
                 raise HTTPException(
                     status_code=500, 
                     detail="FFmpeg is not installed. Please contact support to reinstall FFmpeg on the server."
