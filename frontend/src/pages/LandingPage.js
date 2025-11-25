@@ -23,56 +23,6 @@ const LandingPage = () => {
     }
   ];
 
-  const plans = [
-    {
-      name: 'Free',
-      price: '$0',
-      period: 'forever',
-      description: 'Perfect for trying out Gappy',
-      features: [
-        '3 videos per month',
-        'Up to 5 minutes each',
-        'MP4 export only',
-        'Basic scene detection',
-        'Community support'
-      ],
-      cta: 'Get Started Free',
-      highlighted: false
-    },
-    {
-      name: 'Pro',
-      price: '$29',
-      period: 'per month',
-      description: 'For content creators & educators',
-      features: [
-        '50 videos per month',
-        'Unlimited video length',
-        'All export formats',
-        'Advanced AI analysis',
-        'Priority support',
-        'Custom voice options'
-      ],
-      cta: 'Start Pro Trial',
-      highlighted: true
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      period: 'contact us',
-      description: 'For organizations & teams',
-      features: [
-        'Unlimited videos',
-        'API access',
-        'Custom integrations',
-        'Dedicated support',
-        'SLA guarantee',
-        'Team management'
-      ],
-      cta: 'Contact Sales',
-      highlighted: false
-    }
-  ];
-
   return (
     <div style={styles.container}>
       {/* Header */}
