@@ -136,54 +136,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" style={styles.pricingSection}>
-        <div style={styles.sectionContent}>
-          <h2 style={styles.sectionTitle}>Choose Your Plan</h2>
-          <p style={styles.sectionSubtitle}>Start free, upgrade when you need more. All plans include core features.</p>
-          
-          <div style={styles.pricingGrid}>
-            {plans.map((plan, index) => (
-              <div 
-                key={index} 
-                className="card" 
-                style={{
-                  ...styles.pricingCard,
-                  ...(plan.highlighted ? styles.pricingCardHighlighted : {})
-                }}
-              >
-                {plan.highlighted && (
-                  <div style={styles.popularBadge}>Most Popular</div>
-                )}
-                <h3 style={styles.planName}>{plan.name}</h3>
-                <div style={styles.planPrice}>
-                  <span style={styles.priceAmount}>{plan.price}</span>
-                  <span style={styles.pricePeriod}>/{plan.period}</span>
-                </div>
-                <p style={styles.planDescription}>{plan.description}</p>
-                
-                <ul style={styles.featureList}>
-                  {plan.features.map((feature, fIndex) => (
-                    <li key={fIndex} style={styles.featureItem}>
-                      <CheckCircle2 size={18} color="#4ECDC4" style={{ marginRight: '12px', flexShrink: 0 }} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                
-                <button 
-                  onClick={() => navigate(plan.name === 'Enterprise' ? '/signup' : '/signup')}
-                  className={plan.highlighted ? 'btn-primary' : 'btn-secondary'}
-                  style={{ width: '100%', padding: '14px', marginTop: '24px' }}
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section style={styles.ctaSection}>
         <div style={styles.ctaContent}>
