@@ -76,7 +76,7 @@ const EditorPage = () => {
     try {
       await axios.put(`${API}/scenes/${sceneId}`, {
         description: editText,
-      });
+      }, { withCredentials: true });
       
       setScenes(scenes.map(s => 
         s.id === sceneId ? { ...s, description: editText } : s
