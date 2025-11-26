@@ -318,13 +318,14 @@ const styles = {
   },
   statLabel: {
     fontSize: '13px',
-    color: '#6b7280',
+    color: '#000000',
     marginBottom: '4px',
+    fontWeight: '500',
   },
   statValue: {
     fontSize: '24px',
     fontWeight: '700',
-    color: '#111827',
+    color: '#000000',
   },
   upgradeBanner: {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
