@@ -139,8 +139,8 @@ const LoginPage = () => {
                 </div>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  <Sparkles size={20} />
-                  Login to Gappy
+                  <img src="/gappy-icon.png" alt="Gappy" style={{ width: '20px', height: '20px' }} />
+                  Login to Gappy Describe
                 </div>
               )}
             </button>
