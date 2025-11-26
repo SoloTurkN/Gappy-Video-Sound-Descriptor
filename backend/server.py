@@ -612,6 +612,17 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
     try:
         import tempfile
         
+        # Check if export format is allowed for user's subscription tier
+        subscription_tier = current_user.get("subscription_tier", "free")
+        tier_config = TIER_LIMITS.get(subscription_tier, TIER_LIMITS["free"])
+        
+        if export_req.format not in tier_config["allowed_formats"]:
+            allowed_str = ", ".join(tier_config["allowed_formats"]).upper()
+            raise HTTPException(
+                status_code=403, 
+                detail=f"Format {export_req.format.upper()} not available in your {tier_config['name']} plan. Allowed formats: {allowed_str}"
+            )
+        
         # Get project and verify ownership
         project = await db.projects.find_one({"id": project_id}, {"_id": 0})
         if not project:
