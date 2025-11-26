@@ -137,20 +137,36 @@ const HomePage = () => {
                   <Upload size={48} color="#9ca3af" />
                   <p style={styles.dropzoneText}>Drop video here or click to browse</p>
                   <p style={styles.dropzoneSubtext}>Supports MP4, AVI, MOV</p>
+                  
+                  <input
+                    id="file-upload"
+                    type="file"
+                    accept="video/*"
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }}
+                    data-testid="file-input"
+                  />
+                  <label htmlFor="file-upload" className="btn-secondary" style={{ marginTop: '24px', cursor: 'pointer' }}>
+                    Choose File
+                  </label>
                 </div>
               )}
 
-              <input
-                id="file-upload"
-                type="file"
-                accept="video/*"
-                onChange={handleFileSelect}
-                style={{ display: 'none' }}
-                data-testid="file-input"
-              />
-              <label htmlFor="file-upload" className="btn-secondary" style={{ marginTop: '16px', cursor: 'pointer' }}>
-                {selectedFile ? 'Change File' : 'Choose File'}
-              </label>
+              {selectedFile && (
+                <>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    accept="video/*"
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }}
+                    data-testid="file-input"
+                  />
+                  <label htmlFor="file-upload" className="btn-secondary" style={{ marginTop: '16px', cursor: 'pointer' }}>
+                    Change File
+                  </label>
+                </>
+              )}
             </div>
 
             {selectedFile && (
