@@ -426,6 +426,18 @@ const styles = {
     fontSize: '13px',
     color: '#6b7280',
   },
+  deleteButton: {
+    background: 'transparent',
+    border: 'none',
+    color: '#ef4444',
+    cursor: 'pointer',
+    padding: '8px',
+    borderRadius: '6px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s',
+  },
 };
 
 export default Dashboard;
