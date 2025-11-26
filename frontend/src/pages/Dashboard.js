@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Upload, Video, Clock, CheckCircle, Settings, LogOut, CreditCard, User } from 'lucide-react';
+import { Upload, Video, Clock, CheckCircle, Settings, LogOut, CreditCard, User, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 
