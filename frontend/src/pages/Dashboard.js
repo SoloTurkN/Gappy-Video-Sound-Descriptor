@@ -97,7 +97,7 @@ const Dashboard = () => {
       {/* Navbar */}
       <nav className="navbar">
         <div style={styles.navContent}>
-          <img src="/gappy-logo.png" alt="Gappy" style={styles.logo} onClick={() => navigate('/dashboard')} />
+          <img src="/gappy-logo.png" alt="Gappy" style={{...styles.logo, cursor: 'pointer'}} onClick={() => navigate('/')} />
           <div style={styles.navRight}>
             <button onClick={() => navigate('/dashboard')} style={styles.navButton}>
               <Video size={18} style={{ marginRight: '6px' }} />
