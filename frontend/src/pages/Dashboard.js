@@ -74,6 +74,24 @@ const Dashboard = () => {
     });
   };
 
+  const handleDeleteProject = async (projectId, event) => {
+    event.stopPropagation(); // Prevent navigation to editor
+    
+    if (!window.confirm('Are you sure you want to delete this project? This cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      await axios.delete(`${API}/projects/${projectId}`, { withCredentials: true });
+      setProjects(projects.filter(p => p.id !== projectId));
+      toast.success('Project deleted successfully');
+      loadUsage(); // Refresh usage count
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error('Failed to delete project');
+    }
+  };
+
   return (
     <div style={styles.container}>
       {/* Navbar */}
