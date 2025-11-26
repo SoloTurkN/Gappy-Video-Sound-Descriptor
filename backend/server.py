@@ -460,15 +460,19 @@ class ExportRequest(BaseModel):
     format: str = "mp4"  # mp4, avi, mov
 
 @api_router.post("/export/{project_id}")
-async def export_video(project_id: str, export_req: ExportRequest):
-    """Export final video with audio descriptions - each scene starts with still frame + audio, then continues with video"""
+async def export_video(project_id: str, export_req: ExportRequest, current_user: dict = Depends(get_current_user)):
+    """Export final video with audio descriptions (requires authentication)"""
     try:
         import tempfile
         
-        # Get project and scenes
+        # Get project and verify ownership
         project = await db.projects.find_one({"id": project_id}, {"_id": 0})
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Verify user owns this project
+        if project.get("user_email") != current_user["email"]:
+            raise HTTPException(status_code=403, detail="You don't have permission to export this project")
         
         scenes = await db.scenes.find({"project_id": project_id}, {"_id": 0}).sort("frame_number").to_list(1000)
         
