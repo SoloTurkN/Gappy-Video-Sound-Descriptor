@@ -183,3 +183,31 @@ textarea {
   font-weight: 600;
   border: 1px solid #e0e7ff;
 }
+
+/* Delete Button */
+.delete-button {
+  background: #fee2e2 !important;
+  border: 1px solid #ef4444 !important;
+  color: #ef4444 !important;
+  cursor: pointer !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s !important;
+  position: relative !important;
+  z-index: 10 !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+}
+
+.delete-button:hover {
+  background: #ef4444 !important;
+  color: white !important;
+  transform: scale(1.05);
+}
+
+.delete-button:active {
+  transform: scale(0.95);
+}
