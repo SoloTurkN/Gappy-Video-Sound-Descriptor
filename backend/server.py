@@ -422,13 +422,18 @@ async def get_scenes(project_id: str, current_user: dict = Depends(get_current_u
     return scenes
 
 @api_router.put("/scenes/{scene_id}")
-async def update_scene(scene_id: str, update: SceneUpdate):
-    """Update scene description and regenerate audio"""
+async def update_scene(scene_id: str, update: SceneUpdate, current_user: dict = Depends(get_current_user)):
+    """Update scene description and regenerate audio (requires authentication)"""
     try:
         # Get scene
         scene = await db.scenes.find_one({"id": scene_id}, {"_id": 0})
         if not scene:
             raise HTTPException(status_code=404, detail="Scene not found")
+        
+        # Verify user owns the project this scene belongs to
+        project = await db.projects.find_one({"id": scene["project_id"]}, {"_id": 0})
+        if not project or project.get("user_email") != current_user["email"]:
+            raise HTTPException(status_code=403, detail="You don't have permission to edit this scene")
         
         # Regenerate audio with new description
         audio_path = scene['audio_path']
