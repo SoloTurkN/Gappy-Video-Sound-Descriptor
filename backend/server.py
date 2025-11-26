@@ -550,6 +550,43 @@ async def get_project(project_id: str, current_user: dict = Depends(get_current_
     
     return project
 
+@api_router.delete("/projects/{project_id}")
+async def delete_project(project_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete project and all associated data"""
+    try:
+        # Get project and verify ownership
+        project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Verify user owns this project
+        if project.get("user_email") != current_user["email"]:
+            raise HTTPException(status_code=403, detail="You don't have permission to delete this project")
+        
+        # Delete project files
+        video_path = project.get("video_path")
+        if video_path and os.path.exists(video_path):
+            os.remove(video_path)
+        
+        # Delete exported files
+        project_dir = UPLOADS_DIR / project_id
+        if project_dir.exists():
+            import shutil
+            shutil.rmtree(project_dir)
+        
+        # Delete scenes from database
+        await db.scenes.delete_many({"project_id": project_id})
+        
+        # Delete project from database
+        await db.projects.delete_one({"id": project_id})
+        
+        return {"success": True, "message": "Project deleted successfully"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error deleting project: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete project: {str(e)}")
+
 @api_router.get("/projects/{project_id}/scenes", response_model=List[SceneData])
 async def get_scenes(project_id: str, current_user: dict = Depends(get_current_user)):
     """Get all scenes for a project (only if user owns it)"""
