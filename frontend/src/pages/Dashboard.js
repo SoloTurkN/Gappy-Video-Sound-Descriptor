@@ -26,7 +26,7 @@ const Dashboard = () => {
 
   const loadProjects = async () => {
     try {
-      const response = await axios.get(`${API}/projects`);
+      const response = await axios.get(`${API}/projects`, { withCredentials: true });
       setProjects(response.data);
     } catch (error) {
       console.error('Load error:', error);
