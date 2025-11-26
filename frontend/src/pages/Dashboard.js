@@ -121,7 +121,7 @@ const Dashboard = () => {
             </div>
             <div>
               <p style={styles.statLabel}>Current Plan</p>
-              <p style={styles.statValue}>{stats.plan}</p>
+              <p style={styles.statValue}>{usage.plan}</p>
             </div>
           </div>
 
