@@ -356,6 +356,28 @@ async def generate_audio(text: str, output_path: str) -> float:
 async def root():
     return {"message": "Video Voice Description API"}
 
+@api_router.get("/usage")
+async def get_usage(current_user: dict = Depends(get_current_user)):
+    """Get current user's subscription and usage info"""
+    user_email = current_user["email"]
+    subscription_tier = current_user.get("subscription_tier", "free")
+    
+    # Get current month's usage
+    usage = await get_or_create_usage(user_email, subscription_tier)
+    
+    # Get tier config
+    tier_config = TIER_LIMITS.get(subscription_tier, TIER_LIMITS["free"])
+    
+    return {
+        "subscription_tier": subscription_tier,
+        "tier_name": tier_config["name"],
+        "videos_uploaded": usage["videos_uploaded"],
+        "max_videos": tier_config["max_videos_per_month"],
+        "max_duration_seconds": tier_config["max_video_duration_seconds"],
+        "allowed_formats": tier_config["allowed_formats"],
+        "month": usage["month"]
+    }
+
 @api_router.post("/upload", response_model=ProjectData)
 async def upload_video(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
     """Upload a video file (requires authentication)"""
