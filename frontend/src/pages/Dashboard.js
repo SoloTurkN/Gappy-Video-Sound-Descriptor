@@ -226,6 +226,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={(e) => handleDeleteProject(project.id, e)}
                     style={styles.deleteButton}
                     title="Delete project"
