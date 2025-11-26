@@ -77,7 +77,95 @@ class ProjectCreate(BaseModel):
     video_path: str
     original_filename: str
 
+class UsageData(BaseModel):
+    user_email: str
+    month: str  # Format: YYYY-MM
+    videos_uploaded: int = 0
+    subscription_tier: str = "free"  # free, pro, enterprise
+
+# Subscription tier limits
+TIER_LIMITS = {
+    "free": {
+        "max_videos_per_month": 3,
+        "max_video_duration_seconds": 300,  # 5 minutes
+        "allowed_formats": ["mp4"],
+        "name": "Free"
+    },
+    "pro": {
+        "max_videos_per_month": 50,
+        "max_video_duration_seconds": None,  # Unlimited
+        "allowed_formats": ["mp4", "avi", "mov"],
+        "name": "Pro"
+    },
+    "enterprise": {
+        "max_videos_per_month": None,  # Unlimited
+        "max_video_duration_seconds": None,  # Unlimited
+        "allowed_formats": ["mp4", "avi", "mov"],
+        "name": "Enterprise"
+    }
+}
+
 # Helper functions
+async def get_or_create_usage(user_email: str, subscription_tier: str = "free") -> dict:
+    """Get or create usage record for current month"""
+    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+    
+    usage = await db.usage.find_one(
+        {"user_email": user_email, "month": current_month},
+        {"_id": 0}
+    )
+    
+    if not usage:
+        usage = {
+            "user_email": user_email,
+            "month": current_month,
+            "videos_uploaded": 0,
+            "subscription_tier": subscription_tier
+        }
+        await db.usage.insert_one(usage)
+    
+    return usage
+
+
+async def check_upload_allowed(user_email: str, video_duration: float) -> tuple[bool, str]:
+    """
+    Check if user is allowed to upload based on their subscription tier
+    Returns (allowed: bool, reason: str)
+    """
+    # Get user's subscription tier
+    user = await db.users.find_one({"email": user_email}, {"_id": 0})
+    if not user:
+        return False, "User not found"
+    
+    subscription_tier = user.get("subscription_tier", "free")
+    tier_config = TIER_LIMITS.get(subscription_tier, TIER_LIMITS["free"])
+    
+    # Get current month's usage
+    usage = await get_or_create_usage(user_email, subscription_tier)
+    
+    # Check video count limit
+    max_videos = tier_config["max_videos_per_month"]
+    if max_videos is not None and usage["videos_uploaded"] >= max_videos:
+        return False, f"Monthly limit reached. Your {tier_config['name']} plan allows {max_videos} videos per month."
+    
+    # Check video duration limit
+    max_duration = tier_config["max_video_duration_seconds"]
+    if max_duration is not None and video_duration > max_duration:
+        max_minutes = max_duration // 60
+        return False, f"Video too long. Your {tier_config['name']} plan allows videos up to {max_minutes} minutes."
+    
+    return True, "Upload allowed"
+
+
+async def increment_usage(user_email: str):
+    """Increment video upload count for current month"""
+    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+    
+    await db.usage.update_one(
+        {"user_email": user_email, "month": current_month},
+        {"$inc": {"videos_uploaded": 1}},
+        upsert=True
+    )
 def detect_scene_cuts(video_path: str, threshold: float = 30.0):
     """Detect scene cuts in video using frame difference analysis"""
     cap = cv2.VideoCapture(video_path)
