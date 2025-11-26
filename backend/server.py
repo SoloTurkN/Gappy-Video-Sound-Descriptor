@@ -59,6 +59,7 @@ class ProjectData(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     video_path: str
     original_filename: str
+    user_email: str = ""  # Email of user who created the project
     status: str = "uploaded"  # uploaded, processing, analyzed, completed, error
     total_scenes: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
