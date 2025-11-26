@@ -42,7 +42,11 @@ const Dashboard = () => {
   const loadProjects = async () => {
     try {
       const response = await axios.get(`${API}/projects`, { withCredentials: true });
-      setProjects(response.data);
+      // Sort by created_at, newest first
+      const sortedProjects = response.data.sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      );
+      setProjects(sortedProjects);
     } catch (error) {
       console.error('Load error:', error);
       toast.error('Failed to load projects');
