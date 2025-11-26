@@ -113,7 +113,7 @@ const EditorPage = () => {
       
       const response = await axios.post(`${API}/export/${projectId}`, {
         format: exportFormat
-      });
+      }, { withCredentials: true });
       
       clearInterval(progressInterval);
       setExportProgress(100);
