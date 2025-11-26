@@ -550,6 +550,37 @@ async def get_project(project_id: str, current_user: dict = Depends(get_current_
     
     return project
 
+@api_router.put("/projects/{project_id}")
+async def update_project(project_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    """Update project metadata (e.g., rename)"""
+    try:
+        # Get project and verify ownership
+        project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Verify user owns this project
+        if project.get("user_email") != current_user["email"]:
+            raise HTTPException(status_code=403, detail="You don't have permission to update this project")
+        
+        # Update allowed fields
+        allowed_fields = {"original_filename"}
+        update_dict = {k: v for k, v in update_data.items() if k in allowed_fields}
+        
+        if update_dict:
+            update_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+            await db.projects.update_one(
+                {"id": project_id},
+                {"$set": update_dict}
+            )
+        
+        return {"success": True, "message": "Project updated successfully"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error updating project: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update project: {str(e)}")
+
 @api_router.delete("/projects/{project_id}")
 async def delete_project(project_id: str, current_user: dict = Depends(get_current_user)):
     """Delete project and all associated data"""
