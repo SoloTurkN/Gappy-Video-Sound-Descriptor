@@ -62,13 +62,14 @@ const HomePage = () => {
     try {
       const response = await axios.post(`${API}/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
       });
 
       toast.success('Video uploaded!');
       const projectId = response.data.id;
       
       toast.info('Analyzing video...');
-      await axios.post(`${API}/analyze/${projectId}`);
+      await axios.post(`${API}/analyze/${projectId}`, {}, { withCredentials: true });
       
       toast.success('Analysis complete!');
       navigate(`/editor/${projectId}`);
