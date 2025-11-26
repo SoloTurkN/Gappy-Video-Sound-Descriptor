@@ -99,7 +99,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer style={styles.footer}>
         <div style={styles.footerContent}>
-          <p style={styles.footerText}>© 2024 Gappy Labs. All rights reserved.</p>
+          <p style={styles.footerText}>© 2025 Gappy Labs. All rights reserved.</p>
           <div style={styles.footerLinks}>
             <a href="#" style={styles.footerLink}>Privacy</a>
             <a href="#" style={styles.footerLink}>Terms</a>
