@@ -234,9 +234,10 @@ const Dashboard = () => {
                   <div onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
+                      className="delete-button"
                       onClick={(e) => handleDeleteProject(project.id, e)}
-                      style={styles.deleteButton}
                       title="Delete project"
+                      data-project-id={project.id}
                     >
                       <Trash2 size={18} />
                     </button>
