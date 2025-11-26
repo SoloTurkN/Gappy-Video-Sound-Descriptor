@@ -366,9 +366,23 @@ async def upload_video(file: UploadFile = File(...), current_user: dict = Depend
         video_filename = f"{project_id}{file_extension}"
         video_path = UPLOADS_DIR / video_filename
         
-        # Save uploaded file
+        # Save uploaded file temporarily to check duration
         with open(video_path, 'wb') as f:
             shutil.copyfileobj(file.file, f)
+        
+        # Get video duration
+        cap = cv2.VideoCapture(str(video_path))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        video_duration = frame_count / fps if fps > 0 else 0
+        cap.release()
+        
+        # Check if upload is allowed
+        allowed, reason = await check_upload_allowed(current_user["email"], video_duration)
+        if not allowed:
+            # Delete the uploaded file
+            os.remove(video_path)
+            raise HTTPException(status_code=403, detail=reason)
         
         # Create project in database with user tracking
         project = ProjectData(
