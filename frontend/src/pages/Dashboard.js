@@ -231,14 +231,16 @@ const Dashboard = () => {
                       {project.status}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={(e) => handleDeleteProject(project.id, e)}
-                    style={styles.deleteButton}
-                    title="Delete project"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteProject(project.id, e)}
+                      style={styles.deleteButton}
+                      title="Delete project"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
                 <h3 style={styles.projectName}>{project.original_filename}</h3>
                 <div style={styles.projectMeta}>
