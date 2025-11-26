@@ -213,16 +213,25 @@ const Dashboard = () => {
                 onClick={() => navigate(`/editor/${project.id}`)}
               >
                 <div style={styles.projectHeader}>
-                  <Video size={20} color="#FF6B9D" />
-                  <div 
-                    style={{
-                      ...styles.statusBadge,
-                      background: `${getStatusColor(project.status)}20`,
-                      color: getStatusColor(project.status)
-                    }}
-                  >
-                    {project.status}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Video size={20} color="#FF6B9D" />
+                    <div 
+                      style={{
+                        ...styles.statusBadge,
+                        background: `${getStatusColor(project.status)}20`,
+                        color: getStatusColor(project.status)
+                      }}
+                    >
+                      {project.status}
+                    </div>
                   </div>
+                  <button
+                    onClick={(e) => handleDeleteProject(project.id, e)}
+                    style={styles.deleteButton}
+                    title="Delete project"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
                 <h3 style={styles.projectName}>{project.original_filename}</h3>
                 <div style={styles.projectMeta}>
