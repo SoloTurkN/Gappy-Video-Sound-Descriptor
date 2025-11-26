@@ -445,6 +445,8 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s',
+    position: 'relative',
+    zIndex: 10,
   },
 };
 
