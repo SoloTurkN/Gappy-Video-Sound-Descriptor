@@ -111,7 +111,7 @@ const Dashboard = () => {
             </div>
             <div>
               <p style={styles.statLabel}>Videos This Month</p>
-              <p style={styles.statValue}>{stats.videosThisMonth} / {stats.videosLimit}</p>
+              <p style={styles.statValue}>{usage.videosThisMonth} / {usage.videosLimit}</p>
             </div>
           </div>
 
