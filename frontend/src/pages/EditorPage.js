@@ -23,6 +23,9 @@ const EditorPage = () => {
   const [exportProgress, setExportProgress] = useState(0);
   const [estimatedTime, setEstimatedTime] = useState(0);
   const [downloadUrl, setDownloadUrl] = useState(null);
+  const [editingName, setEditingName] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [descriptionLength, setDescriptionLength] = useState('standard');
 
   useEffect(() => {
     loadProject();
