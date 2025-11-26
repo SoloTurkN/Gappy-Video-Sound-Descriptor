@@ -263,8 +263,8 @@ async def root():
     return {"message": "Video Voice Description API"}
 
 @api_router.post("/upload", response_model=ProjectData)
-async def upload_video(file: UploadFile = File(...)):
-    """Upload a video file"""
+async def upload_video(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Upload a video file (requires authentication)"""
     try:
         # Generate unique filename
         project_id = str(uuid.uuid4())
@@ -276,11 +276,12 @@ async def upload_video(file: UploadFile = File(...)):
         with open(video_path, 'wb') as f:
             shutil.copyfileobj(file.file, f)
         
-        # Create project in database
+        # Create project in database with user tracking
         project = ProjectData(
             id=project_id,
             video_path=str(video_path),
-            original_filename=file.filename
+            original_filename=file.filename,
+            user_email=current_user["email"]
         )
         
         doc = project.model_dump()
