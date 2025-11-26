@@ -76,19 +76,25 @@ const Dashboard = () => {
 
   const handleDeleteProject = async (projectId, event) => {
     event.stopPropagation(); // Prevent navigation to editor
+    event.preventDefault(); // Prevent default action
+    
+    console.log('Delete button clicked for project:', projectId);
     
     if (!window.confirm('Are you sure you want to delete this project? This cannot be undone.')) {
       return;
     }
     
     try {
-      await axios.delete(`${API}/projects/${projectId}`, { withCredentials: true });
+      console.log('Sending delete request to:', `${API}/projects/${projectId}`);
+      const response = await axios.delete(`${API}/projects/${projectId}`, { withCredentials: true });
+      console.log('Delete response:', response);
       setProjects(projects.filter(p => p.id !== projectId));
       toast.success('Project deleted successfully');
       loadUsage(); // Refresh usage count
     } catch (error) {
       console.error('Delete error:', error);
-      toast.error('Failed to delete project');
+      console.error('Error details:', error.response?.data);
+      toast.error(error.response?.data?.detail || 'Failed to delete project');
     }
   };
 
