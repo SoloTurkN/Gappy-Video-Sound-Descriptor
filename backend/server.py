@@ -22,6 +22,11 @@ import subprocess
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+# Import dependencies (must be after ROOT_DIR and load_dotenv)
+import sys
+sys.path.insert(0, str(ROOT_DIR))
+from dependencies import get_current_user
+
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
