@@ -26,60 +26,54 @@ const LandingPage = () => {
   return (
     <div style={styles.container}>
       {/* Header */}
-      <nav className="navbar">
-        <div style={styles.navContent}>
-          <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logo} />
-          <div style={styles.navLinks}>
-            <a href="#features" style={styles.navLink}>Features</a>
-            <button onClick={() => navigate('/pricing')} style={{...styles.navLink, background: 'none', border: 'none', cursor: 'pointer'}}>Pricing</button>
-            <button onClick={() => navigate('/login')} className="btn-secondary" style={{ marginRight: '12px', padding: '10px 24px' }}>Log In</button>
-            <button onClick={() => navigate('/signup')} className="btn-primary" style={{ padding: '10px 24px' }}>Sign Up</button>
+      <header style={styles.header}>
+        <div style={styles.headerContent}>
+          <div style={styles.logoContainer} onClick={() => navigate('/')} style={{...styles.logoContainer, cursor: 'pointer'}}>
+            <img src="/gappy-icon.png" alt="Gappy" style={styles.logoIcon} />
+            <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logoText} />
           </div>
+          <nav style={styles.nav}>
+            <button onClick={() => navigate('/pricing')} style={{...styles.navLink, background: 'none', border: 'none', cursor: 'pointer'}}>Pricing</button>
+            <button onClick={() => navigate('/login')} className="btn-secondary" style={{ padding: '10px 24px' }}>
+              Login
+            </button>
+            <button onClick={() => navigate('/signup')} className="btn-primary" style={{ padding: '10px 24px' }}>
+              Sign Up
+            </button>
+          </nav>
         </div>
-      </nav>
+      </header>
 
       {/* Hero Section */}
       <section style={styles.hero}>
         <div style={styles.heroContent}>
-          <div className="badge" style={{ marginBottom: '24px' }}>
-            <Sparkles size={14} style={{ marginRight: '6px' }} />
-            WCAG 1.2.3 Level A Compliant
-          </div>
-          
           <h1 style={styles.heroTitle}>
-            Make Your Videos Accessible<br />with <span style={{ color: '#667eea' }}>AI-Powered</span> Audio Descriptions
+            Make Your Videos <span style={styles.highlight}>Accessible</span> with AI
           </h1>
-          
           <p style={styles.heroSubtitle}>
-            Gappy automatically generates WCAG-compliant audio descriptions for your videos.
-            Upload, analyze, and export accessible content in minutes.
+            Automatically generate WCAG-compliant audio descriptions for your videos.
+            <br />
+            Upload, analyze, and export in minutes.
           </p>
-
-          <div style={styles.heroButtons}>
-            <button onClick={() => navigate('/signup')} className="btn-primary" style={{ padding: '16px 32px', fontSize: '16px' }}>
+          <div style={styles.heroCta}>
+            <button onClick={() => navigate('/signup')} className="btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>
               Get Started Free
-            </button>
-            <button onClick={() => navigate('/pricing')} className="btn-secondary" style={{ padding: '16px 32px', fontSize: '16px' }}>
-              View Pricing
+              <ArrowRight size={20} style={{ marginLeft: '8px' }} />
             </button>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" style={styles.featuresSection}>
+      <section style={styles.featuresSection}>
         <div style={styles.sectionContent}>
-          <h2 style={styles.sectionTitle}>Everything You Need for Video Accessibility</h2>
-          <p style={styles.sectionSubtitle}>Comprehensive tools to analyze, describe, and export WCAG-compliant videos.</p>
-          
+          <h2 style={styles.sectionTitle}>How It Works</h2>
           <div style={styles.featuresGrid}>
             {features.map((feature, index) => (
               <div key={index} className="card" style={styles.featureCard}>
-                <div style={styles.featureIcon}>
-                  {feature.icon}
-                </div>
+                <div style={styles.featureIcon}>{feature.icon}</div>
                 <h3 style={styles.featureTitle}>{feature.title}</h3>
-                <p style={styles.featureText}>{feature.description}</p>
+                <p style={styles.featureDescription}>{feature.description}</p>
               </div>
             ))}
           </div>
@@ -105,7 +99,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer style={styles.footer}>
         <div style={styles.footerContent}>
-          <p style={styles.footerText}>© 2024 Gappy Descripe. All rights reserved.</p>
+          <p style={styles.footerText}>© 2024 Gappy Labs. All rights reserved.</p>
           <div style={styles.footerLinks}>
             <a href="#" style={styles.footerLink}>Privacy</a>
             <a href="#" style={styles.footerLink}>Terms</a>
@@ -120,9 +114,17 @@ const LandingPage = () => {
 const styles = {
   container: {
     minHeight: '100vh',
-    background: '#ffffff',
+    background: 'white',
   },
-  navContent: {
+  header: {
+    borderBottom: '1px solid #e5e7eb',
+    padding: '16px 0',
+    position: 'sticky',
+    top: 0,
+    background: 'white',
+    zIndex: 50,
+  },
+  headerContent: {
     maxWidth: '1200px',
     margin: '0 auto',
     padding: '0 24px',
@@ -130,55 +132,65 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  logo: {
-    height: '36px',
-    width: 'auto',
-  },
-  navLinks: {
+  logoContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '32px',
+    gap: '12px',
+    cursor: 'pointer',
+  },
+  logoIcon: {
+    height: '40px',
+    width: 'auto',
+  },
+  logoText: {
+    height: '32px',
+    width: 'auto',
+  },
+  nav: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '24px',
   },
   navLink: {
-    color: '#111827',
+    fontSize: '16px',
+    color: '#4a5568',
     textDecoration: 'none',
-    fontWeight: '500',
-    fontSize: '15px',
+    transition: 'color 0.2s',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
   },
   hero: {
-    padding: '100px 24px 80px',
+    padding: '80px 24px',
     textAlign: 'center',
-    background: 'linear-gradient(180deg, #ffffff 0%, #f9fafb 100%)',
   },
   heroContent: {
-    maxWidth: '900px',
+    maxWidth: '800px',
     margin: '0 auto',
   },
   heroTitle: {
-    fontSize: 'clamp(36px, 5vw, 56px)',
+    fontSize: '56px',
     fontWeight: '800',
-    color: '#111827',
-    marginBottom: '24px',
     lineHeight: '1.2',
-    letterSpacing: '-0.02em',
+    marginBottom: '24px',
+    color: '#1a202c',
+  },
+  highlight: {
+    color: '#FF6B9D',
   },
   heroSubtitle: {
     fontSize: '20px',
-    color: '#6b7280',
-    marginBottom: '40px',
+    color: '#718096',
+    marginBottom: '32px',
     lineHeight: '1.6',
-    maxWidth: '700px',
-    margin: '0 auto 40px',
   },
-  heroButtons: {
+  heroCta: {
     display: 'flex',
-    gap: '16px',
     justifyContent: 'center',
-    flexWrap: 'wrap',
+    gap: '16px',
   },
   featuresSection: {
-    padding: '100px 24px',
-    background: '#ffffff',
+    padding: '80px 24px',
+    background: '#f7fafc',
   },
   sectionContent: {
     maxWidth: '1200px',
@@ -187,119 +199,39 @@ const styles = {
   sectionTitle: {
     fontSize: '40px',
     fontWeight: '700',
-    color: '#111827',
     textAlign: 'center',
-    marginBottom: '16px',
-    letterSpacing: '-0.01em',
-  },
-  sectionSubtitle: {
-    fontSize: '18px',
-    color: '#6b7280',
-    textAlign: 'center',
-    marginBottom: '60px',
-    maxWidth: '700px',
-    margin: '0 auto 60px',
+    marginBottom: '48px',
+    color: '#1a202c',
   },
   featuresGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
     gap: '32px',
   },
   featureCard: {
-    padding: '40px 32px',
+    padding: '32px',
     textAlign: 'center',
   },
   featureIcon: {
-    width: '64px',
-    height: '64px',
-    margin: '0 auto 24px',
-    background: '#f9fafb',
-    borderRadius: '16px',
+    marginBottom: '20px',
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'center',
-    border: '1px solid #e5e7eb',
   },
   featureTitle: {
-    fontSize: '20px',
+    fontSize: '24px',
     fontWeight: '600',
-    color: '#111827',
     marginBottom: '12px',
+    color: '#1a202c',
   },
-  featureText: {
-    fontSize: '15px',
-    color: '#6b7280',
+  featureDescription: {
+    fontSize: '16px',
+    color: '#718096',
     lineHeight: '1.6',
   },
-  pricingSection: {
-    padding: '100px 24px',
-    background: '#f9fafb',
-  },
-  pricingGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: '32px',
-    maxWidth: '1100px',
-    margin: '0 auto',
-  },
-  pricingCard: {
-    padding: '40px 32px',
-    position: 'relative',
-  },
-  pricingCardHighlighted: {
-    border: '2px solid #667eea',
-    boxShadow: '0 10px 40px rgba(102, 126, 234, 0.15)',
-  },
-  popularBadge: {
-    position: 'absolute',
-    top: '-12px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    background: '#667eea',
-    color: 'white',
-    padding: '4px 16px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '600',
-  },
-  planName: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: '16px',
-  },
-  planPrice: {
-    marginBottom: '8px',
-  },
-  priceAmount: {
-    fontSize: '48px',
-    fontWeight: '800',
-    color: '#111827',
-  },
-  pricePeriod: {
-    fontSize: '16px',
-    color: '#6b7280',
-  },
-  planDescription: {
-    fontSize: '14px',
-    color: '#6b7280',
-    marginBottom: '32px',
-  },
-  featureList: {
-    listStyle: 'none',
-    padding: 0,
-    margin: 0,
-  },
-  featureItem: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    fontSize: '14px',
-    color: '#111827',
-    marginBottom: '12px',
-  },
   ctaSection: {
-    padding: '100px 24px',
+    padding: '80px 24px',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
     textAlign: 'center',
   },
   ctaContent: {
@@ -309,17 +241,17 @@ const styles = {
   ctaTitle: {
     fontSize: '40px',
     fontWeight: '700',
-    color: 'white',
     marginBottom: '16px',
   },
   ctaSubtitle: {
-    fontSize: '18px',
-    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: '20px',
     marginBottom: '32px',
+    opacity: 0.9,
   },
   footer: {
-    padding: '40px 24px',
-    background: '#111827',
+    borderTop: '1px solid #e5e7eb',
+    padding: '32px 24px',
+    background: 'white',
   },
   footerContent: {
     maxWidth: '1200px',
@@ -327,21 +259,19 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '20px',
   },
   footerText: {
-    color: '#9ca3af',
+    color: '#718096',
     fontSize: '14px',
   },
   footerLinks: {
     display: 'flex',
-    gap: '32px',
+    gap: '24px',
   },
   footerLink: {
-    color: '#9ca3af',
-    textDecoration: 'none',
+    color: '#718096',
     fontSize: '14px',
+    textDecoration: 'none',
   },
 };
 
