@@ -157,13 +157,21 @@ async def check_upload_allowed(user_email: str, video_duration: float) -> tuple[
     return True, "Upload allowed"
 
 
-async def increment_usage(user_email: str):
+async def increment_usage(user_email: str, subscription_tier: str = "free"):
     """Increment video upload count for current month"""
     current_month = datetime.now(timezone.utc).strftime("%Y-%m")
     
+    # Get user's current tier
+    user = await db.users.find_one({"email": user_email}, {"_id": 0})
+    if user:
+        subscription_tier = user.get("subscription_tier", "free")
+    
     await db.usage.update_one(
         {"user_email": user_email, "month": current_month},
-        {"$inc": {"videos_uploaded": 1}},
+        {
+            "$inc": {"videos_uploaded": 1},
+            "$set": {"subscription_tier": subscription_tier}
+        },
         upsert=True
     )
 def detect_scene_cuts(video_path: str, threshold: float = 30.0):
