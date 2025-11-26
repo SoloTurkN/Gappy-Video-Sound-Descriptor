@@ -309,6 +309,20 @@ const EditorPage = () => {
                 <div style={styles.sceneContent}>
                   {editingScene === scene.id ? (
                     <div>
+                      <div style={{ marginBottom: '12px' }}>
+                        <label style={{ fontSize: '13px', color: '#6b7280', display: 'block', marginBottom: '6px' }}>
+                          Description Length
+                        </label>
+                        <select
+                          value={descriptionLength}
+                          onChange={(e) => setDescriptionLength(e.target.value)}
+                          style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', width: '100%', marginBottom: '12px' }}
+                        >
+                          <option value="short">Short (5-10 words)</option>
+                          <option value="standard">Standard (15-20 words)</option>
+                          <option value="detailed">Detailed (30+ words)</option>
+                        </select>
+                      </div>
                       <textarea
                         value={editText}
                         onChange={(e) => setEditText(e.target.value)}
