@@ -127,11 +127,11 @@ const Dashboard = () => {
 
           <div className="card" style={styles.statCard}>
             <div style={styles.statIcon}>
-              <Clock size={24} color="#667eea" />
+              <CheckCircle size={24} color="#4ECDC4" />
             </div>
             <div>
-              <p style={styles.statLabel}>Renewal</p>
-              <p style={styles.statValue}>{stats.daysLeft} days</p>
+              <p style={styles.statLabel}>Formats</p>
+              <p style={styles.statValue}>{usage.allowedFormats.map(f => f.toUpperCase()).join(', ')}</p>
             </div>
           </div>
         </div>
