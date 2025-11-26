@@ -13,16 +13,31 @@ const Dashboard = () => {
   const { user, logout } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [stats] = useState({
-    videosThisMonth: 2,
+  const [usage, setUsage] = useState({
+    videosThisMonth: 0,
     videosLimit: 3,
     plan: 'Free',
-    daysLeft: 30
+    allowedFormats: ['mp4']
   });
 
   useEffect(() => {
     loadProjects();
+    loadUsage();
   }, []);
+
+  const loadUsage = async () => {
+    try {
+      const response = await axios.get(`${API}/usage`, { withCredentials: true });
+      setUsage({
+        videosThisMonth: response.data.videos_uploaded,
+        videosLimit: response.data.max_videos || 'Unlimited',
+        plan: response.data.tier_name,
+        allowedFormats: response.data.allowed_formats
+      });
+    } catch (error) {
+      console.error('Usage load error:', error);
+    }
+  };
 
   const loadProjects = async () => {
     try {
