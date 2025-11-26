@@ -250,7 +250,39 @@ const EditorPage = () => {
       <div style={styles.content}>
         <div style={styles.header}>
           <div>
-            <h1 style={styles.title}>{project?.original_filename}</h1>
+            {editingName ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <input
+                  type="text"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  style={styles.renameInput}
+                  placeholder="Project name"
+                  autoFocus
+                />
+                <button onClick={handleRenameProject} className="btn-primary" style={{ padding: '8px 16px' }}>
+                  Save
+                </button>
+                <button onClick={() => setEditingName(false)} className="btn-secondary" style={{ padding: '8px 16px' }}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <h1 style={styles.title}>{project?.original_filename}</h1>
+                <button
+                  onClick={() => {
+                    setNewProjectName(project?.original_filename || '');
+                    setEditingName(true);
+                  }}
+                  className="btn-secondary"
+                  style={{ padding: '8px 12px', fontSize: '14px' }}
+                >
+                  <Edit2 size={14} style={{ marginRight: '4px' }} />
+                  Rename
+                </button>
+              </div>
+            )}
             <p style={styles.subtitle}>{scenes.length} scenes detected</p>
           </div>
         </div>
