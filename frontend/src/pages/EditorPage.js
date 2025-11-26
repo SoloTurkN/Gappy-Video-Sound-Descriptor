@@ -44,7 +44,7 @@ const EditorPage = () => {
   }, [currentAudio]);
 
   const loadProject = async () => {
-    try:
+    try {
       const [projectRes, scenesRes] = await Promise.all([
         axios.get(`${API}/projects/${projectId}`, { withCredentials: true }),
         axios.get(`${API}/projects/${projectId}/scenes`, { withCredentials: true }),
