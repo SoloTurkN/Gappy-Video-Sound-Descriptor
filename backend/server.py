@@ -297,13 +297,17 @@ async def upload_video(file: UploadFile = File(...), current_user: dict = Depend
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/analyze/{project_id}")
-async def analyze_video(project_id: str):
-    """Analyze video for scene cuts and generate descriptions"""
+async def analyze_video(project_id: str, current_user: dict = Depends(get_current_user)):
+    """Analyze video for scene cuts and generate descriptions (requires authentication)"""
     try:
-        # Get project
+        # Get project and verify ownership
         project = await db.projects.find_one({"id": project_id}, {"_id": 0})
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
+        
+        # Verify user owns this project
+        if project.get("user_email") != current_user["email"]:
+            raise HTTPException(status_code=403, detail="You don't have permission to access this project")
         
         # Update status
         await db.projects.update_one(
