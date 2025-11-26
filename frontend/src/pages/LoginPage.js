@@ -90,12 +90,6 @@ const LoginPage = () => {
   return (
     <div style={styles.container}>
       <div style={styles.content} className="fade-in">
-        {/* Logo and Branding */}
-        <div style={styles.logoSection} className="bounce">
-          <img src="/gappy-icon.png" alt="Gappy" style={styles.logo} />
-          <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logoText} />
-        </div>
-
         {/* Login Card */}
         <div className="glass-card hover-lift" style={styles.loginCard}>
           <div style={styles.cardHeader}>
