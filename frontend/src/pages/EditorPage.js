@@ -74,11 +74,32 @@ const EditorPage = () => {
     setEditText(scene.description);
   };
 
+  const handleRenameProject = async () => {
+    if (!newProjectName.trim()) {
+      toast.error('Project name cannot be empty');
+      return;
+    }
+    
+    try {
+      await axios.put(`${API}/projects/${projectId}`, {
+        original_filename: newProjectName
+      }, { withCredentials: true });
+      
+      setProject({ ...project, original_filename: newProjectName });
+      setEditingName(false);
+      toast.success('Project renamed successfully');
+    } catch (error) {
+      console.error('Rename error:', error);
+      toast.error('Failed to rename project');
+    }
+  };
+
   const handleSaveScene = async (sceneId) => {
     setSaving(true);
     try {
       await axios.put(`${API}/scenes/${sceneId}`, {
         description: editText,
+        description_length: descriptionLength
       }, { withCredentials: true });
       
       setScenes(scenes.map(s => 
