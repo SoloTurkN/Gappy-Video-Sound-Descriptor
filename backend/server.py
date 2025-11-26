@@ -398,6 +398,9 @@ async def upload_video(file: UploadFile = File(...), current_user: dict = Depend
         
         await db.projects.insert_one(doc)
         
+        # Increment usage counter
+        await increment_usage(current_user["email"])
+        
         return project
     except Exception as e:
         logging.error(f"Error uploading video: {e}")
