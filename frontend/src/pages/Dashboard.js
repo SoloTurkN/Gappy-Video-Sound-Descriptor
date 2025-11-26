@@ -116,7 +116,7 @@ const Dashboard = () => {
             <button onClick={async () => { 
               await logout(); 
               toast.success('Logged out successfully');
-              navigate('/'); 
+              window.location.href = '/';
             }} style={styles.navButton}>
               <LogOut size={18} />
             </button>
