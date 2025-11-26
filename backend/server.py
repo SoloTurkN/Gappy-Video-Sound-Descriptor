@@ -379,9 +379,10 @@ async def analyze_video(project_id: str, current_user: dict = Depends(get_curren
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/projects", response_model=List[ProjectData])
-async def get_projects():
-    """Get all projects"""
-    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+async def get_projects(current_user: dict = Depends(get_current_user)):
+    """Get all projects for the current user"""
+    # Filter projects by user email
+    projects = await db.projects.find({"user_email": current_user["email"]}, {"_id": 0}).to_list(1000)
     
     for project in projects:
         if isinstance(project.get('created_at'), str):
@@ -392,11 +393,15 @@ async def get_projects():
     return projects
 
 @api_router.get("/projects/{project_id}", response_model=ProjectData)
-async def get_project(project_id: str):
-    """Get project by ID"""
+async def get_project(project_id: str, current_user: dict = Depends(get_current_user)):
+    """Get project by ID (only if user owns it)"""
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Verify user owns this project
+    if project.get("user_email") != current_user["email"]:
+        raise HTTPException(status_code=403, detail="You don't have permission to access this project")
     
     if isinstance(project.get('created_at'), str):
         project['created_at'] = datetime.fromisoformat(project['created_at'])
@@ -406,8 +411,13 @@ async def get_project(project_id: str):
     return project
 
 @api_router.get("/projects/{project_id}/scenes", response_model=List[SceneData])
-async def get_scenes(project_id: str):
-    """Get all scenes for a project"""
+async def get_scenes(project_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all scenes for a project (only if user owns it)"""
+    # Verify user owns this project
+    project = await db.projects.find_one({"id": project_id, "user_email": current_user["email"]}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found or you don't have permission")
+    
     scenes = await db.scenes.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
     return scenes
 
