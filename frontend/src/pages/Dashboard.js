@@ -437,8 +437,8 @@ const styles = {
     color: '#6b7280',
   },
   deleteButton: {
-    background: 'transparent',
-    border: 'none',
+    background: '#fee2e2',
+    border: '1px solid #ef4444',
     color: '#ef4444',
     cursor: 'pointer',
     padding: '8px',
@@ -449,6 +449,8 @@ const styles = {
     transition: 'all 0.2s',
     position: 'relative',
     zIndex: 10,
+    minWidth: '36px',
+    minHeight: '36px',
   },
 };
 
