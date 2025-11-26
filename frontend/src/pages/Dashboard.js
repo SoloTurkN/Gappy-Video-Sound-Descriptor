@@ -137,11 +137,16 @@ const Dashboard = () => {
         </div>
 
         {/* Upgrade Banner */}
-        {stats.plan === 'Free' && (
+        {usage.plan === 'Free' && (
           <div style={styles.upgradeBanner}>
             <div>
               <h3 style={styles.bannerTitle}>You're on the Free plan</h3>
-              <p style={styles.bannerText}>Upgrade to Pro for unlimited videos and advanced features</p>
+              <p style={styles.bannerText}>
+                {usage.videosThisMonth >= usage.videosLimit 
+                  ? `You've reached your monthly limit (${usage.videosLimit} videos). Upgrade for more!`
+                  : `Upgrade to Pro for 50 videos/month and advanced features`
+                }
+              </p>
             </div>
             <button onClick={() => navigate('/pricing')} className="btn-primary">
               Upgrade to Pro
