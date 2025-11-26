@@ -572,6 +572,14 @@ const styles = {
     color: '#1a1a1a',
     marginBottom: '4px',
   },
+  renameInput: {
+    fontSize: '32px',
+    fontWeight: '700',
+    padding: '8px 12px',
+    border: '2px solid #FF6B9D',
+    borderRadius: '8px',
+    outline: 'none',
+  },
   subtitle: {
     fontSize: '16px',
     color: '#666666',
