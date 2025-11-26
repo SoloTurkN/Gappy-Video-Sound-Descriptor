@@ -290,11 +290,12 @@ const EditorPage = () => {
                         <button
                           onClick={() => handleEditScene(scene)}
                           className="btn-secondary"
+                          disabled={saving || editingScene !== null}
                           style={{ padding: '10px 16px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                           data-testid={`edit-button-${index}`}
                         >
                           <Edit2 size={16} />
-                          Edit
+                          {saving && editingScene === scene.id ? 'Saving...' : 'Edit'}
                         </button>
                         <button
                           onClick={() => playAudio(scene.audio_path)}
