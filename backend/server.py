@@ -686,9 +686,8 @@ async def download_video(project_id: str, filename: str):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path, filename=filename, media_type="video/mp4")
 
-# Import auth routes and dependencies
+# Import auth routes
 from routes import auth as auth_routes
-from dependencies import get_current_user
 
 # Include the router in the main app
 app.include_router(api_router)
