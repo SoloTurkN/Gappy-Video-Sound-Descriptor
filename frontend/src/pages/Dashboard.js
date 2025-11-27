@@ -216,7 +216,13 @@ const Dashboard = () => {
                 key={project.id} 
                 className="card" 
                 style={styles.projectCard}
-                onClick={() => navigate(`/editor/${project.id}`)}
+                onClick={(e) => {
+                  // Don't navigate if clicking delete button or its children
+                  if (e.target.closest('.delete-button')) {
+                    return;
+                  }
+                  navigate(`/editor/${project.id}`);
+                }}
               >
                 <div style={styles.projectHeader}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
