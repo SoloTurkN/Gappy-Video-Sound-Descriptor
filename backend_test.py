@@ -650,38 +650,90 @@ class VideoDescriptionAPITester:
         return success
 
 def main():
-    print("🚀 Starting Video Description API Tests")
-    print("=" * 50)
+    print("🚀 Starting Comprehensive Gappy Describe API Tests")
+    print("=" * 60)
     
     tester = VideoDescriptionAPITester()
     
-    # Run tests in sequence
-    tests = [
+    # Run tests in logical sequence
+    print("\n" + "=" * 20 + " AUTHENTICATION FLOW " + "=" * 20)
+    auth_tests = [
         tester.test_root_endpoint,
-        tester.test_upload_video,
-        tester.test_get_projects,
-        tester.test_get_project,
-        tester.test_analyze_video,
-        tester.test_get_scenes,
-        tester.test_update_scene,
-        tester.test_export_video,
-        tester.test_file_serving,
+        tester.test_email_signup,
+        tester.test_email_login,
+        tester.test_session_validation,
+        tester.test_protected_endpoint_without_auth,
     ]
     
-    for test in tests:
-        if not test():
-            print(f"\n❌ Test failed: {test.__name__}")
-            # Continue with other tests even if one fails
+    print("\n" + "=" * 20 + " VIDEO PROCESSING FLOW " + "=" * 19)
+    video_tests = [
+        tester.test_upload_video,
+        tester.test_usage_counter,
+        tester.test_video_analysis,
+        tester.test_get_scenes,
+        tester.test_scene_editing,
+    ]
     
-    # Print results
-    print("\n" + "=" * 50)
-    print(f"📊 Tests Results: {tester.tests_passed}/{tester.tests_run} passed")
+    print("\n" + "=" * 20 + " PROJECT MANAGEMENT " + "=" * 22)
+    project_tests = [
+        tester.test_get_projects,
+        tester.test_get_single_project,
+        tester.test_project_rename,
+    ]
+    
+    print("\n" + "=" * 20 + " SUBSCRIPTION & USAGE " + "=" * 21)
+    usage_tests = [
+        tester.test_usage_endpoint,
+        tester.test_upload_limits_free_user,
+        tester.test_duration_limits_free_user,
+    ]
+    
+    print("\n" + "=" * 20 + " EXPORT FLOW " + "=" * 28)
+    export_tests = [
+        tester.test_export_format_restrictions,
+        tester.test_video_export_with_ffmpeg,
+    ]
+    
+    print("\n" + "=" * 20 + " SECURITY TESTS " + "=" * 26)
+    security_tests = [
+        tester.test_unauthorized_access,
+        tester.test_cross_user_access_prevention,
+        tester.test_logout,
+        tester.test_session_expiration,
+    ]
+    
+    print("\n" + "=" * 20 + " CLEANUP " + "=" * 32)
+    cleanup_tests = [
+        tester.test_project_delete,
+    ]
+    
+    # Run all test suites
+    all_tests = auth_tests + video_tests + project_tests + usage_tests + export_tests + security_tests + cleanup_tests
+    
+    failed_tests = []
+    for test in all_tests:
+        try:
+            if not test():
+                failed_tests.append(test.__name__)
+                print(f"\n❌ Test failed: {test.__name__}")
+        except Exception as e:
+            failed_tests.append(test.__name__)
+            print(f"\n💥 Test crashed: {test.__name__} - {str(e)}")
+    
+    # Print final results
+    print("\n" + "=" * 60)
+    print(f"📊 FINAL RESULTS: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    if failed_tests:
+        print(f"\n❌ FAILED TESTS ({len(failed_tests)}):")
+        for test_name in failed_tests:
+            print(f"   • {test_name}")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed!")
+        print("\n🎉 ALL TESTS PASSED! The Gappy Describe API is working correctly.")
         return 0
     else:
-        print("⚠️  Some tests failed - check logs above")
+        print(f"\n⚠️  {len(failed_tests)} TESTS FAILED - See details above")
         return 1
 
 if __name__ == "__main__":
