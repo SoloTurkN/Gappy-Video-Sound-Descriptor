@@ -78,7 +78,7 @@ class VideoDescriptionAPITester:
             print(f"❌ Failed - Error: {str(e)}")
             return False, {}
 
-    def create_test_video(self):
+    def create_test_video(self, duration_seconds=3):
         """Create a simple test video for testing"""
         try:
             # Create a temporary video file
@@ -87,14 +87,16 @@ class VideoDescriptionAPITester:
             
             # Create a simple video with OpenCV
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-            out = cv2.VideoWriter(temp_file.name, fourcc, 2.0, (640, 480))
+            fps = 2.0
+            out = cv2.VideoWriter(temp_file.name, fourcc, fps, (640, 480))
             
-            # Create 3 different colored frames to simulate scene changes
+            # Create different colored frames to simulate scene changes
             colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]  # Blue, Green, Red
+            total_frames = int(duration_seconds * fps)
             
-            for i in range(6):  # 3 seconds at 2 fps
+            for i in range(total_frames):
                 frame = np.zeros((480, 640, 3), dtype=np.uint8)
-                color_idx = i // 2  # Change color every 2 frames
+                color_idx = (i // 2) % len(colors)  # Change color every 2 frames
                 frame[:] = colors[color_idx]
                 
                 # Add some text to make frames different
