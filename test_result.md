@@ -461,8 +461,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Comprehensive backend API testing completed"
-  stuck_tasks: []
+    - "Dashboard logo click and logout functionality fixes needed"
+  stuck_tasks:
+    - "Dashboard UI and Features"
   test_all: true
   test_priority: "high_first"
 
@@ -471,3 +472,5 @@ agent_communication:
       message: "Delete button testing completed. ISSUE FOUND: Cannot test delete functionality because no projects exist in the system. The dashboard shows empty state 'No projects yet'. The delete button implementation appears correct in the code - it includes confirmation dialog, proper API calls, and error handling. To test this functionality, either test projects need to be created or the backend needs to be populated with sample data. Login and dashboard navigation work correctly."
     - agent: "testing"
       message: "COMPREHENSIVE BACKEND TESTING COMPLETED: All 26 backend API tests passed successfully. Fixed 2 critical issues: (1) HTTPException handling in upload/export functions to return proper 403 status codes instead of 500, (2) Updated test suite to use unique users per run to avoid monthly limit conflicts. Authentication flow, video processing, project management, subscription limits, export functionality, and security measures all working correctly. The Gappy Describe backend API is fully functional and ready for production use."
+    - agent: "testing"
+      message: "COMPREHENSIVE FRONTEND UI TESTING COMPLETED: Tested all pages and flows. ✅ WORKING: Landing page (logo, hero, footer, navigation), Signup page (form fields, account creation, redirect), Login page (UI elements, authentication), Editor page (error handling, structure), Auto-logout (10min inactivity logic). ❌ CRITICAL ISSUES FOUND: 1) Dashboard logo click redirects to dashboard instead of landing page, 2) Logout button not found/working properly. These issues prevent proper logout flow testing. All other UI elements, usage counters, plan displays, and empty states work correctly."
