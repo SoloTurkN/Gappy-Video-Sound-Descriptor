@@ -18,15 +18,18 @@ class VideoDescriptionAPITester:
         self.session_cookies = None
         self.user_data = None
         self.scene_id = None
+        # Generate unique email for each test run
+        import uuid
+        unique_id = str(uuid.uuid4())[:8]
         self.test_users = {
             'free_user': {
                 'name': 'Alice Johnson',
-                'email': 'alice.johnson@testmail.com',
+                'email': f'alice.johnson.{unique_id}@testmail.com',
                 'password': 'TestPass123'
             },
             'pro_user': {
                 'name': 'Bob Smith', 
-                'email': 'bob.smith@testmail.com',
+                'email': f'bob.smith.{unique_id}@testmail.com',
                 'password': 'TestPass456'
             }
         }
