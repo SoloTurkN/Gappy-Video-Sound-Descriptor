@@ -885,6 +885,8 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
             "download_url": f"/api/download/{project_id}/{output_filename}",
             "format": output_format
         }
+    except HTTPException as e:
+        raise e
     except subprocess.TimeoutExpired:
         logging.error("FFmpeg timeout")
         raise HTTPException(status_code=500, detail="Video export timeout")
