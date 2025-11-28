@@ -5,6 +5,8 @@ import tempfile
 import cv2
 import numpy as np
 from datetime import datetime
+import json
+import time
 
 class VideoDescriptionAPITester:
     def __init__(self, base_url="https://video-describer-4.preview.emergentagent.com"):
@@ -13,6 +15,21 @@ class VideoDescriptionAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.project_id = None
+        self.session_cookies = None
+        self.user_data = None
+        self.scene_id = None
+        self.test_users = {
+            'free_user': {
+                'name': 'Alice Johnson',
+                'email': 'alice.johnson@testmail.com',
+                'password': 'TestPass123'
+            },
+            'pro_user': {
+                'name': 'Bob Smith', 
+                'email': 'bob.smith@testmail.com',
+                'password': 'TestPass456'
+            }
+        }
 
     def run_test(self, name, method, endpoint, expected_status, data=None, files=None):
         """Run a single API test"""
