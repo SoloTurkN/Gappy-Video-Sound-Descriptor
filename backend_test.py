@@ -31,26 +31,31 @@ class VideoDescriptionAPITester:
             }
         }
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, files=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None, files=None, auth_required=True, cookies=None):
         """Run a single API test"""
         url = f"{self.api_url}/{endpoint}"
         headers = {}
         if not files:
             headers['Content-Type'] = 'application/json'
 
+        # Use session cookies if available and auth required
+        test_cookies = cookies or (self.session_cookies if auth_required else None)
+
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers, timeout=30)
+                response = requests.get(url, headers=headers, cookies=test_cookies, timeout=30)
             elif method == 'POST':
                 if files:
-                    response = requests.post(url, files=files, timeout=60)
+                    response = requests.post(url, files=files, cookies=test_cookies, timeout=60)
                 else:
-                    response = requests.post(url, json=data, headers=headers, timeout=60)
+                    response = requests.post(url, json=data, headers=headers, cookies=test_cookies, timeout=60)
             elif method == 'PUT':
-                response = requests.put(url, json=data, headers=headers, timeout=30)
+                response = requests.put(url, json=data, headers=headers, cookies=test_cookies, timeout=30)
+            elif method == 'DELETE':
+                response = requests.delete(url, headers=headers, cookies=test_cookies, timeout=30)
 
             success = response.status_code == expected_status
             if success:
