@@ -432,6 +432,8 @@ async def upload_video(file: UploadFile = File(...), current_user: dict = Depend
         await increment_usage(current_user["email"])
         
         return project
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logging.error(f"Error uploading video: {e}")
         raise HTTPException(status_code=500, detail=str(e))
