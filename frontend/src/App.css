@@ -24,10 +24,10 @@ h1, h2, h3 {
 }
 
 :root {
-  --primary: #FF6B9D;
-  --primary-light: #FFB3C6;
-  --secondary: #4ECDC4;
-  --accent: #667eea;
+  --primary: #E91E8C;
+  --primary-light: #FF6BB8;
+  --secondary: #00D4D4;
+  --accent: #6B5DD3;
   --text: #111827;
   --text-muted: #6b7280;
   --border: #e5e7eb;
