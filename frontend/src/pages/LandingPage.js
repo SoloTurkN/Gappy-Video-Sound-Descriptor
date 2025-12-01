@@ -7,17 +7,17 @@ const LandingPage = () => {
 
   const features = [
     {
-      icon: <Video size={28} color="#FF6B9D" />,
+      icon: <Video size={28} color="#E91E8C" />,
       title: 'Smart Scene Detection',
       description: 'AI automatically detects scene changes and key moments in your video for precise audio descriptions.'
     },
     {
-      icon: <Sparkles size={28} color="#4ECDC4" />,
+      icon: <Sparkles size={28} color="#00D4D4" />,
       title: 'AI-Powered Descriptions',
       description: 'GPT-4o generates WCAG 1.2.3 Level A compliant audio descriptions that meet accessibility standards.'
     },
     {
-      icon: <BarChart3 size={28} color="#667eea" />,
+      icon: <BarChart3 size={28} color="#6B5DD3" />,
       title: 'Easy Editing & Export',
       description: 'Review, edit, and export your videos in multiple formats (MP4, AVI, MOV) with embedded audio descriptions.'
     }
