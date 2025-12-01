@@ -47,7 +47,7 @@ const LandingPage = () => {
       <section style={styles.hero}>
         <div style={styles.heroContent}>
           <h1 style={styles.heroTitle}>
-            Make Your Videos <span style={styles.highlight}>Accessible</span> with AI
+            Make Your Videos <span style={styles.highlight}>Accessible</span> with Gappy Describe.
           </h1>
           <p style={styles.heroSubtitle}>
             Automatically generate WCAG-compliant audio descriptions for your videos.
