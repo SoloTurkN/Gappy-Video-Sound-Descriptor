@@ -121,6 +121,10 @@ const EditorPage = () => {
     setExporting(true);
     setExportProgress(0);
     
+    // Create new AbortController for this export
+    const controller = new AbortController();
+    setAbortController(controller);
+    
     const estimatedSeconds = Math.max(5, (scenes.length * 2) + 3);
     setEstimatedTime(estimatedSeconds);
     
@@ -138,7 +142,10 @@ const EditorPage = () => {
       
       const response = await axios.post(`${API}/export/${projectId}`, {
         format: exportFormat
-      }, { withCredentials: true });
+      }, { 
+        withCredentials: true,
+        signal: controller.signal
+      });
       
       clearInterval(progressInterval);
       setExportProgress(100);
@@ -169,6 +176,15 @@ const EditorPage = () => {
       
     } catch (error) {
       clearInterval(progressInterval);
+      
+      // Check if the error was due to cancellation
+      if (axios.isCancel(error) || error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+        toast.info('Export cancelled');
+        setExportProgress(0);
+        setEstimatedTime(0);
+        return;
+      }
+      
       console.error('Export error:', error);
       const errorMessage = error.response?.data?.detail || error.message || 'Failed to export video';
       const displayMessage = typeof errorMessage === 'string' && errorMessage.length > 100 
@@ -179,6 +195,7 @@ const EditorPage = () => {
       setEstimatedTime(0);
     } finally {
       setExporting(false);
+      setAbortController(null);
     }
   };
 
