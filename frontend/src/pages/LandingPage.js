@@ -174,7 +174,7 @@ const styles = {
     color: '#1a202c',
   },
   highlight: {
-    color: '#FF6B9D',
+    color: '#E91E8C',
   },
   heroSubtitle: {
     fontSize: '20px',
