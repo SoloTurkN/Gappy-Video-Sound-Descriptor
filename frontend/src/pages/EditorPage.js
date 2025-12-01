@@ -199,6 +199,18 @@ const EditorPage = () => {
     }
   };
 
+  const handleCancelExport = () => {
+    if (abortController) {
+      abortController.abort();
+      toast.info('Cancelling export...');
+    }
+    setShowExportDialog(false);
+    setExporting(false);
+    setExportProgress(0);
+    setEstimatedTime(0);
+    setDownloadUrl(null);
+  };
+
   const playAudio = (audioPath) => {
     if (currentAudio) {
       currentAudio.pause();
