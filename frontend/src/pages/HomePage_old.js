@@ -87,7 +87,7 @@ const HomePage = () => {
       {/* Navbar */}
       <nav className="navbar">
         <div style={styles.navContent}>
-          <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.navLogo} />
+          <img src="/gappy-logo1.png" alt="Gappy Descripe" style={styles.navLogo} />
         </div>
       </nav>
 

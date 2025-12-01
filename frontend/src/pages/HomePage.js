@@ -86,7 +86,7 @@ const HomePage = () => {
       {/* Navbar */}
       <nav className="navbar">
         <div style={styles.navContent}>
-          <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logo} />
+          <img src="/gappy-logo1.png" alt="Gappy Descripe" style={styles.logo} />
           <div className="badge">
             <Sparkles size={14} style={{ marginRight: '6px' }} />
             WCAG Compliant

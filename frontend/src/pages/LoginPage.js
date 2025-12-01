@@ -76,7 +76,7 @@ const LoginPage = () => {
         <div style={styles.content} className="fade-in">
           <div style={styles.logoSection}>
             <img src="/gappy-icon.png" alt="Gappy" style={styles.logo} className="spin-icon" />
-            <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logoText} />
+            <img src="/gappy-logo1.png" alt="Gappy Descripe" style={styles.logoText} />
           </div>
           <div className="glass-card" style={styles.loginCard}>
             <h2 style={styles.title}>Completing Sign In...</h2>

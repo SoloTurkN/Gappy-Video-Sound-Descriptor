@@ -63,7 +63,7 @@ const PricingPage = () => {
       {/* Navbar */}
       <nav className="navbar">
         <div style={styles.navContent}>
-          <img src="/gappy-logo.png" alt="Gappy" style={styles.logo} onClick={() => navigate('/')} />
+          <img src="/gappy-logo1.png" alt="Gappy" style={styles.logo} onClick={() => navigate('/')} />
           <button onClick={() => navigate('/')} className="btn-secondary" style={{ padding: '10px 20px' }}>
             <ArrowLeft size={18} style={{ marginRight: '6px' }} />
             Back

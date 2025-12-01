@@ -89,7 +89,7 @@ const SignupPage = () => {
       <div style={styles.container}>
         <div style={styles.content}>
           <div style={styles.logoSection}>
-            <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logo} className="spin-icon" />
+            <img src="/gappy-logo1.png" alt="Gappy Descripe" style={styles.logo} className="spin-icon" />
           </div>
           <div className="card" style={styles.signupCard}>
             <h2 style={styles.title}>Setting Up Your Account...</h2>
@@ -104,7 +104,7 @@ const SignupPage = () => {
     <div style={styles.container}>
       <div style={styles.content}>
         <div style={styles.logoSection}>
-          <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logo} />
+          <img src="/gappy-logo1.png" alt="Gappy Descripe" style={styles.logo} />
         </div>
 
         <div className="card" style={styles.signupCard}>

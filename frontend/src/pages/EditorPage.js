@@ -232,7 +232,7 @@ const EditorPage = () => {
             Back
           </button>
           
-          <img src="/gappy-logo.png" alt="Gappy" style={styles.navLogo} />
+          <img src="/gappy-logo1.png" alt="Gappy" style={styles.navLogo} />
           
           <button
             onClick={() => setShowExportDialog(true)}
