@@ -26,6 +26,7 @@ const EditorPage = () => {
   const [editingName, setEditingName] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [descriptionLength, setDescriptionLength] = useState('standard');
+  const [abortController, setAbortController] = useState(null);
 
   useEffect(() => {
     loadProject();
