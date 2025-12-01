@@ -546,9 +546,8 @@ const EditorPage = () => {
                     )}
                   </button>
                   <button
-                    onClick={() => setShowExportDialog(false)}
+                    onClick={handleCancelExport}
                     className="btn-secondary"
-                    disabled={exporting}
                     style={{ padding: '14px 24px' }}
                     data-testid="cancel-export-button"
                   >
