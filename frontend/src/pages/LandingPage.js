@@ -229,7 +229,7 @@ const styles = {
   },
   ctaSection: {
     padding: '80px 24px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    background: 'linear-gradient(135deg, #6B5DD3 0%, #E91E8C 50%, #00D4D4 100%)',
     color: 'white',
     textAlign: 'center',
   },
