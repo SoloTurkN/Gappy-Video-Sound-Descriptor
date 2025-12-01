@@ -29,7 +29,7 @@ const LandingPage = () => {
       <header style={styles.header}>
         <div style={styles.headerContent}>
           <div style={{...styles.logoContainer, cursor: 'pointer'}} onClick={() => navigate('/')}>
-            <img src="/gappy-logo.png" alt="Gappy Descripe" style={styles.logoText} />
+            <img src="/gappy-logo1.png" alt="Gappy Describe" style={styles.logoText} />
           </div>
           <nav style={styles.nav}>
             <button onClick={() => navigate('/pricing')} style={{...styles.navLink, background: 'none', border: 'none', cursor: 'pointer'}}>Pricing</button>
