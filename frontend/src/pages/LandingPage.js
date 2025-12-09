@@ -174,7 +174,10 @@ const styles = {
     color: '#1a202c',
   },
   highlight: {
-    color: '#E91E8C',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
   },
   heroSubtitle: {
     fontSize: '20px',
