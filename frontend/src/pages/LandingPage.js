@@ -254,9 +254,8 @@ const styles = {
     opacity: 0.9,
   },
   footer: {
-    borderTop: '1px solid #e5e7eb',
-    padding: '32px 24px',
-    background: 'white',
+    padding: '48px 24px',
+    background: '#1a202c',
   },
   footerContent: {
     maxWidth: '1200px',
@@ -265,18 +264,29 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  footerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+  },
+  footerLogo: {
+    height: '28px',
+    width: 'auto',
+  },
   footerText: {
-    color: '#718096',
+    color: '#a0aec0',
     fontSize: '14px',
+    margin: 0,
   },
   footerLinks: {
     display: 'flex',
     gap: '24px',
   },
   footerLink: {
-    color: '#718096',
+    color: '#a0aec0',
     fontSize: '14px',
     textDecoration: 'none',
+    transition: 'color 0.2s',
   },
 };
 
