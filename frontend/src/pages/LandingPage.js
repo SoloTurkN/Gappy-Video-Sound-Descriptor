@@ -87,7 +87,7 @@ const LandingPage = () => {
           <button 
             onClick={() => navigate('/signup')} 
             className="btn-primary" 
-            style={{ padding: '16px 40px', fontSize: '18px' }}
+            style={{ padding: '16px 40px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             Start Free Today
             <ArrowRight size={20} style={{ marginLeft: '8px' }} />
