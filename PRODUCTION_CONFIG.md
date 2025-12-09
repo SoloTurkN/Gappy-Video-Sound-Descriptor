@@ -36,13 +36,18 @@ LLM_MODEL=gpt-4o
 
 **Cluster**: cluster0.xw6kwek.mongodb.net
 **Username**: gappy_admin
-**Password**: KdV4J94RisXPhaU8
+**Password**: `<YOUR_MONGODB_PASSWORD>` ⚠️ *Enter securely in deployment settings*
 **Database**: gappy_describe
 
-**Connection String**:
+**Connection String Template**:
 ```
-mongodb+srv://gappy_admin:KdV4J94RisXPhaU8@cluster0.xw6kwek.mongodb.net/gappy_describe?retryWrites=true&w=majority&appName=Cluster0
+mongodb+srv://gappy_admin:<YOUR_MONGODB_PASSWORD>@cluster0.xw6kwek.mongodb.net/gappy_describe?retryWrites=true&w=majority&appName=Cluster0
 ```
+
+**🔒 Security Best Practice**: 
+- Store the actual password securely (password manager, secure notes)
+- Only enter it in the Emergent Deployment Environment Variables panel
+- Never commit passwords to code repositories or documentation
 
 ---
 
