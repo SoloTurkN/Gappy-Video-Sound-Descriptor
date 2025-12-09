@@ -244,11 +244,12 @@ const styles = {
     fontSize: '40px',
     fontWeight: '700',
     marginBottom: '16px',
+    color: '#1a202c',
   },
   ctaSubtitle: {
     fontSize: '20px',
     marginBottom: '32px',
-    opacity: 0.9,
+    color: '#718096',
   },
   footer: {
     padding: '48px 24px',
