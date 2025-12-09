@@ -55,7 +55,7 @@ const LandingPage = () => {
             Upload, analyze, and export in minutes.
           </p>
           <div style={styles.heroCta}>
-            <button onClick={() => navigate('/signup')} className="btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>
+            <button onClick={() => navigate('/signup')} className="btn-primary" style={{ padding: '16px 32px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               Get Started Free
               <ArrowRight size={20} style={{ marginLeft: '8px' }} />
             </button>
