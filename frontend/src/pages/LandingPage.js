@@ -99,8 +99,8 @@ const LandingPage = () => {
       <footer style={styles.footer}>
         <div style={styles.footerContent}>
           <div style={styles.footerLeft}>
-            <img src="/gappy-logo1.png" alt="Gappy Labs" style={styles.footerLogo} />
-            <p style={styles.footerText}>© 2025 Gappy Labs. All rights reserved.</p>
+            <img src="/gappy-labs-logo-white-text.png" alt="Gappy Labs" style={styles.footerLogo} />
+            <p style={styles.footerText}>© 2025 All rights reserved.</p>
           </div>
           <div style={styles.footerLinks}>
             <a href="#" style={styles.footerLink}>Privacy</a>
