@@ -232,8 +232,8 @@ const styles = {
   },
   ctaSection: {
     padding: '80px 24px',
-    background: 'linear-gradient(135deg, #6B5DD3 0%, #E91E8C 50%, #00D4D4 100%)',
-    color: 'white',
+    background: 'white',
+    color: '#1a202c',
     textAlign: 'center',
   },
   ctaContent: {
