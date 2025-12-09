@@ -19,7 +19,7 @@
 When deploying, configure these environment variables in Emergent's deployment settings:
 
 ```env
-MONGO_URL=mongodb+srv://gappy_admin:KdV4J94RisXPhaU8@cluster0.xw6kwek.mongodb.net/gappy_describe?retryWrites=true&w=majority&appName=Cluster0
+MONGO_URL=mongodb+srv://gappy_admin:<YOUR_MONGODB_PASSWORD>@cluster0.xw6kwek.mongodb.net/gappy_describe?retryWrites=true&w=majority&appName=Cluster0
 DB_NAME=gappy_describe
 JWT_SECRET_KEY=zeG43IvpvoMcBFTeEJESMPKVvDrzD43AA_RmqiHsuE0
 CORS_ORIGINS=*
@@ -27,6 +27,8 @@ EMERGENT_LLM_KEY=sk-emergent-0D9F14c584cC506990
 LLM_PROVIDER=openai
 LLM_MODEL=gpt-4o
 ```
+
+⚠️ **SECURITY NOTE**: Replace `<YOUR_MONGODB_PASSWORD>` with your actual MongoDB password ONLY in the Emergent Deployment Environment Variables panel. Never commit passwords to code or documentation.
 
 ---
 
