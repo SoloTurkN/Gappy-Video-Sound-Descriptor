@@ -253,7 +253,7 @@ const styles = {
   ctaSubtitle: {
     fontSize: '20px',
     marginBottom: '32px',
-    color: '#718096',
+    color: '#4a5568',
   },
   footer: {
     padding: '48px 24px',
