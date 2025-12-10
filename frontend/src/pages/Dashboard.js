@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Upload, Video, Clock, CheckCircle, Settings, LogOut, CreditCard, User, Trash2 } from 'lucide-react';
+import { 
+  Upload, Video, Clock, CheckCircle, Settings, LogOut, User, Trash2,
+  Folder, Search, MoreVertical, Edit2, Archive, RefreshCw, Download,
+  X, Check, AlertCircle, Play, Pause
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 
@@ -12,7 +16,16 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [projects, setProjects] = useState([]);
+  const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentFolder, setCurrentFolder] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProjects, setSelectedProjects] = useState([]);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
+  const [draggedProject, setDraggedProject] = useState(null);
+  const [hoveredVideo, setHoveredVideo] = useState(null);
+  const videoRefs = useRef({});
+  
   const [usage, setUsage] = useState({
     videosThisMonth: 0,
     videosLimit: 3,
@@ -22,7 +35,20 @@ const Dashboard = () => {
 
   useEffect(() => {
     loadProjects();
+    loadFolders();
     loadUsage();
+  }, [currentFolder, searchQuery]);
+
+  // Cleanup function for video elements
+  useEffect(() => {
+    return () => {
+      Object.values(videoRefs.current).forEach(video => {
+        if (video) {
+          video.pause();
+          video.src = '';
+        }
+      });
+    };
   }, []);
 
   const loadUsage = async () => {
@@ -39,233 +65,513 @@ const Dashboard = () => {
     }
   };
 
+  const loadFolders = async () => {
+    try {
+      const response = await axios.get(`${API}/folders`, { withCredentials: true });
+      setFolders(response.data.folders || []);
+    } catch (error) {
+      console.error('Folders load error:', error);
+    }
+  };
+
   const loadProjects = async () => {
     try {
-      const response = await axios.get(`${API}/projects`, { withCredentials: true });
-      // Sort by created_at, newest first
-      const sortedProjects = response.data.sort((a, b) => 
-        new Date(b.created_at) - new Date(a.created_at)
-      );
-      setProjects(sortedProjects);
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (currentFolder) params.append('folder', currentFolder);
+      if (searchQuery) params.append('search', searchQuery);
+      
+      const response = await axios.get(`${API}/projects?${params}`, { withCredentials: true });
+      setProjects(response.data);
+      setSelectedProjects([]);
     } catch (error) {
-      console.error('Load error:', error);
+      console.error('Projects load error:', error);
       toast.error('Failed to load projects');
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status) => {
-    const colors = {
-      'uploaded': '#9ca3af',
-      'processing': '#667eea',
-      'analyzed': '#4ECDC4',
-      'completed': '#10b981',
-      'error': '#ef4444'
-    };
-    return colors[status] || '#9ca3af';
+  const handleDeleteProject = async (projectId, permanent = false) => {
+    try {
+      if (permanent) {
+        if (!window.confirm('Permanently delete this project? This cannot be undone.')) return;
+        
+        await axios.post(`${API}/projects/bulk-action`, {
+          project_ids: [projectId],
+          action: 'delete_permanent'
+        }, { withCredentials: true });
+        
+        toast.success('Project permanently deleted');
+      } else {
+        await axios.post(`${API}/projects/bulk-action`, {
+          project_ids: [projectId],
+          action: 'move_to_trash'
+        }, { withCredentials: true });
+        
+        toast.success('Project moved to trash');
+      }
+      
+      loadProjects();
+      loadFolders();
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error('Failed to delete project');
+    }
+  };
+
+  const handleRestoreProject = async (projectId) => {
+    try {
+      await axios.post(`${API}/projects/bulk-action`, {
+        project_ids: [projectId],
+        action: 'restore'
+      }, { withCredentials: true });
+      
+      toast.success('Project restored');
+      loadProjects();
+      loadFolders();
+    } catch (error) {
+      console.error('Restore error:', error);
+      toast.error('Failed to restore project');
+    }
+  };
+
+  const handleBulkAction = async (action, folder = null) => {
+    if (selectedProjects.length === 0) {
+      toast.error('No projects selected');
+      return;
+    }
+
+    try {
+      const payload = {
+        project_ids: selectedProjects,
+        action: action
+      };
+      
+      if (folder) payload.folder = folder;
+
+      await axios.post(`${API}/projects/bulk-action`, payload, { withCredentials: true });
+      
+      toast.success(`Bulk action completed for ${selectedProjects.length} project(s)`);
+      setSelectedProjects([]);
+      loadProjects();
+      loadFolders();
+    } catch (error) {
+      console.error('Bulk action error:', error);
+      toast.error('Failed to complete bulk action');
+    }
+  };
+
+  const handleDragStart = (e, projectId) => {
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedProject(projectId);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e, targetFolder) => {
+    e.preventDefault();
+    
+    if (!draggedProject) return;
+
+    try {
+      await axios.put(`${API}/projects/${draggedProject}/move`, {
+        folder: targetFolder
+      }, { withCredentials: true });
+      
+      toast.success(`Project moved to ${targetFolder}`);
+      setDraggedProject(null);
+      loadProjects();
+      loadFolders();
+    } catch (error) {
+      console.error('Move error:', error);
+      toast.error('Failed to move project');
+    }
+  };
+
+  const toggleSelectProject = (projectId) => {
+    setSelectedProjects(prev => 
+      prev.includes(projectId) 
+        ? prev.filter(id => id !== projectId)
+        : [...prev, projectId]
+    );
+  };
+
+  const selectAllProjects = () => {
+    if (selectedProjects.length === projects.length) {
+      setSelectedProjects([]);
+    } else {
+      setSelectedProjects(projects.map(p => p.id));
+    }
+  };
+
+  const handleVideoHover = (projectId, isHovering) => {
+    if (isHovering) {
+      setHoveredVideo(projectId);
+      const video = videoRefs.current[projectId];
+      if (video) {
+        video.currentTime = 0;
+        video.play().catch(err => console.log('Play error:', err));
+      }
+    } else {
+      setHoveredVideo(null);
+      const video = videoRefs.current[projectId];
+      if (video) {
+        video.pause();
+        video.currentTime = 0;
+      }
+    }
+  };
+
+  const formatDuration = (seconds) => {
+    if (!seconds) return 'N/A';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const handleDeleteProject = async (projectId, event) => {
-    event.stopPropagation(); // Prevent navigation to editor
-    event.preventDefault(); // Prevent default action
-    
-    console.log('Delete button clicked for project:', projectId);
-    
-    if (!window.confirm('Are you sure you want to delete this project? This cannot be undone.')) {
-      return;
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed': return '#10b981';
+      case 'analyzed': return '#3b82f6';
+      case 'processing': return '#f59e0b';
+      case 'error': return '#ef4444';
+      default: return '#6b7280';
     }
-    
-    try {
-      console.log('Sending delete request to:', `${API}/projects/${projectId}`);
-      const response = await axios.delete(`${API}/projects/${projectId}`, { withCredentials: true });
-      console.log('Delete response:', response);
-      setProjects(projects.filter(p => p.id !== projectId));
-      toast.success('Project deleted successfully');
-      loadUsage(); // Refresh usage count
-    } catch (error) {
-      console.error('Delete error:', error);
-      console.error('Error details:', error.response?.data);
-      toast.error(error.response?.data?.detail || 'Failed to delete project');
-    }
+  };
+
+  const getStatusText = (status) => {
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   return (
     <div style={styles.container}>
-      {/* Navbar */}
-      <nav className="navbar">
-        <div style={styles.navContent}>
-          <img src="/gappy-logo1.png" alt="Gappy" style={{...styles.logo, cursor: 'pointer'}} onClick={() => navigate('/')} />
-          <div style={styles.navRight}>
-            <button onClick={() => navigate('/dashboard')} style={styles.navButton}>
-              <Video size={18} style={{ marginRight: '6px' }} />
-              Projects
-            </button>
-            {user && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginRight: '12px' }}>
-                {user.picture ? (
-                  <img src={user.picture} alt={user.name} style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
-                ) : (
-                  <User size={18} />
-                )}
-                <span style={{ fontSize: '14px', color: '#4a5568' }}>{user.name}</span>
-              </div>
-            )}
-            <button onClick={async () => { 
-              await logout(); 
-              toast.success('Logged out successfully');
-              window.location.href = '/';
-            }} style={styles.navButton}>
-              <LogOut size={18} />
-            </button>
+      {/* Header */}
+      <header style={styles.header}>
+        <div style={styles.headerContent}>
+          <div style={{...styles.logoContainer, cursor: 'pointer'}} onClick={() => navigate('/')}>
+            <img src="/gappy-logo1.png" alt="Gappy Describe" style={styles.logo} />
           </div>
-        </div>
-      </nav>
-
-      <div style={styles.content}>
-        {/* Stats Cards */}
-        <div style={styles.statsGrid}>
-          <div className="card" style={styles.statCard}>
-            <div style={styles.statIcon}>
-              <Video size={24} color="#FF6B9D" />
+          
+          <div style={styles.headerRight}>
+            <div style={styles.usageBadge}>
+              <span style={styles.planName}>{usage.plan}</span>
+              <span style={styles.usageText}>
+                {usage.videosThisMonth}/{usage.videosLimit === 'Unlimited' ? '∞' : usage.videosLimit} videos
+              </span>
             </div>
-            <div>
-              <p style={styles.statLabel}>Videos This Month</p>
-              <p style={styles.statValue}>{usage.videosThisMonth} / {usage.videosLimit}</p>
-            </div>
-          </div>
-
-          <div className="card" style={styles.statCard}>
-            <div style={styles.statIcon}>
-              <CreditCard size={24} color="#4ECDC4" />
-            </div>
-            <div>
-              <p style={styles.statLabel}>Current Plan</p>
-              <p style={styles.statValue}>{usage.plan}</p>
-            </div>
-          </div>
-
-          <div className="card" style={styles.statCard}>
-            <div style={styles.statIcon}>
-              <CheckCircle size={24} color="#4ECDC4" />
-            </div>
-            <div>
-              <p style={styles.statLabel}>Formats</p>
-              <p style={styles.statValue}>{usage.allowedFormats.map(f => f.toUpperCase()).join(', ')}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Upgrade Banner */}
-        {usage.plan === 'Free' && (
-          <div style={styles.upgradeBanner}>
-            <div>
-              <h3 style={styles.bannerTitle}>You're on the Free plan</h3>
-              <p style={styles.bannerText}>
-                {usage.videosThisMonth >= usage.videosLimit 
-                  ? `You've reached your monthly limit (${usage.videosLimit} videos). Upgrade for more!`
-                  : `Upgrade to Pro for 50 videos/month and advanced features`
-                }
-              </p>
-            </div>
-            <button onClick={() => navigate('/pricing')} className="btn-primary">
-              Upgrade to Pro
-            </button>
-          </div>
-        )}
-
-        {/* Projects Section */}
-        <div style={styles.projectsHeader}>
-          <div>
-            <h2 style={styles.projectsTitle}>Your Projects</h2>
-            <p style={styles.projectsSubtitle}>{projects.length} total projects</p>
-          </div>
-          <button onClick={() => navigate('/upload')} className="btn-primary">
-            <Upload size={18} style={{ marginRight: '8px' }} />
-            New Project
-          </button>
-        </div>
-
-        {loading ? (
-          <div style={styles.loading}>
-            <div className="spinner" style={{ width: '40px', height: '40px' }}></div>
-            <p style={{ marginTop: '16px', color: '#6b7280' }}>Loading projects...</p>
-          </div>
-        ) : projects.length === 0 ? (
-          <div className="card" style={styles.emptyState}>
-            <Video size={48} color="#9ca3af" />
-            <h3 style={styles.emptyTitle}>No projects yet</h3>
-            <p style={styles.emptyText}>Upload your first video to get started</p>
-            <button onClick={() => navigate('/upload')} className="btn-primary" style={{ marginTop: '20px' }}>
-              <Upload size={18} style={{ marginRight: '8px' }} />
+            
+            <button
+              onClick={() => navigate('/upload')}
+              className="btn-primary"
+              style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
+              aria-label="Upload new video"
+            >
+              <Upload size={18} />
               Upload Video
             </button>
+            
+            <button
+              onClick={logout}
+              style={styles.logoutBtn}
+              aria-label="Logout"
+            >
+              <LogOut size={20} />
+            </button>
           </div>
-        ) : (
-          <div style={styles.projectsGrid}>
-            {projects.map((project) => (
-              <div 
-                key={project.id} 
-                className="card" 
-                style={styles.projectCard}
-                onClick={(e) => {
-                  // Don't navigate if clicking delete button or its children
-                  if (e.target.closest('.delete-button')) {
-                    return;
-                  }
-                  navigate(`/editor/${project.id}`);
+        </div>
+      </header>
+
+      <div style={styles.mainContent}>
+        {/* Sidebar with Folders */}
+        <aside style={styles.sidebar} role="navigation" aria-label="Project folders">
+          <h2 style={styles.sidebarTitle}>Folders</h2>
+          <nav style={styles.folderList}>
+            {folders.map((folder) => (
+              <button
+                key={folder.id}
+                onClick={() => setCurrentFolder(folder.id)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, folder.id)}
+                style={{
+                  ...styles.folderItem,
+                  ...(currentFolder === folder.id ? styles.folderItemActive : {})
                 }}
+                aria-label={`${folder.name} folder, ${folder.count} items`}
+                aria-current={currentFolder === folder.id ? 'page' : undefined}
               >
-                <div style={styles.projectHeader}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Video size={20} color="#FF6B9D" />
-                    <div 
+                <div style={styles.folderIcon}>
+                  {folder.icon === 'folder' && <Folder size={20} />}
+                  {folder.icon === 'clock' && <Clock size={20} />}
+                  {folder.icon === 'trash' && <Trash2 size={20} />}
+                </div>
+                <span style={styles.folderName}>{folder.name}</span>
+                <span style={styles.folderCount}>{folder.count}</span>
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Main Content Area */}
+        <main style={styles.contentArea} role="main">
+          {/* Search and Actions Bar */}
+          <div style={styles.actionBar}>
+            <div style={styles.searchContainer}>
+              <Search size={20} style={styles.searchIcon} />
+              <input
+                type="search"
+                placeholder="Search projects..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={styles.searchInput}
+                aria-label="Search projects"
+              />
+            </div>
+
+            {selectedProjects.length > 0 && (
+              <div style={styles.bulkActions}>
+                <span style={styles.selectedCount}>
+                  {selectedProjects.length} selected
+                </span>
+                
+                {currentFolder === 'trash' ? (
+                  <>
+                    <button
+                      onClick={() => handleBulkAction('restore')}
+                      style={styles.bulkActionBtn}
+                      aria-label="Restore selected projects"
+                    >
+                      <RefreshCw size={16} />
+                      Restore
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Permanently delete selected projects? This cannot be undone.')) {
+                          handleBulkAction('delete_permanent');
+                        }
+                      }}
+                      style={{...styles.bulkActionBtn, ...styles.bulkActionDanger}}
+                      aria-label="Permanently delete selected projects"
+                    >
+                      <Trash2 size={16} />
+                      Delete Forever
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleBulkAction('move_to_trash')}
+                      style={styles.bulkActionBtn}
+                      aria-label="Move selected projects to trash"
+                    >
+                      <Trash2 size={16} />
+                      Move to Trash
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Projects List */}
+          {loading ? (
+            <div style={styles.loadingContainer}>
+              <img src="/gappy-icon1.png" alt="Loading" style={{ width: '60px', height: '60px' }} className="spin-icon" />
+              <p style={styles.loadingText}>Loading projects...</p>
+            </div>
+          ) : projects.length === 0 ? (
+            <div style={styles.emptyState}>
+              <Video size={64} color="#cbd5e1" />
+              <h3 style={styles.emptyTitle}>
+                {searchQuery ? 'No projects found' : 
+                 currentFolder === 'trash' ? 'Trash is empty' :
+                 'No projects yet'}
+              </h3>
+              <p style={styles.emptyText}>
+                {searchQuery ? 'Try a different search term' :
+                 currentFolder === 'trash' ? 'Deleted projects will appear here' :
+                 'Upload your first video to get started'}
+              </p>
+              {currentFolder !== 'trash' && !searchQuery && (
+                <button
+                  onClick={() => navigate('/upload')}
+                  className="btn-primary"
+                  style={{ marginTop: '24px', padding: '12px 24px' }}
+                >
+                  <Upload size={18} style={{ marginRight: '8px' }} />
+                  Upload Video
+                </button>
+              )}
+            </div>
+          ) : (
+            <div style={styles.projectsList}>
+              {/* Select All Header */}
+              <div style={styles.listHeader}>
+                <label style={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={selectedProjects.length === projects.length}
+                    onChange={selectAllProjects}
+                    style={styles.checkbox}
+                    aria-label="Select all projects"
+                  />
+                  <span style={styles.headerText}>Video</span>
+                </label>
+                <span style={styles.headerText}>Duration</span>
+                <span style={styles.headerText}>Status</span>
+                <span style={styles.headerText}>Created</span>
+                <span style={styles.headerText}>Actions</span>
+              </div>
+
+              {/* Project Items */}
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, project.id)}
+                  style={{
+                    ...styles.projectItem,
+                    ...(selectedProjects.includes(project.id) ? styles.projectItemSelected : {})
+                  }}
+                  role="article"
+                  aria-label={`Project: ${project.original_filename}`}
+                >
+                  <div style={styles.projectMain}>
+                    <label style={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={selectedProjects.includes(project.id)}
+                        onChange={() => toggleSelectProject(project.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        style={styles.checkbox}
+                        aria-label={`Select ${project.original_filename}`}
+                      />
+                    </label>
+
+                    <div
+                      style={styles.thumbnailContainer}
+                      onMouseEnter={() => handleVideoHover(project.id, true)}
+                      onMouseLeave={() => handleVideoHover(project.id, false)}
+                    >
+                      {hoveredVideo === project.id ? (
+                        <video
+                          ref={el => videoRefs.current[project.id] = el}
+                          style={styles.videoPreview}
+                          src={`${BACKEND_URL}${project.video_path}`}
+                          muted
+                          loop
+                          playsInline
+                          aria-label={`Video preview for ${project.original_filename}`}
+                        />
+                      ) : (
+                        <div style={styles.thumbnailPlaceholder}>
+                          <Video size={24} color="#94a3b8" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={styles.projectInfo}>
+                      <h3 style={styles.projectTitle}>{project.original_filename}</h3>
+                      <p style={styles.projectMeta}>
+                        {project.total_scenes || 0} scenes
+                      </p>
+                    </div>
+                  </div>
+
+                  <span style={styles.projectDuration}>
+                    {formatDuration(project.duration)}
+                  </span>
+
+                  <div style={styles.projectStatus}>
+                    <span
                       style={{
                         ...styles.statusBadge,
-                        background: `${getStatusColor(project.status)}20`,
+                        backgroundColor: `${getStatusColor(project.status)}20`,
                         color: getStatusColor(project.status)
                       }}
                     >
-                      {project.status}
-                    </div>
+                      {getStatusText(project.status)}
+                    </span>
                   </div>
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      className="delete-button"
-                      onClick={(e) => handleDeleteProject(project.id, e)}
-                      title="Delete project"
-                      data-project-id={project.id}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
-                <h3 style={styles.projectName}>{project.original_filename}</h3>
-                <div style={styles.projectMeta}>
-                  <span style={styles.metaItem}>
-                    <Clock size={14} style={{ marginRight: '4px' }} />
+
+                  <span style={styles.projectDate}>
                     {formatDate(project.created_at)}
                   </span>
-                  {project.total_scenes > 0 && (
-                    <span style={styles.metaItem}>
-                      <CheckCircle size={14} style={{ marginRight: '4px' }} />
-                      {project.total_scenes} scenes
-                    </span>
-                  )}
+
+                  <div style={styles.projectActions}>
+                    {currentFolder === 'trash' ? (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRestoreProject(project.id);
+                          }}
+                          style={styles.actionBtn}
+                          aria-label="Restore project"
+                          title="Restore"
+                        >
+                          <RefreshCw size={18} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteProject(project.id, true);
+                          }}
+                          style={{...styles.actionBtn, color: '#ef4444'}}
+                          aria-label="Delete permanently"
+                          title="Delete Forever"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/editor/${project.id}`);
+                          }}
+                          style={styles.actionBtn}
+                          aria-label="Edit project"
+                          title="Edit"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteProject(project.id);
+                          }}
+                          style={{...styles.actionBtn, color: '#ef4444'}}
+                          aria-label="Move to trash"
+                          title="Move to Trash"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );
@@ -276,7 +582,15 @@ const styles = {
     minHeight: '100vh',
     background: '#f9fafb',
   },
-  navContent: {
+  header: {
+    background: 'white',
+    borderBottom: '1px solid #e5e7eb',
+    padding: '16px 0',
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
+  },
+  headerContent: {
     maxWidth: '1400px',
     margin: '0 auto',
     padding: '0 24px',
@@ -284,180 +598,336 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  logoContainer: {
+    display: 'flex',
+    alignItems: 'center',
+  },
   logo: {
     height: '32px',
-    cursor: 'pointer',
+    width: 'auto',
   },
-  navRight: {
+  headerRight: {
     display: 'flex',
-    gap: '8px',
     alignItems: 'center',
+    gap: '16px',
   },
-  navButton: {
+  usageBadge: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    padding: '8px 16px',
+    background: '#f9fafb',
+    borderRadius: '8px',
+    border: '1px solid #e5e7eb',
+  },
+  planName: {
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#667eea',
+    textTransform: 'uppercase',
+  },
+  usageText: {
+    fontSize: '14px',
+    color: '#4a5568',
+  },
+  logoutBtn: {
     background: 'none',
     border: 'none',
-    padding: '10px 16px',
+    padding: '8px',
     cursor: 'pointer',
+    color: '#6b7280',
     display: 'flex',
     alignItems: 'center',
-    color: '#6b7280',
-    fontSize: '14px',
-    fontWeight: '500',
     borderRadius: '8px',
     transition: 'all 0.2s',
   },
-  content: {
+  mainContent: {
     maxWidth: '1400px',
     margin: '0 auto',
-    padding: '40px 24px',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '20px',
-    marginBottom: '32px',
-  },
-  statCard: {
-    display: 'flex',
-    gap: '16px',
-    alignItems: 'center',
     padding: '24px',
+    display: 'flex',
+    gap: '24px',
+    minHeight: 'calc(100vh - 80px)',
   },
-  statIcon: {
-    width: '48px',
-    height: '48px',
+  sidebar: {
+    width: '240px',
+    background: 'white',
     borderRadius: '12px',
-    background: '#f9fafb',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: '20px',
+    border: '1px solid #e5e7eb',
+    height: 'fit-content',
+    position: 'sticky',
+    top: '100px',
   },
-  statLabel: {
-    fontSize: '13px',
-    color: '#000000',
-    marginBottom: '4px',
-    fontWeight: '500',
-  },
-  statValue: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#000000',
-  },
-  upgradeBanner: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    padding: '24px',
-    borderRadius: '16px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '32px',
-    flexWrap: 'wrap',
-    gap: '16px',
-  },
-  bannerTitle: {
-    fontSize: '18px',
+  sidebarTitle: {
+    fontSize: '14px',
     fontWeight: '600',
-    color: 'white',
-    marginBottom: '4px',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    marginBottom: '16px',
   },
-  bannerText: {
+  folderList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  folderItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '10px 12px',
+    background: 'transparent',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    color: '#4a5568',
     fontSize: '14px',
-    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '500',
+    textAlign: 'left',
+    width: '100%',
   },
-  projectsHeader: {
+  folderItemActive: {
+    background: '#667eea',
+    color: 'white',
+  },
+  folderIcon: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  folderName: {
+    flex: 1,
+  },
+  folderCount: {
+    fontSize: '12px',
+    opacity: 0.7,
+  },
+  contentArea: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+  actionBar: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '24px',
-    flexWrap: 'wrap',
     gap: '16px',
+    flexWrap: 'wrap',
   },
-  projectsTitle: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#111827',
+  searchContainer: {
+    position: 'relative',
+    flex: 1,
+    maxWidth: '400px',
   },
-  projectsSubtitle: {
+  searchIcon: {
+    position: 'absolute',
+    left: '12px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#9ca3af',
+  },
+  searchInput: {
+    width: '100%',
+    padding: '10px 12px 10px 40px',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
     fontSize: '14px',
-    color: '#6b7280',
+    background: 'white',
   },
-  loading: {
+  bulkActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '8px 16px',
+    background: '#f0f4ff',
+    borderRadius: '8px',
+    border: '1px solid #667eea',
+  },
+  selectedCount: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#667eea',
+  },
+  bulkActionBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 12px',
+    background: 'white',
+    border: '1px solid #e5e7eb',
+    borderRadius: '6px',
+    fontSize: '14px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    color: '#4a5568',
+    transition: 'all 0.2s',
+  },
+  bulkActionDanger: {
+    color: '#ef4444',
+    borderColor: '#ef4444',
+  },
+  loadingContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '60px 20px',
+    padding: '80px 20px',
   },
-  emptyState: {
-    padding: '60px 20px',
-    textAlign: 'center',
-  },
-  emptyTitle: {
-    fontSize: '20px',
-    fontWeight: '600',
-    color: '#111827',
+  loadingText: {
     marginTop: '16px',
-    marginBottom: '8px',
-  },
-  emptyText: {
-    fontSize: '15px',
+    fontSize: '16px',
     color: '#6b7280',
   },
-  projectsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-    gap: '20px',
-  },
-  projectCard: {
-    padding: '24px',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  projectHeader: {
+  emptyState: {
     display: 'flex',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     alignItems: 'center',
-    marginBottom: '16px',
+    justifyContent: 'center',
+    padding: '80px 20px',
+    background: 'white',
+    borderRadius: '12px',
+    border: '1px solid #e5e7eb',
+  },
+  emptyTitle: {
+    fontSize: '24px',
+    fontWeight: '600',
+    color: '#1a202c',
+    marginTop: '24px',
+  },
+  emptyText: {
+    fontSize: '16px',
+    color: '#6b7280',
+    marginTop: '8px',
+  },
+  projectsList: {
+    background: 'white',
+    borderRadius: '12px',
+    border: '1px solid #e5e7eb',
+    overflow: 'hidden',
+  },
+  listHeader: {
+    display: 'grid',
+    gridTemplateColumns: '2fr 120px 120px 120px 120px',
+    gap: '16px',
+    padding: '12px 20px',
+    background: '#f9fafb',
+    borderBottom: '1px solid #e5e7eb',
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  checkboxLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  checkbox: {
+    width: '18px',
+    height: '18px',
+    cursor: 'pointer',
+    accentColor: '#667eea',
+  },
+  headerText: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  projectItem: {
+    display: 'grid',
+    gridTemplateColumns: '2fr 120px 120px 120px 120px',
+    gap: '16px',
+    padding: '16px 20px',
+    borderBottom: '1px solid #f3f4f6',
+    transition: 'all 0.2s',
+    cursor: 'move',
+  },
+  projectItemSelected: {
+    background: '#f0f4ff',
+  },
+  projectMain: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  thumbnailContainer: {
+    width: '80px',
+    height: '45px',
+    borderRadius: '6px',
+    overflow: 'hidden',
+    background: '#f3f4f6',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  videoPreview: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  thumbnailPlaceholder: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  projectInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  projectTitle: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#1a202c',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    marginBottom: '4px',
+  },
+  projectMeta: {
+    fontSize: '12px',
+    color: '#6b7280',
+  },
+  projectDuration: {
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '14px',
+    color: '#4a5568',
+  },
+  projectStatus: {
+    display: 'flex',
+    alignItems: 'center',
   },
   statusBadge: {
     padding: '4px 12px',
     borderRadius: '12px',
     fontSize: '12px',
     fontWeight: '600',
-    textTransform: 'capitalize',
   },
-  projectName: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: '12px',
-  },
-  projectMeta: {
-    display: 'flex',
-    gap: '16px',
-    flexWrap: 'wrap',
-  },
-  metaItem: {
+  projectDate: {
     display: 'flex',
     alignItems: 'center',
-    fontSize: '13px',
+    fontSize: '14px',
     color: '#6b7280',
   },
-  deleteButton: {
-    background: '#fee2e2',
-    border: '1px solid #ef4444',
-    color: '#ef4444',
-    cursor: 'pointer',
-    padding: '8px',
-    borderRadius: '6px',
+  projectActions: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: '8px',
+    justifyContent: 'flex-end',
+  },
+  actionBtn: {
+    background: 'none',
+    border: 'none',
+    padding: '8px',
+    cursor: 'pointer',
+    color: '#6b7280',
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: '6px',
     transition: 'all 0.2s',
-    position: 'relative',
-    zIndex: 10,
-    minWidth: '36px',
-    minHeight: '36px',
   },
 };
 
