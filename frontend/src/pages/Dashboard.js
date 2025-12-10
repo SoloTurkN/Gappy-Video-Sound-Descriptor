@@ -783,7 +783,7 @@ const styles = {
   },
   projectItem: {
     display: 'grid',
-    gridTemplateColumns: '2fr 120px 120px 120px 120px',
+    gridTemplateColumns: '3fr 100px 120px 120px 120px',
     gap: '16px',
     padding: '16px 20px',
     borderBottom: '1px solid #f3f4f6',
