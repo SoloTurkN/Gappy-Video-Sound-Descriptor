@@ -37,18 +37,6 @@ const Dashboard = () => {
     loadUsage();
   }, [currentFolder, searchQuery]);
 
-  // Cleanup function for video elements
-  useEffect(() => {
-    return () => {
-      Object.values(videoRefs.current).forEach(video => {
-        if (video) {
-          video.pause();
-          video.src = '';
-        }
-      });
-    };
-  }, []);
-
   const loadUsage = async () => {
     try {
       const response = await axios.get(`${API}/usage`, { withCredentials: true });
