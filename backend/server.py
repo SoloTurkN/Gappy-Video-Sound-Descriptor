@@ -443,9 +443,11 @@ async def get_usage(current_user: dict = Depends(get_current_user)):
 async def upload_video(
     file: UploadFile = File(...), 
     language: str = Form("en"),
+    voice_id: str = Form(...),
+    description_length: str = Form("1"),
     current_user: dict = Depends(get_current_user)
 ):
-    """Upload a video file with language selection (requires authentication)"""
+    """Upload a video file with language, voice, and description length selection (requires authentication)"""
     try:
         # Generate unique filename
         project_id = str(uuid.uuid4())
