@@ -755,7 +755,7 @@ const styles = {
   },
   listHeader: {
     display: 'grid',
-    gridTemplateColumns: '2fr 120px 120px 120px 120px',
+    gridTemplateColumns: '3fr 100px 120px 120px 120px',
     gap: '16px',
     padding: '12px 20px',
     background: '#f9fafb',
