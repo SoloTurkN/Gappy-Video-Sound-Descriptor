@@ -14,7 +14,7 @@ const LandingPage = () => {
     {
       icon: <Sparkles size={28} color="#00D4D4" />,
       title: 'AI-Powered Descriptions',
-      description: 'GPT-4o generates WCAG 1.2.3 Level A compliant audio descriptions that meet accessibility standards.'
+      description: 'Gappy AI generates WCAG 1.2.3 Level AA compliant audio descriptions that meet accessibility standards.'
     },
     {
       icon: <BarChart3 size={28} color="#6B5DD3" />,
