@@ -215,7 +215,7 @@ const HomePage = () => {
                 {/* Language Selection */}
                 <div style={styles.selectorGroup}>
                   <label style={styles.selectorLabel}>
-                    <span style={styles.labelText}>Language <span style={styles.required}>*</span></span>
+                    <span style={styles.labelText}>Video Description Language <span style={styles.required}>*</span></span>
                     <select
                       value={selectedLanguage}
                       onChange={(e) => setSelectedLanguage(e.target.value)}
@@ -235,7 +235,7 @@ const HomePage = () => {
                 {/* Voice Selection */}
                 <div style={styles.selectorGroup}>
                   <label style={styles.selectorLabel}>
-                    <span style={styles.labelText}>Voice <span style={styles.required}>*</span></span>
+                    <span style={styles.labelText}>Narration Voice <span style={styles.required}>*</span></span>
                     <select
                       value={selectedVoice}
                       onChange={(e) => setSelectedVoice(e.target.value)}
