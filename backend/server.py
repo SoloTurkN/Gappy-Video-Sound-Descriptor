@@ -541,7 +541,8 @@ async def analyze_video(project_id: str, current_user: dict = Depends(get_curren
             
             # Generate audio
             audio_path = project_dir / f"audio_{i}.mp3"
-            duration = await generate_audio(description, str(audio_path))
+            voice_id = project.get('voice_id', '21m00Tcm4TlvDq8ikWAM')  # Default to Rachel
+            duration = await generate_audio(description, str(audio_path), voice_id)
             
             # Create scene document
             scene_data = SceneData(
