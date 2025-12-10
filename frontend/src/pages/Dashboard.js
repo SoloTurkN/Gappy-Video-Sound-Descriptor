@@ -798,16 +798,6 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
   },
-  thumbnailContainer: {
-    width: '60px',
-    height: '60px',
-    borderRadius: '8px',
-    background: '#f0f4ff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
   projectInfo: {
     flex: 1,
     minWidth: 0,
