@@ -345,7 +345,7 @@ async def generate_audio(text: str, output_path: str, voice_id: str = "21m00Tcm4
                 try:
                     audio = MP3(output_path)
                     return audio.info.length
-                except:
+                except Exception:
                     word_count = len(text.split())
                     return (word_count / 150) * 60
             else:
