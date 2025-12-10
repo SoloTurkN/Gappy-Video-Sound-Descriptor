@@ -469,6 +469,34 @@ const styles = {
     fontSize: '14px',
     color: '#9ca3af',
   },
+  selectorGroup: {
+    marginTop: '16px',
+    width: '100%',
+  },
+  selectorLabel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  labelText: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#374151',
+  },
+  required: {
+    color: '#ef4444',
+  },
+  select: {
+    width: '100%',
+    padding: '12px',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    fontSize: '14px',
+    color: '#111827',
+    backgroundColor: 'white',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
   howItWorks: {
     padding: '80px 24px',
     background: '#f9fafb',
