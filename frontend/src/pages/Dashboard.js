@@ -495,15 +495,32 @@ const Dashboard = () => {
                       onMouseEnter={() => handleVideoHover(project.id, true)}
                       onMouseLeave={() => handleVideoHover(project.id, false)}
                     >
-                      {hoveredVideo === project.id ? (
+                      {hoveredVideo === project.id && project.video_path ? (
                         <video
                           ref={el => videoRefs.current[project.id] = el}
                           style={styles.videoPreview}
-                          src={`${BACKEND_URL}${project.video_path}`}
+                          src={`${BACKEND_URL}/uploads/${project.id.split('/').pop().replace(/\.[^/.]+$/, '')}/${project.original_filename}`}
                           muted
                           loop
                           playsInline
                           aria-label={`Video preview for ${project.original_filename}`}
+                          onError={(e) => {
+                            // Fallback to direct video path if constructed path fails
+                            if (!e.target.dataset.retried) {
+                              e.target.dataset.retried = 'true';
+                              e.target.src = `${BACKEND_URL}${project.video_path}`;
+                            }
+                          }}
+                        />
+                      ) : projectThumbnails[project.id] ? (
+                        <img 
+                          src={projectThumbnails[project.id]} 
+                          alt={`Thumbnail for ${project.original_filename}`}
+                          style={styles.thumbnail}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg></div>';
+                          }}
                         />
                       ) : (
                         <div style={styles.thumbnailPlaceholder}>
