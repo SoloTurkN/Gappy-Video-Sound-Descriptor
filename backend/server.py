@@ -819,7 +819,7 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
                 str(video_segment_output)
             ]
             
-            result = subprocess.run(segment_cmd, capture_output=True, text=True, timeout=60)
+            result = subprocess.run(segment_cmd, capture_output=True, text=True, timeout=180)
             if result.returncode != 0:
                 logging.error(f"Segment extraction error: {result.stderr}")
                 continue
