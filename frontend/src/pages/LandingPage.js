@@ -185,7 +185,7 @@ const styles = {
   },
   heroSubtitle: {
     fontSize: '20px',
-    color: '#718096',
+    color: '#4a5568',
     marginBottom: '32px',
     lineHeight: '1.6',
   },
