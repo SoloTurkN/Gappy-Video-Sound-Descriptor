@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import HomePage from './pages/HomePage';
 import EditorPage from './pages/EditorPage';
 import PricingPage from './pages/PricingPage';
+import PrivacyPage from './pages/PrivacyPage';
 import './App.css';
 
 // Protected Route Component
