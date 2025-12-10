@@ -85,12 +85,37 @@ const Dashboard = () => {
       const response = await axios.get(`${API}/projects?${params}`, { withCredentials: true });
       setProjects(response.data);
       setSelectedProjects([]);
+      
+      // Load thumbnails for each project
+      loadProjectThumbnails(response.data);
     } catch (error) {
       console.error('Projects load error:', error);
       toast.error('Failed to load projects');
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadProjectThumbnails = async (projects) => {
+    const thumbnails = {};
+    
+    for (const project of projects) {
+      try {
+        // Get first scene for thumbnail
+        const scenesResponse = await axios.get(`${API}/projects/${project.id}/scenes`, { 
+          withCredentials: true 
+        });
+        
+        if (scenesResponse.data && scenesResponse.data.length > 0) {
+          const firstScene = scenesResponse.data[0];
+          thumbnails[project.id] = `${BACKEND_URL}${firstScene.thumbnail_path}`;
+        }
+      } catch (error) {
+        console.error(`Error loading thumbnail for ${project.id}:`, error);
+      }
+    }
+    
+    setProjectThumbnails(thumbnails);
   };
 
   const handleDeleteProject = async (projectId, permanent = false) => {
