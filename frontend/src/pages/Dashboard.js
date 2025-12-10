@@ -911,6 +911,11 @@ const styles = {
     height: '100%',
     objectFit: 'cover',
   },
+  thumbnail: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
   thumbnailPlaceholder: {
     display: 'flex',
     alignItems: 'center',
