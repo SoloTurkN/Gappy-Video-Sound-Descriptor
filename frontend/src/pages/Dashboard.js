@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [draggedProject, setDraggedProject] = useState(null);
   const [hoveredVideo, setHoveredVideo] = useState(null);
   const [projectThumbnails, setProjectThumbnails] = useState({});
+  const [thumbnailErrors, setThumbnailErrors] = useState({});
   const videoRefs = useRef({});
   
   const [usage, setUsage] = useState({
