@@ -894,7 +894,8 @@ async def update_scene(scene_id: str, update: SceneUpdate, current_user: dict = 
         
         # Regenerate audio with new description
         audio_path = scene['audio_path']
-        duration = await generate_audio(update.description, audio_path)
+        voice_id = project.get('voice_id', '21m00Tcm4TlvDq8ikWAM')  # Default to Rachel
+        duration = await generate_audio(update.description, audio_path, voice_id)
         
         # Update scene
         await db.scenes.update_one(
