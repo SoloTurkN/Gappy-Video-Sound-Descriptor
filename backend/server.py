@@ -427,7 +427,7 @@ async def get_voices():
         {
             "voice_id": "VR6AewLTigWG4xSOukaG",
             "name": "Arnold",
-            "name": "Deep, authoritative male voice",
+            "description": "Deep, authoritative male voice",
             "gender": "male"
         }
     ]
