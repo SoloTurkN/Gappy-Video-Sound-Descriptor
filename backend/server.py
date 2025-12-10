@@ -69,6 +69,10 @@ class ProjectData(BaseModel):
     total_scenes: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    folder: str = "all"  # Folder/category: "all", "recent", "trash", or custom
+    trashed_at: Optional[datetime] = None  # When moved to trash
+    duration: Optional[float] = None  # Video duration in seconds
+    export_format: Optional[str] = None  # Last export format used
 
 class SceneUpdate(BaseModel):
     description: str
