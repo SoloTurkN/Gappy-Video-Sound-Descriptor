@@ -270,22 +270,30 @@ def ensure_ffmpeg_available() -> str:
     raise FileNotFoundError("FFmpeg is not installed on this system")
 
 
-async def generate_description(frame_base64: str) -> str:
-    """Generate WCAG-compliant audio description for a frame"""
+async def generate_description(frame_base64: str, language: str = "en") -> str:
+    """Generate WCAG-compliant audio description for a frame in specified language"""
     try:
         llm_provider = os.environ.get('LLM_PROVIDER', 'openai')
         llm_model = os.environ.get('LLM_MODEL', 'gpt-4o')
         
+        # Language-specific instructions
+        language_names = {
+            "en": "English", "es": "Spanish", "fr": "French", "de": "German",
+            "it": "Italian", "pt": "Portuguese", "ru": "Russian", "ja": "Japanese",
+            "zh": "Chinese", "ar": "Arabic"
+        }
+        lang_name = language_names.get(language, "English")
+        
         chat = LlmChat(
             api_key=API_KEY,
             session_id=f"scene_{uuid.uuid4()}",
-            system_message="You are an expert at creating WCAG 1.2.3 Level A compliant audio descriptions. Provide ONE SHORT SENTENCE describing the most important visual information. Keep it under 10 words. Be direct and concise."
+            system_message=f"You are an expert at creating WCAG 1.2.3 Level AA compliant audio descriptions. Provide ONE SHORT SENTENCE in {lang_name} describing the most important visual information. Keep it under 10 words. Be direct and concise."
         ).with_model(llm_provider, llm_model)
         
         image_content = ImageContent(image_base64=frame_base64)
         
         user_message = UserMessage(
-            text="Describe this scene in ONE SHORT SENTENCE (under 10 words). Focus only on the most important visual element.",
+            text=f"Describe this scene in ONE SHORT SENTENCE in {lang_name} (under 10 words). Focus only on the most important visual element.",
             file_contents=[image_content]
         )
         
