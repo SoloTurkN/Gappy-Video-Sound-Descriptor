@@ -144,7 +144,8 @@ const EditorPage = () => {
         format: exportFormat
       }, { 
         withCredentials: true,
-        signal: controller.signal
+        signal: controller.signal,
+        timeout: 600000  // 10 minutes
       });
       
       clearInterval(progressInterval);
