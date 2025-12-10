@@ -73,6 +73,8 @@ class ProjectData(BaseModel):
     trashed_at: Optional[datetime] = None  # When moved to trash
     duration: Optional[float] = None  # Video duration in seconds
     export_format: Optional[str] = None  # Last export format used
+    language: str = "en"  # Language for AI descriptions
+    voice_id: Optional[str] = None  # ElevenLabs voice ID for TTS
 
 class SceneUpdate(BaseModel):
     description: str
