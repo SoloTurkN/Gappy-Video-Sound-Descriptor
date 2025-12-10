@@ -210,58 +210,57 @@ const EditorPage = () => {
     setDownloadUrl(null);
   };
 
-  const playAudio = async (audioPath) => {
-    try {
-      if (currentAudio) {
+  const playAudio = (audioPath) => {
+    // Stop current audio if playing
+    if (currentAudio) {
+      try {
         currentAudio.pause();
         currentAudio.currentTime = 0;
+      } catch (e) {
+        console.error('Error stopping current audio:', e);
       }
-      
-      if (!audioPath) {
-        toast.error('No audio available for this scene');
-        return;
-      }
-      
+    }
+    
+    if (!audioPath) {
+      toast.error('No audio available for this scene');
+      return;
+    }
+    
+    try {
       // Extract filename from path
       const fileName = audioPath.split('/').pop();
       const audioUrl = `${API}/audio/${projectId}/${fileName}`;
       
-      console.log('Fetching audio from:', audioUrl);
+      // Create audio element with full URL
+      const audio = new Audio(audioUrl);
       
-      // Fetch audio with credentials
-      const response = await axios.get(audioUrl, {
-        responseType: 'blob',
-        withCredentials: true
-      });
-      
-      // Create blob URL
-      const blob = new Blob([response.data], { type: 'audio/mpeg' });
-      const blobUrl = URL.createObjectURL(blob);
-      
-      const audio = new Audio(blobUrl);
-      
+      // Set up event handlers
       audio.onended = () => {
         setCurrentAudio(null);
-        URL.revokeObjectURL(blobUrl); // Clean up
       };
       
-      audio.onerror = (err) => {
-        console.error('Audio playback error:', err);
-        toast.error('Failed to play audio');
+      audio.onerror = (e) => {
+        console.error('Audio error:', e);
+        toast.error('Failed to play audio. The audio file may not exist yet.');
         setCurrentAudio(null);
-        URL.revokeObjectURL(blobUrl);
       };
       
+      audio.onloadeddata = () => {
+        console.log('Audio loaded successfully');
+      };
+      
+      // Store and play
       setCurrentAudio(audio);
-      await audio.play();
+      
+      audio.play().catch(err => {
+        console.error('Play error:', err);
+        toast.error('Unable to play audio. Please try again.');
+        setCurrentAudio(null);
+      });
       
     } catch (err) {
-      console.error('Audio fetch error:', err);
-      if (err.response?.status === 404) {
-        toast.error('Audio file not found. Please re-analyze the video.');
-      } else {
-        toast.error('Failed to load audio');
-      }
+      console.error('Audio setup error:', err);
+      toast.error('Failed to initialize audio player');
       setCurrentAudio(null);
     }
   };
