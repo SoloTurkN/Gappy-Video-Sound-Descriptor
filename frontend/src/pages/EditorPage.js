@@ -226,43 +226,49 @@ const EditorPage = () => {
       return;
     }
     
-    try {
-      // Extract filename from path
-      const fileName = audioPath.split('/').pop();
-      const audioUrl = `${API}/audio/${projectId}/${fileName}`;
+    // Extract filename from path
+    const fileName = audioPath.split('/').pop();
+    const audioUrl = `${API}/audio/${projectId}/${fileName}`;
+    
+    // Fetch and play audio with authentication
+    axios.get(audioUrl, {
+      responseType: 'blob',
+      withCredentials: true
+    })
+    .then(response => {
+      // Create blob URL
+      const blob = new Blob([response.data], { type: 'audio/mpeg' });
+      const blobUrl = URL.createObjectURL(blob);
       
-      // Create audio element with full URL
-      const audio = new Audio(audioUrl);
+      const audio = new Audio(blobUrl);
       
-      // Set up event handlers
       audio.onended = () => {
         setCurrentAudio(null);
+        URL.revokeObjectURL(blobUrl);
       };
       
-      audio.onerror = (e) => {
-        console.error('Audio error:', e);
-        toast.error('Failed to play audio. The audio file may not exist yet.');
+      audio.onerror = () => {
+        toast.error('Failed to play audio');
         setCurrentAudio(null);
+        URL.revokeObjectURL(blobUrl);
       };
       
-      audio.onloadeddata = () => {
-        console.log('Audio loaded successfully');
-      };
-      
-      // Store and play
       setCurrentAudio(audio);
-      
-      audio.play().catch(err => {
-        console.error('Play error:', err);
-        toast.error('Unable to play audio. Please try again.');
+      audio.play().catch(() => {
+        toast.error('Unable to play audio');
         setCurrentAudio(null);
+        URL.revokeObjectURL(blobUrl);
       });
-      
-    } catch (err) {
-      console.error('Audio setup error:', err);
-      toast.error('Failed to initialize audio player');
+    })
+    .catch(err => {
+      console.error('Audio fetch error:', err);
+      if (err.response?.status === 404) {
+        toast.error('Audio file not found. Please re-analyze the video.');
+      } else {
+        toast.error('Failed to load audio');
+      }
       setCurrentAudio(null);
-    }
+    });
   };
 
   if (loading) {
