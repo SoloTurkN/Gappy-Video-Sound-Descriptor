@@ -842,7 +842,7 @@ const styles = {
     padding: '16px 20px',
     borderBottom: '1px solid #f3f4f6',
     transition: 'all 0.2s',
-    cursor: 'move',
+    cursor: 'default',
   },
   projectItemSelected: {
     background: '#f0f4ff',
