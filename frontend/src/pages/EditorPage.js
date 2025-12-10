@@ -216,23 +216,33 @@ const EditorPage = () => {
       currentAudio.currentTime = 0;
     }
     
+    if (!audioPath) {
+      toast.error('No audio available for this scene');
+      return;
+    }
+    
+    // Extract filename from path (handles both absolute and relative paths)
     const fileName = audioPath.split('/').pop();
     const audioUrl = `${API}/audio/${projectId}/${fileName}`;
+    
+    console.log('Playing audio from:', audioUrl); // Debug log
+    
     const audio = new Audio(audioUrl);
     
     audio.onended = () => {
       setCurrentAudio(null);
     };
     
-    audio.onerror = () => {
-      toast.error('Failed to play audio');
+    audio.onerror = (err) => {
+      console.error('Audio error:', err, 'URL:', audioUrl);
+      toast.error('Failed to play audio. Audio file may not be generated yet.');
       setCurrentAudio(null);
     };
     
     setCurrentAudio(audio);
     audio.play().catch(err => {
       console.error('Audio play error:', err);
-      toast.error('Failed to play audio');
+      toast.error('Failed to play audio. Please re-analyze the video.');
       setCurrentAudio(null);
     });
   };
