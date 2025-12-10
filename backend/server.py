@@ -271,7 +271,7 @@ def ensure_ffmpeg_available() -> str:
     raise FileNotFoundError("FFmpeg is not installed on this system")
 
 
-async def generate_description(frame_base64: str, language: str = "en") -> str:
+async def generate_description(frame_base64: str, language: str = "en", num_sentences: str = "1") -> str:
     """Generate WCAG-compliant audio description for a frame in specified language"""
     try:
         llm_provider = os.environ.get('LLM_PROVIDER', 'openai')
@@ -285,24 +285,30 @@ async def generate_description(frame_base64: str, language: str = "en") -> str:
         }
         lang_name = language_names.get(language, "English")
         
+        # Description length instructions
+        length_instructions = {
+            "1": "ONE SHORT SENTENCE (under 10 words)",
+            "2": "TWO SENTENCES (total under 20 words)",
+            "5": "FIVE SENTENCES (total under 50 words)"
+        }
+        length_instruction = length_instructions.get(num_sentences, "ONE SHORT SENTENCE (under 10 words)")
+        
         chat = LlmChat(
             api_key=API_KEY,
             session_id=f"scene_{uuid.uuid4()}",
-            system_message=f"You are an expert at creating WCAG 1.2.3 Level AA compliant audio descriptions. Provide ONE SHORT SENTENCE in {lang_name} describing the most important visual information. Keep it under 10 words. Be direct and concise."
+            system_message=f"You are an expert at creating WCAG 1.2.3 Level AA compliant audio descriptions. Provide {length_instruction} in {lang_name} describing the visual information. Be direct and concise."
         ).with_model(llm_provider, llm_model)
         
         image_content = ImageContent(image_base64=frame_base64)
         
         user_message = UserMessage(
-            text=f"Describe this scene in ONE SHORT SENTENCE in {lang_name} (under 10 words). Focus only on the most important visual element.",
+            text=f"Describe this scene in {length_instruction} in {lang_name}. Focus on the most important visual elements.",
             file_contents=[image_content]
         )
         
         response = await chat.send_message(user_message)
         
-        # Extract only the first sentence as a safety measure
-        first_sentence = response.split('.')[0].strip() + '.'
-        return first_sentence
+        return response.strip()
     except Exception as e:
         logging.error(f"Error generating description: {e}")
         return "Scene description unavailable."
