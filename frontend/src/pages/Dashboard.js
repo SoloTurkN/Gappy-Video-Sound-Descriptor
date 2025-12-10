@@ -432,10 +432,6 @@ const Dashboard = () => {
                       />
                     </label>
 
-                    <div style={styles.thumbnailContainer}>
-                      <Video size={28} color="#667eea" />
-                    </div>
-
                     <div style={styles.projectInfo}>
                       <h3 style={styles.projectTitle}>{project.original_filename}</h3>
                       <p style={styles.projectMeta}>
@@ -444,8 +440,8 @@ const Dashboard = () => {
                     </div>
                   </div>
 
-                  <span style={styles.projectDuration}>
-                    {formatDuration(project.duration)}
+                  <span style={styles.projectFormat}>
+                    {project.original_filename.split('.').pop().toUpperCase()}
                   </span>
 
                   <div style={styles.projectStatus}>
