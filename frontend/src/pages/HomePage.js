@@ -11,6 +11,11 @@ const HomePage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [languages, setLanguages] = useState([]);
+  const [voices, setVoices] = useState([]);
+  const [selectedLanguage, setSelectedLanguage] = useState('');
+  const [selectedVoice, setSelectedVoice] = useState('');
+  const [descriptionLength, setDescriptionLength] = useState('');
   const navigate = useNavigate();
 
   const handleDrag = (e) => {
