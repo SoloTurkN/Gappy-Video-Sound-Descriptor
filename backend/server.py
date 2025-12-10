@@ -456,8 +456,12 @@ async def get_usage(current_user: dict = Depends(get_current_user)):
     }
 
 @api_router.post("/upload", response_model=ProjectData)
-async def upload_video(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
-    """Upload a video file (requires authentication)"""
+async def upload_video(
+    file: UploadFile = File(...), 
+    language: str = Form("en"),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload a video file with language selection (requires authentication)"""
     try:
         # Generate unique filename
         project_id = str(uuid.uuid4())
