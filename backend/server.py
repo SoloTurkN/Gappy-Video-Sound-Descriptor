@@ -935,8 +935,13 @@ async def get_thumbnail(project_id: str, filename: str):
     return FileResponse(file_path)
 
 @api_router.get("/audio/{project_id}/{filename}")
-async def get_audio(project_id: str, filename: str):
-    """Serve audio file"""
+async def get_audio(project_id: str, filename: str, current_user: dict = Depends(get_current_user)):
+    """Serve audio file (requires authentication)"""
+    # Verify user owns this project
+    project = await db.projects.find_one({"id": project_id, "user_email": current_user["email"]}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
     file_path = UPLOADS_DIR / project_id / filename
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Audio not found")
