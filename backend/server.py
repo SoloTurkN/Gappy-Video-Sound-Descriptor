@@ -857,7 +857,7 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
         ]
         
         logging.info(f"Concatenating: {' '.join(concat_cmd)}")
-        result = subprocess.run(concat_cmd, capture_output=True, text=True, timeout=300)
+        result = subprocess.run(concat_cmd, capture_output=True, text=True, timeout=600)
         
         if result.returncode != 0:
             logging.error(f"FFmpeg concat error: {result.stderr}")
