@@ -82,64 +82,12 @@ const Dashboard = () => {
       const response = await axios.get(`${API}/projects?${params}`, { withCredentials: true });
       setProjects(response.data);
       setSelectedProjects([]);
-      
-      // Load thumbnails for each project
-      loadProjectThumbnails(response.data);
     } catch (error) {
       console.error('Projects load error:', error);
       toast.error('Failed to load projects');
     } finally {
       setLoading(false);
     }
-  };
-
-  const loadProjectThumbnails = async (projects) => {
-    // Generate thumbnails from video files directly
-    projects.forEach(project => {
-      if (project.video_path) {
-        generateVideoThumbnail(project.id, `${BACKEND_URL}${project.video_path}`);
-      }
-    });
-  };
-
-  const generateVideoThumbnail = (projectId, videoUrl) => {
-    const video = document.createElement('video');
-    video.crossOrigin = 'anonymous';
-    video.src = videoUrl;
-    video.currentTime = 1; // Capture frame at 1 second
-    
-    video.addEventListener('loadeddata', () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.7);
-        
-        setProjectThumbnails(prev => ({
-          ...prev,
-          [projectId]: thumbnailUrl
-        }));
-        
-        // Clean up
-        video.src = '';
-        video.remove();
-      } catch (error) {
-        console.error(`Error generating thumbnail for ${projectId}:`, error);
-        setThumbnailErrors(prev => ({...prev, [projectId]: true}));
-      }
-    });
-    
-    video.addEventListener('error', (e) => {
-      console.error(`Error loading video for thumbnail ${projectId}:`, e);
-      setThumbnailErrors(prev => ({...prev, [projectId]: true}));
-      video.remove();
-    });
-    
-    video.load();
   };
 
   const handleDeleteProject = async (projectId, permanent = false) => {
