@@ -210,41 +210,60 @@ const EditorPage = () => {
     setDownloadUrl(null);
   };
 
-  const playAudio = (audioPath) => {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
+  const playAudio = async (audioPath) => {
+    try {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      
+      if (!audioPath) {
+        toast.error('No audio available for this scene');
+        return;
+      }
+      
+      // Extract filename from path
+      const fileName = audioPath.split('/').pop();
+      const audioUrl = `${API}/audio/${projectId}/${fileName}`;
+      
+      console.log('Fetching audio from:', audioUrl);
+      
+      // Fetch audio with credentials
+      const response = await axios.get(audioUrl, {
+        responseType: 'blob',
+        withCredentials: true
+      });
+      
+      // Create blob URL
+      const blob = new Blob([response.data], { type: 'audio/mpeg' });
+      const blobUrl = URL.createObjectURL(blob);
+      
+      const audio = new Audio(blobUrl);
+      
+      audio.onended = () => {
+        setCurrentAudio(null);
+        URL.revokeObjectURL(blobUrl); // Clean up
+      };
+      
+      audio.onerror = (err) => {
+        console.error('Audio playback error:', err);
+        toast.error('Failed to play audio');
+        setCurrentAudio(null);
+        URL.revokeObjectURL(blobUrl);
+      };
+      
+      setCurrentAudio(audio);
+      await audio.play();
+      
+    } catch (err) {
+      console.error('Audio fetch error:', err);
+      if (err.response?.status === 404) {
+        toast.error('Audio file not found. Please re-analyze the video.');
+      } else {
+        toast.error('Failed to load audio');
+      }
+      setCurrentAudio(null);
     }
-    
-    if (!audioPath) {
-      toast.error('No audio available for this scene');
-      return;
-    }
-    
-    // Extract filename from path (handles both absolute and relative paths)
-    const fileName = audioPath.split('/').pop();
-    const audioUrl = `${API}/audio/${projectId}/${fileName}`;
-    
-    console.log('Playing audio from:', audioUrl); // Debug log
-    
-    const audio = new Audio(audioUrl);
-    
-    audio.onended = () => {
-      setCurrentAudio(null);
-    };
-    
-    audio.onerror = (err) => {
-      console.error('Audio error:', err, 'URL:', audioUrl);
-      toast.error('Failed to play audio. Audio file may not be generated yet.');
-      setCurrentAudio(null);
-    };
-    
-    setCurrentAudio(audio);
-    audio.play().catch(err => {
-      console.error('Audio play error:', err);
-      toast.error('Failed to play audio. Please re-analyze the video.');
-      setCurrentAudio(null);
-    });
   };
 
   if (loading) {
