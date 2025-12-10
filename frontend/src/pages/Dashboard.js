@@ -206,24 +206,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleVideoHover = (projectId, isHovering) => {
-    if (isHovering) {
-      setHoveredVideo(projectId);
-      const video = videoRefs.current[projectId];
-      if (video) {
-        video.currentTime = 0;
-        video.play().catch(err => console.log('Play error:', err));
-      }
-    } else {
-      setHoveredVideo(null);
-      const video = videoRefs.current[projectId];
-      if (video) {
-        video.pause();
-        video.currentTime = 0;
-      }
-    }
-  };
-
   const formatDuration = (seconds) => {
     if (!seconds) return 'N/A';
     const mins = Math.floor(seconds / 60);
