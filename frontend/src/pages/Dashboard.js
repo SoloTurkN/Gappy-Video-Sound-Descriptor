@@ -98,25 +98,52 @@ const Dashboard = () => {
   };
 
   const loadProjectThumbnails = async (projects) => {
-    const thumbnails = {};
-    
-    for (const project of projects) {
-      try {
-        // Get first scene for thumbnail
-        const scenesResponse = await axios.get(`${API}/projects/${project.id}/scenes`, { 
-          withCredentials: true 
-        });
-        
-        if (scenesResponse.data && scenesResponse.data.length > 0) {
-          const firstScene = scenesResponse.data[0];
-          thumbnails[project.id] = `${BACKEND_URL}${firstScene.thumbnail_path}`;
-        }
-      } catch (error) {
-        console.error(`Error loading thumbnail for ${project.id}:`, error);
+    // Generate thumbnails from video files directly
+    projects.forEach(project => {
+      if (project.video_path) {
+        generateVideoThumbnail(project.id, `${BACKEND_URL}${project.video_path}`);
       }
-    }
+    });
+  };
+
+  const generateVideoThumbnail = (projectId, videoUrl) => {
+    const video = document.createElement('video');
+    video.crossOrigin = 'anonymous';
+    video.src = videoUrl;
+    video.currentTime = 1; // Capture frame at 1 second
     
-    setProjectThumbnails(thumbnails);
+    video.addEventListener('loadeddata', () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.7);
+        
+        setProjectThumbnails(prev => ({
+          ...prev,
+          [projectId]: thumbnailUrl
+        }));
+        
+        // Clean up
+        video.src = '';
+        video.remove();
+      } catch (error) {
+        console.error(`Error generating thumbnail for ${projectId}:`, error);
+        setThumbnailErrors(prev => ({...prev, [projectId]: true}));
+      }
+    });
+    
+    video.addEventListener('error', (e) => {
+      console.error(`Error loading video for thumbnail ${projectId}:`, e);
+      setThumbnailErrors(prev => ({...prev, [projectId]: true}));
+      video.remove();
+    });
+    
+    video.load();
   };
 
   const handleDeleteProject = async (projectId, permanent = false) => {
