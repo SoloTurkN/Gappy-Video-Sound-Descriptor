@@ -211,6 +211,68 @@ const HomePage = () => {
             </div>
 
             {selectedFile && (
+              <>
+                {/* Language Selection */}
+                <div style={styles.selectorGroup}>
+                  <label style={styles.selectorLabel}>
+                    <span style={styles.labelText}>Language <span style={styles.required}>*</span></span>
+                    <select
+                      value={selectedLanguage}
+                      onChange={(e) => setSelectedLanguage(e.target.value)}
+                      style={styles.select}
+                      required
+                    >
+                      <option value="">Select language...</option>
+                      {languages.map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                {/* Voice Selection */}
+                <div style={styles.selectorGroup}>
+                  <label style={styles.selectorLabel}>
+                    <span style={styles.labelText}>Voice <span style={styles.required}>*</span></span>
+                    <select
+                      value={selectedVoice}
+                      onChange={(e) => setSelectedVoice(e.target.value)}
+                      style={styles.select}
+                      required
+                    >
+                      <option value="">Select voice...</option>
+                      {voices.map((voice) => (
+                        <option key={voice.voice_id} value={voice.voice_id}>
+                          {voice.name} - {voice.description} ({voice.gender})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                {/* Description Length Selection */}
+                <div style={styles.selectorGroup}>
+                  <label style={styles.selectorLabel}>
+                    <span style={styles.labelText}>Description Length <span style={styles.required}>*</span></span>
+                    <select
+                      value={descriptionLength}
+                      onChange={(e) => setDescriptionLength(e.target.value)}
+                      style={styles.select}
+                      required
+                    >
+                      <option value="">Select length...</option>
+                      <option value="1">1 sentence</option>
+                      <option value="2">2 sentences</option>
+                      <option value="5">5 sentences</option>
+                    </select>
+                  </label>
+                </div>
+              </>
+            )}
+
+            {selectedFile && (
               <button
                 className="btn-primary"
                 onClick={handleUpload}
