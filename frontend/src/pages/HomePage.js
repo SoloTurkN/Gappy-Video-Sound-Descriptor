@@ -54,15 +54,51 @@ const HomePage = () => {
     }
   };
 
+  React.useEffect(() => {
+    // Fetch languages and voices
+    const fetchOptions = async () => {
+      try {
+        const [langResponse, voiceResponse] = await Promise.all([
+          axios.get(`${API}/languages`),
+          axios.get(`${API}/voices`)
+        ]);
+        setLanguages(langResponse.data.languages);
+        setVoices(voiceResponse.data.voices);
+      } catch (error) {
+        console.error('Error fetching options:', error);
+        toast.error('Failed to load language and voice options');
+      }
+    };
+    fetchOptions();
+  }, []);
+
   const handleUpload = async () => {
     if (!selectedFile) {
       toast.error('Please select a video file');
       return;
     }
 
+    if (!selectedLanguage) {
+      toast.error('Please select a language');
+      return;
+    }
+
+    if (!selectedVoice) {
+      toast.error('Please select a voice');
+      return;
+    }
+
+    if (!descriptionLength) {
+      toast.error('Please select description length');
+      return;
+    }
+
     setUploading(true);
     const formData = new FormData();
     formData.append('file', selectedFile);
+    formData.append('language', selectedLanguage);
+    formData.append('voice_id', selectedVoice);
+    formData.append('description_length', descriptionLength);
 
     try {
       const response = await axios.post(`${API}/upload`, formData, {
