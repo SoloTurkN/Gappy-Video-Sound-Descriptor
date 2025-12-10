@@ -432,12 +432,16 @@ async def upload_video(file: UploadFile = File(...), current_user: dict = Depend
             id=project_id,
             video_path=str(video_path),
             original_filename=file.filename,
-            user_email=current_user["email"]
+            user_email=current_user["email"],
+            folder="all",
+            duration=video_duration
         )
         
         doc = project.model_dump()
         doc['created_at'] = doc['created_at'].isoformat()
         doc['updated_at'] = doc['updated_at'].isoformat()
+        if doc.get('trashed_at'):
+            doc['trashed_at'] = doc['trashed_at'].isoformat()
         
         await db.projects.insert_one(doc)
         
