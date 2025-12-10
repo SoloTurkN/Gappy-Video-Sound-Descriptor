@@ -432,38 +432,8 @@ const Dashboard = () => {
                       />
                     </label>
 
-                    <div
-                      style={styles.thumbnailContainer}
-                      onMouseEnter={() => handleVideoHover(project.id, true)}
-                      onMouseLeave={() => handleVideoHover(project.id, false)}
-                    >
-                      {hoveredVideo === project.id && project.video_path ? (
-                        <video
-                          ref={el => videoRefs.current[project.id] = el}
-                          style={styles.videoPreview}
-                          src={`${BACKEND_URL}${project.video_path}`}
-                          muted
-                          loop
-                          playsInline
-                          aria-label={`Video preview for ${project.original_filename}`}
-                          onError={(e) => {
-                            console.error('Video playback error:', e);
-                          }}
-                        />
-                      ) : projectThumbnails[project.id] && !thumbnailErrors[project.id] ? (
-                        <img 
-                          src={projectThumbnails[project.id]} 
-                          alt={`Thumbnail for ${project.original_filename}`}
-                          style={styles.thumbnail}
-                          onError={() => {
-                            setThumbnailErrors(prev => ({...prev, [project.id]: true}));
-                          }}
-                        />
-                      ) : (
-                        <div style={styles.thumbnailPlaceholder}>
-                          <Video size={24} color="#94a3b8" />
-                        </div>
-                      )}
+                    <div style={styles.thumbnailContainer}>
+                      <Video size={28} color="#667eea" />
                     </div>
 
                     <div style={styles.projectInfo}>
