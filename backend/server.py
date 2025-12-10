@@ -633,6 +633,170 @@ async def delete_project(project_id: str, current_user: dict = Depends(get_curre
         logger.error(f"Error deleting project: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to delete project: {str(e)}")
 
+@api_router.put("/projects/{project_id}/move")
+async def move_project_to_folder(project_id: str, update: ProjectUpdate, current_user: dict = Depends(get_current_user)):
+    """Move project to a folder/category"""
+    try:
+        # Verify user owns this project
+        project = await db.projects.find_one({"id": project_id, "user_email": current_user["email"]}, {"_id": 0})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        update_data = {}
+        if update.folder is not None:
+            update_data["folder"] = update.folder
+            if update.folder == "trash":
+                update_data["trashed_at"] = datetime.now(timezone.utc)
+            else:
+                update_data["trashed_at"] = None
+        
+        if update.original_filename is not None:
+            update_data["original_filename"] = update.original_filename
+        
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        
+        await db.projects.update_one(
+            {"id": project_id},
+            {"$set": update_data}
+        )
+        
+        return {"success": True, "message": "Project updated successfully"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error updating project: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/projects/bulk-action")
+async def bulk_action(request: BulkActionRequest, current_user: dict = Depends(get_current_user)):
+    """Perform bulk actions on multiple projects"""
+    try:
+        user_email = current_user["email"]
+        
+        # Verify all projects belong to user
+        projects = await db.projects.find({
+            "id": {"$in": request.project_ids},
+            "user_email": user_email
+        }, {"_id": 0}).to_list(100)
+        
+        if len(projects) != len(request.project_ids):
+            raise HTTPException(status_code=403, detail="Some projects not found or unauthorized")
+        
+        if request.action == "move_to_folder":
+            if not request.folder:
+                raise HTTPException(status_code=400, detail="Folder name required")
+            
+            await db.projects.update_many(
+                {"id": {"$in": request.project_ids}},
+                {"$set": {
+                    "folder": request.folder,
+                    "trashed_at": None,
+                    "updated_at": datetime.now(timezone.utc)
+                }}
+            )
+            
+        elif request.action == "move_to_trash":
+            await db.projects.update_many(
+                {"id": {"$in": request.project_ids}},
+                {"$set": {
+                    "folder": "trash",
+                    "trashed_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
+                }}
+            )
+            
+        elif request.action == "restore":
+            await db.projects.update_many(
+                {"id": {"$in": request.project_ids}},
+                {"$set": {
+                    "folder": "all",
+                    "trashed_at": None,
+                    "updated_at": datetime.now(timezone.utc)
+                }}
+            )
+            
+        elif request.action == "delete_permanent":
+            # Only allow permanent deletion of trashed items
+            for project in projects:
+                if project.get("folder") != "trash":
+                    raise HTTPException(status_code=400, detail="Can only permanently delete trashed items")
+                
+                # Delete files
+                video_path = project.get("video_path")
+                if video_path and os.path.exists(video_path):
+                    os.remove(video_path)
+                
+                project_dir = UPLOADS_DIR / project["id"]
+                if project_dir.exists():
+                    shutil.rmtree(project_dir)
+                
+                # Delete scenes
+                await db.scenes.delete_many({"project_id": project["id"]})
+            
+            # Delete projects
+            await db.projects.delete_many({"id": {"$in": request.project_ids}})
+        
+        else:
+            raise HTTPException(status_code=400, detail="Invalid action")
+        
+        return {"success": True, "message": f"Bulk action '{request.action}' completed", "count": len(request.project_ids)}
+        
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error in bulk action: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/folders")
+async def get_folders(current_user: dict = Depends(get_current_user)):
+    """Get all folders/categories with project counts"""
+    try:
+        user_email = current_user["email"]
+        
+        # Get all projects for this user
+        projects = await db.projects.find({"user_email": user_email}, {"_id": 0, "folder": 1}).to_list(1000)
+        
+        # Count projects by folder
+        folder_counts = {}
+        for project in projects:
+            folder = project.get("folder", "all")
+            folder_counts[folder] = folder_counts.get(folder, 0) + 1
+        
+        # Get total and recent counts
+        from datetime import timedelta
+        seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        
+        total_count = len([p for p in projects if p.get("folder") != "trash"])
+        recent_count = len(await db.projects.find({
+            "user_email": user_email,
+            "folder": {"$ne": "trash"},
+            "created_at": {"$gte": seven_days_ago}
+        }, {"_id": 0}).to_list(1000))
+        
+        trash_count = folder_counts.get("trash", 0)
+        
+        folders = [
+            {"id": "all", "name": "All Projects", "count": total_count, "icon": "folder"},
+            {"id": "recent", "name": "Recent", "count": recent_count, "icon": "clock"},
+            {"id": "trash", "name": "Trash", "count": trash_count, "icon": "trash"}
+        ]
+        
+        # Add custom folders
+        custom_folders = set([f for f in folder_counts.keys() if f not in ["all", "recent", "trash"]])
+        for folder_id in sorted(custom_folders):
+            folders.append({
+                "id": folder_id,
+                "name": folder_id.replace("_", " ").title(),
+                "count": folder_counts[folder_id],
+                "icon": "folder"
+            })
+        
+        return {"folders": folders}
+        
+    except Exception as e:
+        logger.error(f"Error getting folders: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/projects/{project_id}/scenes", response_model=List[SceneData])
 async def get_scenes(project_id: str, current_user: dict = Depends(get_current_user)):
     """Get all scenes for a project (only if user owns it)"""
