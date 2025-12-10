@@ -379,6 +379,60 @@ async def generate_audio(text: str, output_path: str) -> float:
 async def root():
     return {"message": "Video Voice Description API"}
 
+@api_router.get("/languages")
+async def get_languages():
+    """Get available languages for description generation"""
+    languages = [
+        {"code": "en", "name": "English"},
+        {"code": "es", "name": "Spanish"},
+        {"code": "fr", "name": "French"},
+        {"code": "de", "name": "German"},
+        {"code": "it", "name": "Italian"},
+        {"code": "pt", "name": "Portuguese"},
+        {"code": "ru", "name": "Russian"},
+        {"code": "ja", "name": "Japanese"},
+        {"code": "zh", "name": "Chinese (Mandarin)"},
+        {"code": "ar", "name": "Arabic"}
+    ]
+    return {"languages": languages}
+
+@api_router.get("/voices")
+async def get_voices():
+    """Get pre-selected high-quality voices from ElevenLabs"""
+    voices = [
+        {
+            "voice_id": "21m00Tcm4TlvDq8ikWAM",
+            "name": "Rachel",
+            "description": "Calm, clear, professional female voice",
+            "gender": "female"
+        },
+        {
+            "voice_id": "AZnzlk1XvdvUeBnXmlld",
+            "name": "Domi",
+            "description": "Confident, strong female voice",
+            "gender": "female"
+        },
+        {
+            "voice_id": "EXAVITQu4vr4xnSDxMaL",
+            "name": "Bella",
+            "description": "Soft, warm female voice",
+            "gender": "female"
+        },
+        {
+            "voice_id": "ErXwobaYiN019PkySvjV",
+            "name": "Antoni",
+            "description": "Clear, well-rounded male voice",
+            "gender": "male"
+        },
+        {
+            "voice_id": "VR6AewLTigWG4xSOukaG",
+            "name": "Arnold",
+            "name": "Deep, authoritative male voice",
+            "gender": "male"
+        }
+    ]
+    return {"voices": voices}
+
 @api_router.get("/usage")
 async def get_usage(current_user: dict = Depends(get_current_user)):
     """Get current user's subscription and usage info"""
