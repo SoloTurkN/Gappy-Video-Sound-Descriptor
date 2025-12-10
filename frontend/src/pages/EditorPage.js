@@ -98,8 +98,7 @@ const EditorPage = () => {
     setSaving(true);
     try {
       await axios.put(`${API}/scenes/${sceneId}`, {
-        description: editText,
-        description_length: descriptionLength
+        description: editText
       }, { withCredentials: true });
       
       setScenes(scenes.map(s => 
