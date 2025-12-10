@@ -216,7 +216,7 @@ const HomePage = () => {
               </div>
               <div>
                 <h3 style={styles.stepTitle}>2. AI Generates Descriptions</h3>
-                <p style={styles.stepText}>GPT-4o analyzes each scene and creates WCAG-compliant descriptions.</p>
+                <p style={styles.stepText}>Gappy AI analyzes each scene and creates WCAG-compliant descriptions.</p>
               </div>
             </div>
 
@@ -249,7 +249,7 @@ const HomePage = () => {
               <CheckCircle2 size={20} color="#4ECDC4" />
               <div>
                 <h4 style={styles.featureTitle}>AI-Powered Analysis</h4>
-                <p style={styles.featureText}>GPT-4o vision for accurate descriptions</p>
+                <p style={styles.featureText}>Gappy AI vision for accurate descriptions</p>
               </div>
             </div>
 

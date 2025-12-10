@@ -202,7 +202,7 @@ const HomePage = () => {
               <div style={styles.stepNumber}>2</div>
               <h3 style={styles.stepTitle}>AI Analysis</h3>
               <p style={styles.stepText}>
-                GPT-4o generates concise, WCAG-compliant audio descriptions for each scene.
+                Gappy AI generates concise, WCAG-compliant audio descriptions for each scene.
               </p>
             </div>
 
@@ -235,7 +235,7 @@ const HomePage = () => {
               <CheckCircle2 size={24} color="#4ECDC4" />
               <div>
                 <h4 style={styles.benefitTitle}>AI-Powered</h4>
-                <p style={styles.benefitText}>Uses GPT-4o for accurate descriptions</p>
+                <p style={styles.benefitText}>Uses Gappy AI for accurate descriptions</p>
               </div>
             </div>
 

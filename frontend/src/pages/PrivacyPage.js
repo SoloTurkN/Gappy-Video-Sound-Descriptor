@@ -127,7 +127,7 @@ const PrivacyPage = () => {
             <ul style={styles.list}>
               <li style={styles.listItem}>Process and store videos on our secure servers;</li>
               <li style={styles.listItem}>Analyze videos using FFmpeg to detect scene changes;</li>
-              <li style={styles.listItem}>Generate AI-powered descriptions using OpenAI's GPT-4o model;</li>
+              <li style={styles.listItem}>Generate AI-powered descriptions using OpenAI's Gappy AI model;</li>
               <li style={styles.listItem}>Create audio narration using text-to-speech technology;</li>
               <li style={styles.listItem}>Export videos with embedded audio descriptions in your chosen format;</li>
               <li style={styles.listItem}>Display your projects, timelines, and settings;</li>
@@ -168,7 +168,7 @@ const PrivacyPage = () => {
               Gappy Describe uses AI models to analyze videos and generate descriptive text.
             </p>
             <ul style={styles.list}>
-              <li style={styles.listItem}>We use <strong>OpenAI's GPT-4o</strong> model to generate WCAG-compliant audio descriptions of video scenes;</li>
+              <li style={styles.listItem}>We use <strong>OpenAI's Gappy AI</strong> model to generate WCAG-compliant audio descriptions of video scenes;</li>
               <li style={styles.listItem}>We use <strong>FFmpeg</strong> and <strong>PySceneDetect</strong> to analyze video files and detect scene changes;</li>
               <li style={styles.listItem}>We use <strong>gTTS (Google Text-to-Speech)</strong> to convert text descriptions into audio;</li>
               <li style={styles.listItem}>Your videos are temporarily stored on our secure servers during processing and permanently stored until you delete them;</li>
@@ -194,7 +194,7 @@ const PrivacyPage = () => {
             </p>
             <ul style={styles.list}>
               <li style={styles.listItem}><strong>MongoDB Atlas</strong> - Database hosting and storage;</li>
-              <li style={styles.listItem}><strong>OpenAI</strong> - AI-powered description generation (GPT-4o);</li>
+              <li style={styles.listItem}><strong>OpenAI</strong> - AI-powered description generation (Gappy AI);</li>
               <li style={styles.listItem}><strong>Google</strong> - Authentication services (Google OAuth) and text-to-speech;</li>
               <li style={styles.listItem}><strong>Emergent</strong> - Cloud hosting infrastructure;</li>
               <li style={styles.listItem}>Analytics and monitoring tools for service improvement.</li>
