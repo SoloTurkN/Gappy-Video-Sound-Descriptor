@@ -534,16 +534,36 @@ async def analyze_video(project_id: str, current_user: dict = Depends(get_curren
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/projects", response_model=List[ProjectData])
-async def get_projects(current_user: dict = Depends(get_current_user)):
-    """Get all projects for the current user"""
-    # Filter projects by user email
-    projects = await db.projects.find({"user_email": current_user["email"]}, {"_id": 0}).to_list(1000)
+async def get_projects(folder: str = "all", search: str = None, current_user: dict = Depends(get_current_user)):
+    """Get all projects for the current user, optionally filtered by folder and search"""
+    from datetime import timedelta
+    
+    # Build query
+    query = {"user_email": current_user["email"]}
+    
+    # Filter by folder
+    if folder == "all":
+        query["folder"] = {"$ne": "trash"}
+    elif folder == "recent":
+        seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        query["folder"] = {"$ne": "trash"}
+        query["created_at"] = {"$gte": seven_days_ago}
+    else:
+        query["folder"] = folder
+    
+    # Search filter
+    if search:
+        query["original_filename"] = {"$regex": search, "$options": "i"}
+    
+    projects = await db.projects.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
     
     for project in projects:
         if isinstance(project.get('created_at'), str):
             project['created_at'] = datetime.fromisoformat(project['created_at'])
         if isinstance(project.get('updated_at'), str):
             project['updated_at'] = datetime.fromisoformat(project['updated_at'])
+        if isinstance(project.get('trashed_at'), str):
+            project['trashed_at'] = datetime.fromisoformat(project['trashed_at'])
     
     return projects
 
