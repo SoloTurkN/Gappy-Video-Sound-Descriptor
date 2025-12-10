@@ -231,7 +231,7 @@ const styles = {
   },
   featureDescription: {
     fontSize: '16px',
-    color: '#718096',
+    color: '#4a5568',
     lineHeight: '1.6',
   },
   ctaSection: {
