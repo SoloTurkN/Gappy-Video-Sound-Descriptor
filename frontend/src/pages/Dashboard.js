@@ -815,11 +815,12 @@ const styles = {
     fontSize: '12px',
     color: '#6b7280',
   },
-  projectDuration: {
+  projectFormat: {
     display: 'flex',
     alignItems: 'center',
     fontSize: '14px',
-    color: '#4a5568',
+    fontWeight: '600',
+    color: '#667eea',
   },
   projectStatus: {
     display: 'flex',
