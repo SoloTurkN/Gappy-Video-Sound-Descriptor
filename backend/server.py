@@ -548,7 +548,9 @@ async def analyze_video(project_id: str, current_user: dict = Depends(get_curren
             
             # Generate description
             frame_base64 = frame_to_base64(scene['frame'])
-            description = await generate_description(frame_base64)
+            language = project.get('language', 'en')
+            description_length = project.get('description_length', '1')
+            description = await generate_description(frame_base64, language, description_length)
             
             # Generate audio
             audio_path = project_dir / f"audio_{i}.mp3"
