@@ -19,7 +19,7 @@
 When deploying, configure these environment variables in Emergent's deployment settings:
 
 ```env
-MONGO_URL=mongodb+srv://gappy_admin:<YOUR_MONGODB_PASSWORD>@cluster0.xw6kwek.mongodb.net/gappy_describe?retryWrites=true&w=majority&appName=Cluster0
+MONGO_URL=mongodb+srv://gappy_admin:H3gZAOJstosJyoCq@cluster0.xw6kwek.mongodb.net/gappy_describe?retryWrites=true&w=majority&appName=Cluster0
 DB_NAME=gappy_describe
 JWT_SECRET_KEY=zeG43IvpvoMcBFTeEJESMPKVvDrzD43AA_RmqiHsuE0
 CORS_ORIGINS=*
