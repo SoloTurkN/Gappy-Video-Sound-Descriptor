@@ -23,10 +23,6 @@ const Dashboard = () => {
   const [selectedProjects, setSelectedProjects] = useState([]);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
   const [draggedProject, setDraggedProject] = useState(null);
-  const [hoveredVideo, setHoveredVideo] = useState(null);
-  const [projectThumbnails, setProjectThumbnails] = useState({});
-  const [thumbnailErrors, setThumbnailErrors] = useState({});
-  const videoRefs = useRef({});
   
   const [usage, setUsage] = useState({
     videosThisMonth: 0,
