@@ -19,7 +19,7 @@ function ProtectedRoute({ children }) {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <img src="/gappy-icon.png" alt="Loading" style={{ width: '60px', height: '60px' }} className="spin-icon" />
+        <img src="/gappy-icon1.png" alt="Loading" style={{ width: '60px', height: '60px' }} className="spin-icon" />
       </div>
     );
   }
@@ -33,7 +33,7 @@ function RootPage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <img src="/gappy-icon.png" alt="Loading" style={{ width: '60px', height: '60px' }} className="spin-icon" />
+        <img src="/gappy-icon1.png" alt="Loading" style={{ width: '60px', height: '60px' }} className="spin-icon" />
       </div>
     );
   }

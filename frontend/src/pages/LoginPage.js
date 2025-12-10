@@ -75,7 +75,7 @@ const LoginPage = () => {
       <div style={styles.container}>
         <div style={styles.content} className="fade-in">
           <div style={styles.logoSection}>
-            <img src="/gappy-icon.png" alt="Gappy" style={styles.logo} className="spin-icon" />
+            <img src="/gappy-icon1.png" alt="Gappy" style={styles.logo} className="spin-icon" />
             <img src="/gappy-logo1.png" alt="Gappy Descripe" style={styles.logoText} />
           </div>
           <div className="glass-card" style={styles.loginCard}>
@@ -134,12 +134,12 @@ const LoginPage = () => {
             >
               {loading ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                  <img src="/gappy-icon.png" alt="Loading" style={{ width: '24px', height: '24px' }} className="spin-icon" />
+                  <img src="/gappy-icon1.png" alt="Loading" style={{ width: '24px', height: '24px' }} className="spin-icon" />
                   Logging in...
                 </div>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  <img src="/gappy-icon.png" alt="Gappy" style={{ width: '20px', height: '20px' }} />
+                  <img src="/gappy-icon1.png" alt="Gappy" style={{ width: '20px', height: '20px' }} />
                   Login to Gappy Describe
                 </div>
               )}

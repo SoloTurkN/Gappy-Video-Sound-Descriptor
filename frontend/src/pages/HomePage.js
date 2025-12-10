@@ -179,7 +179,7 @@ const HomePage = () => {
               >
                 {uploading ? (
                   <>
-                    <img src="/gappy-icon.png" alt="" style={{ width: '20px', height: '20px' }} className="spin-icon" />
+                    <img src="/gappy-icon1.png" alt="" style={{ width: '20px', height: '20px' }} className="spin-icon" />
                     Processing...
                   </>
                 ) : (
