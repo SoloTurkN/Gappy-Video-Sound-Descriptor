@@ -399,9 +399,9 @@ const Dashboard = () => {
                     style={styles.checkbox}
                     aria-label="Select all projects"
                   />
-                  <span style={styles.headerText}>Video</span>
+                  <span style={styles.headerText}>Name</span>
                 </label>
-                <span style={styles.headerText}>Duration</span>
+                <span style={styles.headerText}>Format</span>
                 <span style={styles.headerText}>Status</span>
                 <span style={styles.headerText}>Created</span>
                 <span style={styles.headerText}>Actions</span>
