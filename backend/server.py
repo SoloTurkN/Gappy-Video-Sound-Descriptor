@@ -81,6 +81,15 @@ class ProjectCreate(BaseModel):
     video_path: str
     original_filename: str
 
+class ProjectUpdate(BaseModel):
+    folder: Optional[str] = None
+    original_filename: Optional[str] = None
+
+class BulkActionRequest(BaseModel):
+    project_ids: List[str]
+    action: str  # "move_to_folder", "move_to_trash", "restore", "delete_permanent"
+    folder: Optional[str] = None
+
 class UsageData(BaseModel):
     user_email: str
     month: str  # Format: YYYY-MM
