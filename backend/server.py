@@ -75,6 +75,7 @@ class ProjectData(BaseModel):
     export_format: Optional[str] = None  # Last export format used
     language: str = "en"  # Language for AI descriptions
     voice_id: Optional[str] = None  # ElevenLabs voice ID for TTS
+    description_length: str = "1"  # Number of sentences: "1", "2", or "5"
 
 class SceneUpdate(BaseModel):
     description: str
