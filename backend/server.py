@@ -494,7 +494,8 @@ async def upload_video(
             original_filename=file.filename,
             user_email=current_user["email"],
             folder="all",
-            duration=video_duration
+            duration=video_duration,
+            language=language
         )
         
         doc = project.model_dump()
