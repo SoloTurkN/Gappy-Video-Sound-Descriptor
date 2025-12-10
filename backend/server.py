@@ -306,81 +306,57 @@ async def generate_description(frame_base64: str, language: str = "en") -> str:
         logging.error(f"Error generating description: {e}")
         return "Scene description unavailable."
 
-async def generate_audio(text: str, output_path: str) -> float:
-    """Generate audio from text using gTTS (default) or OpenAI TTS (optional)"""
-    # Check if user provided OpenAI API key for premium TTS
-    openai_api_key = os.environ.get('OPENAI_API_KEY', '')
-    
-    # Try OpenAI TTS first if API key is available
-    if openai_api_key:
-        try:
-            import httpx
-            from mutagen.mp3 import MP3
-            
-            logging.info("Using OpenAI TTS")
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                response = await client.post(
-                    "https://api.openai.com/v1/audio/speech",
-                    headers={
-                        "Authorization": f"Bearer {openai_api_key}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "model": "tts-1",
-                        "voice": "alloy",
-                        "input": text,
-                        "speed": 1.0
-                    }
-                )
-                
-                if response.status_code == 200:
-                    with open(output_path, 'wb') as f:
-                        f.write(response.content)
-                    
-                    # Calculate audio duration
-                    try:
-                        audio = MP3(output_path)
-                        return audio.info.length
-                    except:
-                        word_count = len(text.split())
-                        return (word_count / 150) * 60
-                else:
-                    logging.warning(f"OpenAI TTS failed: {response.status_code}, falling back to gTTS")
-        except Exception as e:
-            logging.warning(f"OpenAI TTS error: {e}, falling back to gTTS")
-    
-    # Use free gTTS as default
+async def generate_audio(text: str, output_path: str, voice_id: str = "21m00Tcm4TlvDq8ikWAM") -> float:
+    """Generate audio from text using ElevenLabs TTS"""
     try:
-        from gtts import gTTS
+        import httpx
         from mutagen.mp3 import MP3
         
-        logging.info("Using gTTS for audio generation")
-        tts = gTTS(text=text, lang='en', slow=False)
-        tts.save(output_path)
+        elevenlabs_api_key = os.environ.get('ELEVENLABS_API_KEY', '')
         
-        # Calculate audio duration
-        try:
-            audio = MP3(output_path)
-            return audio.info.length
-        except:
-            # Fallback estimation
-            word_count = len(text.split())
-            return (word_count / 150) * 60
+        if not elevenlabs_api_key:
+            logging.error("ElevenLabs API key not found")
+            raise Exception("ElevenLabs API key missing")
+        
+        logging.info(f"Using ElevenLabs TTS with voice {voice_id}")
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
+                headers={
+                    "xi-api-key": elevenlabs_api_key,
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "text": text,
+                    "model_id": "eleven_multilingual_v2",
+                    "voice_settings": {
+                        "stability": 0.5,
+                        "similarity_boost": 0.75
+                    }
+                }
+            )
+            
+            if response.status_code == 200:
+                with open(output_path, 'wb') as f:
+                    f.write(response.content)
+                
+                # Calculate audio duration
+                try:
+                    audio = MP3(output_path)
+                    return audio.info.length
+                except:
+                    word_count = len(text.split())
+                    return (word_count / 150) * 60
+            else:
+                logging.error(f"ElevenLabs TTS failed: {response.status_code} - {response.text}")
+                raise Exception(f"ElevenLabs API error: {response.status_code}")
+                
     except Exception as e:
-        logging.error(f"Error generating audio with gTTS: {e}")
-        # Last resort: create silent audio with estimated duration
+        logging.error(f"Audio generation error: {e}")
+        # Estimate duration as fallback
         word_count = len(text.split())
-        duration = (word_count / 150) * 60
-        
-        try:
-            from pydub import AudioSegment
-            silence = AudioSegment.silent(duration=int(duration * 1000))
-            silence.export(output_path, format="mp3")
-        except:
-            with open(output_path, 'wb') as f:
-                f.write(b'')
-        
-        return duration
+        return (word_count / 150) * 60
 
 # Routes
 @api_router.get("/")
