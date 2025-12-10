@@ -103,7 +103,7 @@ const LandingPage = () => {
             <p style={styles.footerText}>© 2025 All rights reserved.</p>
           </div>
           <div style={styles.footerLinks}>
-            <a href="#" style={styles.footerLink}>Privacy</a>
+            <button onClick={() => navigate('/privacy')} style={{...styles.footerLink, background: 'none', border: 'none', cursor: 'pointer'}}>Privacy</button>
             <a href="#" style={styles.footerLink}>Terms</a>
             <a href="#" style={styles.footerLink}>Contact</a>
           </div>
