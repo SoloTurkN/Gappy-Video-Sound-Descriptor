@@ -314,7 +314,7 @@ async def generate_description(frame_base64: str, language: str = "en", num_sent
         return "Scene description unavailable."
 
 async def generate_audio(text: str, output_path: str, voice_id: str = "21m00Tcm4TlvDq8ikWAM") -> float:
-    """Generate audio from text using ElevenLabs TTS"""
+    """Generate audio from text using ElevenLabs TTS with gTTS fallback"""
     try:
         import httpx
         from mutagen.mp3 import MP3
@@ -322,10 +322,10 @@ async def generate_audio(text: str, output_path: str, voice_id: str = "21m00Tcm4
         elevenlabs_api_key = os.environ.get('ELEVENLABS_API_KEY', '')
         
         if not elevenlabs_api_key:
-            logging.error("ElevenLabs API key not found")
-            raise Exception("ElevenLabs API key missing")
+            logging.warning("ElevenLabs API key not found, using gTTS fallback")
+            return await generate_audio_gtts(text, output_path)
         
-        logging.info(f"Using ElevenLabs TTS with voice {voice_id}")
+        logging.info(f"Attempting ElevenLabs TTS with voice {voice_id}")
         
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
@@ -348,6 +348,8 @@ async def generate_audio(text: str, output_path: str, voice_id: str = "21m00Tcm4
                 with open(output_path, 'wb') as f:
                     f.write(response.content)
                 
+                logging.info("ElevenLabs TTS successful")
+                
                 # Calculate audio duration
                 try:
                     audio = MP3(output_path)
@@ -356,12 +358,34 @@ async def generate_audio(text: str, output_path: str, voice_id: str = "21m00Tcm4
                     word_count = len(text.split())
                     return (word_count / 150) * 60
             else:
-                logging.error(f"ElevenLabs TTS failed: {response.status_code} - {response.text}")
-                raise Exception(f"ElevenLabs API error: {response.status_code}")
+                logging.warning(f"ElevenLabs TTS failed: {response.status_code} - {response.text}")
+                logging.info("Falling back to gTTS")
+                return await generate_audio_gtts(text, output_path)
                 
     except Exception as e:
-        logging.error(f"Audio generation error: {e}")
-        # Estimate duration as fallback
+        logging.error(f"ElevenLabs error: {e}, falling back to gTTS")
+        return await generate_audio_gtts(text, output_path)
+
+async def generate_audio_gtts(text: str, output_path: str) -> float:
+    """Fallback audio generation using gTTS"""
+    try:
+        from gtts import gTTS
+        from mutagen.mp3 import MP3
+        
+        logging.info("Using gTTS for audio generation")
+        tts = gTTS(text=text, lang='en', slow=False)
+        tts.save(output_path)
+        
+        # Calculate audio duration
+        try:
+            audio = MP3(output_path)
+            return audio.info.length
+        except Exception:
+            word_count = len(text.split())
+            return (word_count / 150) * 60
+    except Exception as e:
+        logging.error(f"gTTS generation error: {e}")
+        # Return estimated duration even if generation fails
         word_count = len(text.split())
         return (word_count / 150) * 60
 
