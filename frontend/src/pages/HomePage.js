@@ -88,17 +88,12 @@ const HomePage = () => {
       return;
     }
 
-    if (!descriptionLength) {
-      toast.error('Please select description length');
-      return;
-    }
-
     setUploading(true);
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('language', selectedLanguage);
     formData.append('voice_id', selectedVoice);
-    formData.append('description_length', descriptionLength);
+    formData.append('description_length', '1'); // Always use 1 sentence
 
     try {
       const response = await axios.post(`${API}/upload`, formData, {
