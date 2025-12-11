@@ -15,7 +15,6 @@ const HomePage = () => {
   const [voices, setVoices] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [selectedVoice, setSelectedVoice] = useState('');
-  const [descriptionLength, setDescriptionLength] = useState('');
   const navigate = useNavigate();
 
   const handleDrag = (e) => {
