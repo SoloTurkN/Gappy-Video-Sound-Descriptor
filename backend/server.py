@@ -950,6 +950,49 @@ async def update_scene(scene_id: str, update: SceneUpdate, current_user: dict = 
         logging.error(f"Error updating scene: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.delete("/scenes/{scene_id}")
+async def delete_scene(scene_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a scene (requires authentication)"""
+    try:
+        # Get scene
+        scene = await db.scenes.find_one({"id": scene_id}, {"_id": 0})
+        if not scene:
+            raise HTTPException(status_code=404, detail="Scene not found")
+        
+        # Verify user owns the project this scene belongs to
+        project = await db.projects.find_one({"id": scene["project_id"]}, {"_id": 0})
+        if not project or project.get("user_email") != current_user["email"]:
+            raise HTTPException(status_code=403, detail="You don't have permission to delete this scene")
+        
+        # Delete scene files if they exist
+        project_dir = UPLOADS_DIR / scene["project_id"]
+        if scene.get("audio_path"):
+            audio_file = project_dir / Path(scene["audio_path"]).name
+            if audio_file.exists():
+                os.remove(audio_file)
+        
+        if scene.get("thumbnail_path"):
+            thumb_file = project_dir / Path(scene["thumbnail_path"]).name
+            if thumb_file.exists():
+                os.remove(thumb_file)
+        
+        # Delete scene from database
+        await db.scenes.delete_one({"id": scene_id})
+        
+        # Update project total_scenes count
+        remaining_scenes = await db.scenes.count_documents({"project_id": scene["project_id"]})
+        await db.projects.update_one(
+            {"id": scene["project_id"]},
+            {"$set": {"total_scenes": remaining_scenes}}
+        )
+        
+        return {"status": "success", "message": "Scene deleted successfully"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logging.error(f"Error deleting scene: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/thumbnail/{project_id}/{filename}")
 async def get_thumbnail(project_id: str, filename: str):
     """Serve thumbnail image"""
