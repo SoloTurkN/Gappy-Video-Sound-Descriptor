@@ -255,25 +255,33 @@ const HomePage = () => {
             )}
 
             {selectedFile && (
-              <button
-                className="btn-primary"
-                onClick={handleUpload}
-                disabled={uploading}
-                style={{ marginTop: '20px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                data-testid="upload-button"
-              >
-                {uploading ? (
-                  <>
-                    <img src="/gappy-icon1.png" alt="" style={{ width: '20px', height: '20px' }} className="spin-icon" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    Start Analysis
-                    <ArrowRight size={18} />
-                  </>
+              <>
+                <button
+                  className="btn-primary"
+                  onClick={handleUpload}
+                  disabled={uploading}
+                  style={{ marginTop: '20px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  data-testid="upload-button"
+                >
+                  {uploading ? (
+                    <>
+                      <img src="/gappy-icon1.png" alt="" style={{ width: '20px', height: '20px' }} className="spin-icon" />
+                      {uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : 'Processing...'}
+                    </>
+                  ) : (
+                    <>
+                      Start Analysis
+                      <ArrowRight size={18} />
+                    </>
+                  )}
+                </button>
+                
+                {uploading && uploadProgress < 100 && (
+                  <div style={styles.progressContainer}>
+                    <div style={{...styles.progressBar, width: `${uploadProgress}%`}}></div>
+                  </div>
                 )}
-              </button>
+              </>
             )}
           </div>
         </div>
