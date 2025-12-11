@@ -252,23 +252,6 @@ const HomePage = () => {
                   </label>
                 </div>
 
-                {/* Description Length Selection */}
-                <div style={styles.selectorGroup}>
-                  <label style={styles.selectorLabel}>
-                    <span style={styles.labelText}>Description Length <span style={styles.required}>*</span></span>
-                    <select
-                      value={descriptionLength}
-                      onChange={(e) => setDescriptionLength(e.target.value)}
-                      style={styles.select}
-                      required
-                    >
-                      <option value="">Select length...</option>
-                      <option value="1">1 sentence</option>
-                      <option value="2">2 sentences</option>
-                      <option value="5">5 sentences</option>
-                    </select>
-                  </label>
-                </div>
               </>
             )}
 
