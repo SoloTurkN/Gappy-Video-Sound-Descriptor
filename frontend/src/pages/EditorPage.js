@@ -115,6 +115,30 @@ const EditorPage = () => {
     }
   };
 
+  const handleDeleteScene = async (sceneId) => {
+    if (!window.confirm('Are you sure you want to delete this scene? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/scenes/${sceneId}`, { withCredentials: true });
+      toast.success('Scene deleted successfully');
+      
+      // Reload scenes
+      const response = await axios.get(`${API}/projects/${projectId}/scenes`, { withCredentials: true });
+      setScenes(response.data);
+      
+      // Update project info
+      setProject(prev => ({
+        ...prev,
+        total_scenes: response.data.length
+      }));
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error('Failed to delete scene');
+    }
+  };
+
   const handleExport = async () => {
     setExporting(true);
     setExportProgress(0);
