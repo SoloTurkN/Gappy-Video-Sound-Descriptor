@@ -193,21 +193,6 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Features */}
-        <div style={styles.features}>
-          <div style={styles.feature}>
-            <div style={styles.featureDot}></div>
-            <span>WCAG Compliant</span>
-          </div>
-          <div style={styles.feature}>
-            <div style={styles.featureDot}></div>
-            <span>AI-Powered</span>
-          </div>
-          <div style={styles.feature}>
-            <div style={styles.featureDot}></div>
-            <span>Fast Export</span>
-          </div>
-        </div>
       </div>
     </div>
   );
