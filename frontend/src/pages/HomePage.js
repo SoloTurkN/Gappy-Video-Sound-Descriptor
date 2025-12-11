@@ -558,6 +558,20 @@ const styles = {
     fontSize: '14px',
     color: '#6b7280',
   },
+  progressContainer: {
+    width: '100%',
+    height: '8px',
+    backgroundColor: '#e5e7eb',
+    borderRadius: '4px',
+    marginTop: '12px',
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    borderRadius: '4px',
+    transition: 'width 0.3s ease',
+  },
 };
 
 export default HomePage;
