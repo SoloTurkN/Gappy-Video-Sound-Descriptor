@@ -94,7 +94,7 @@ const LoginPage = () => {
         <div className="glass-card hover-lift" style={styles.loginCard}>
           <div style={styles.cardHeader}>
             <h2 style={styles.title}>Welcome Back!</h2>
-            <p style={styles.subtitle}>Make your videos accessible with AI ✨</p>
+            <p style={styles.subtitle}>Make your videos accessible with AI</p>
           </div>
 
           <form onSubmit={handleEmailLogin} style={styles.form}>
