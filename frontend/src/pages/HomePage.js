@@ -10,6 +10,7 @@ const API = `${BACKEND_URL}/api`;
 const HomePage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [languages, setLanguages] = useState([]);
   const [voices, setVoices] = useState([]);
