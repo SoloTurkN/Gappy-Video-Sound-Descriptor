@@ -128,13 +128,31 @@ const LoginPage = () => {
 
             <button
               type="submit"
-              className="btn-primary"
               disabled={loading}
-              style={{ width: '100%', marginTop: '10px' }}
+              style={{ 
+                width: '100%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '10px',
+                background: 'white',
+                color: '#111827',
+                border: '1px solid #e5e7eb',
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                fontSize: '15px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+                opacity: loading ? 0.6 : 1,
+                marginTop: '10px'
+              }}
+              onMouseEnter={(e) => !loading && (e.target.style.background = '#f9fafb')}
+              onMouseLeave={(e) => !loading && (e.target.style.background = 'white')}
             >
               {loading ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                  <img src="/gappy-icon1.png" alt="Loading" style={{ width: '24px', height: '24px' }} className="spin-icon" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img src="/gappy-icon1.png" alt="Loading" style={{ width: '20px', height: '20px' }} className="spin-icon" />
                   Logging in...
                 </div>
               ) : (
