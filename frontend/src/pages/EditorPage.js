@@ -417,6 +417,26 @@ const EditorPage = () => {
                           {saving && editingScene === scene.id ? 'Saving...' : 'Edit'}
                         </button>
                         <button
+                          onClick={() => handleDeleteScene(scene.id)}
+                          style={{ 
+                            padding: '10px 16px',
+                            background: '#fee',
+                            color: '#dc2626',
+                            border: '1px solid #fecaca',
+                            borderRadius: '8px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
+                          data-testid={`delete-button-${index}`}
+                        >
+                          <Trash2 size={16} />
+                          Delete
+                        </button>
+                        <button
                           onClick={() => playAudio(scene.audio_path)}
                           className="btn-primary"
                           style={{ 
