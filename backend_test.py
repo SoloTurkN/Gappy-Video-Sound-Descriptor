@@ -447,8 +447,13 @@ class VideoDescriptionAPITester:
             try:
                 with open(video_path, 'rb') as f:
                     files = {'file': (f'test_video_{i}.mp4', f, 'video/mp4')}
+                    data = {
+                        'language': 'en',
+                        'voice_id': '21m00Tcm4TlvDq8ikWAM',
+                        'description_length': '1'
+                    }
                     url = f"{self.api_url}/upload"
-                    response = requests.post(url, files=files, cookies=self.session_cookies, timeout=60)
+                    response = requests.post(url, files=files, data=data, cookies=self.session_cookies, timeout=60)
                     
                     if response.status_code == 200:
                         videos_uploaded += 1
