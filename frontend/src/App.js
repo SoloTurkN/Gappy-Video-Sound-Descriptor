@@ -51,6 +51,14 @@ function AppRoutes() {
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route 
+        path="/payment/success" 
+        element={
+          <ProtectedRoute>
+            <PaymentSuccessPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/dashboard" 
         element={
           <ProtectedRoute>
