@@ -18,6 +18,7 @@ class VideoDescriptionAPITester:
         self.session_cookies = None
         self.user_data = None
         self.scene_id = None
+        self.checkout_session_id = None
         # Generate unique email for each test run
         import uuid
         unique_id = str(uuid.uuid4())[:8]
