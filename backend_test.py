@@ -848,21 +848,34 @@ class VideoDescriptionAPITester:
         """Test POST /api/webhook/stripe endpoint exists"""
         # Note: We can't fully test webhook without Stripe signature
         # But we can verify the endpoint exists and handles requests
-        success, response = self.run_test(
-            "Stripe Webhook Endpoint",
-            "POST",
-            "../webhook/stripe",  # Note: webhook is at /api/webhook/stripe, not /api/payments/webhook/stripe
-            400,  # Should return 400 for invalid webhook data, not 404
-            data={"test": "data"},
-            auth_required=False
-        )
         
-        # 400 or 500 is acceptable - means endpoint exists but rejects invalid data
-        # 404 would mean endpoint doesn't exist
-        if success or response:  # Even if status isn't exactly 400, if we get a response, endpoint exists
-            print("✅ Stripe webhook endpoint exists and responds")
-            return True
-        return False
+        # Make direct request to webhook endpoint
+        url = f"{self.base_url}/api/webhook/stripe"
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Stripe Webhook Endpoint...")
+        
+        try:
+            response = requests.post(url, json={"test": "data"}, timeout=30)
+            
+            # 400, 422, or 500 is acceptable - means endpoint exists but rejects invalid data
+            # 404 would mean endpoint doesn't exist
+            if response.status_code in [400, 422, 500]:
+                self.tests_passed += 1
+                print(f"✅ Passed - Webhook endpoint exists (Status: {response.status_code})")
+                print("✅ Stripe webhook endpoint exists and responds")
+                return True
+            elif response.status_code == 404:
+                print(f"❌ Failed - Webhook endpoint not found (Status: {response.status_code})")
+                return False
+            else:
+                print(f"⚠️ Unexpected status: {response.status_code}")
+                print("✅ Stripe webhook endpoint exists and responds")
+                return True
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
 
     def test_payment_security_cross_user(self):
         """Test that users cannot access other users' payment data"""
