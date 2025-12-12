@@ -157,6 +157,24 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Refresh user data (useful after subscription changes)
+  const refreshUser = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/me`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        return userData;
+      }
+    } catch (error) {
+      console.error('Refresh user error:', error);
+    }
+    return null;
+  };
+
   const value = {
     user,
     authenticated,
@@ -165,7 +183,8 @@ export function AuthProvider({ children }) {
     signupWithEmail,
     loginWithEmail,
     logout,
-    checkAuth
+    checkAuth,
+    refreshUser
   };
 
   return (
