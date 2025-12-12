@@ -10,6 +10,7 @@ import HomePage from './pages/HomePage';
 import EditorPage from './pages/EditorPage';
 import PricingPage from './pages/PricingPage';
 import PrivacyPage from './pages/PrivacyPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import './App.css';
 
 // Protected Route Component
