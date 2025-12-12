@@ -478,6 +478,8 @@ test_plan:
     - "Dashboard UI and Features"
   test_all: true
   test_priority: "high_first"
+  completed_features:
+    - "Scene deletion feature - implementation verified, ready for use"
 
 agent_communication:
     - agent: "testing"
