@@ -1016,7 +1016,7 @@ def main():
     ]
     
     # Run all test suites
-    all_tests = auth_tests + video_tests + project_tests + usage_tests + export_tests + security_tests + cleanup_tests
+    all_tests = auth_tests + video_tests + project_tests + usage_tests + export_tests + payment_tests + security_tests + cleanup_tests
     
     failed_tests = []
     for test in all_tests:
