@@ -11,7 +11,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 
-EMERGENT_AUTH_API = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
+EMERGENT_AUTH_API = os.getenv("EMERGENT_AUTH_API", "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data")
 SESSION_EXPIRY_DAYS = 7
 
 # Password hashing
