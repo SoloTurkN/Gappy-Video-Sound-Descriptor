@@ -987,6 +987,21 @@ def main():
         tester.test_video_export_with_ffmpeg,
     ]
     
+    print("\n" + "=" * 20 + " STRIPE PAYMENT TESTS " + "=" * 20)
+    payment_tests = [
+        tester.test_get_packages,
+        tester.test_checkout_without_auth,
+        tester.test_checkout_with_auth,
+        tester.test_checkout_invalid_package,
+        tester.test_payment_status_without_auth,
+        tester.test_payment_status_with_auth,
+        tester.test_payment_status_invalid_session,
+        tester.test_payment_history_without_auth,
+        tester.test_payment_history_with_auth,
+        tester.test_stripe_webhook_endpoint,
+        tester.test_payment_security_cross_user,
+    ]
+    
     print("\n" + "=" * 20 + " SECURITY TESTS " + "=" * 26)
     security_tests = [
         tester.test_unauthorized_access,
