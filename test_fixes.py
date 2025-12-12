@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import os
 
-BASE_URL = "https://video-audio-desc.preview.emergentagent.com"
+BASE_URL = "https://vidvoicer.preview.emergentagent.com"
 API_URL = f"{BASE_URL}/api"
 
 def create_test_video(duration_seconds=600):
