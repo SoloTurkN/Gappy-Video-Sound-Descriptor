@@ -26,6 +26,8 @@ CORS_ORIGINS=*
 EMERGENT_LLM_KEY=sk-emergent-0D9F14c584cC506990
 LLM_PROVIDER=openai
 LLM_MODEL=gpt-4o
+ELEVENLABS_API_KEY=sk_bbae26d0d9d0240492cca81fec8dd76dad19d39b02c9b2b1
+EMERGENT_AUTH_API=https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data
 ```
 
 ⚠️ **SECURITY NOTE**: Replace `<YOUR_MONGODB_PASSWORD>` with your actual MongoDB password ONLY in the Emergent Deployment Environment Variables panel. Never commit passwords to code or documentation.
