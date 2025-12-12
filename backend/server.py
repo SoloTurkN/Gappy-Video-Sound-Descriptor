@@ -1239,10 +1239,75 @@ async def download_video(project_id: str, filename: str):
 
 # Import auth routes
 from routes import auth as auth_routes
+from routes import payments as payment_routes
 
 # Include the router in the main app
 app.include_router(api_router)
 app.include_router(auth_routes.router)
+app.include_router(payment_routes.router)
+
+# Stripe Webhook endpoint (must be outside authenticated routes)
+@app.post("/api/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhook events"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+    
+    try:
+        stripe_api_key = os.environ.get("STRIPE_API_KEY")
+        if not stripe_api_key:
+            raise HTTPException(status_code=500, detail="Stripe not configured")
+        
+        host_url = str(request.base_url).rstrip('/')
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+        
+        # Get request body
+        body = await request.body()
+        signature = request.headers.get("Stripe-Signature")
+        
+        # Handle webhook
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        logger.info(f"Stripe webhook received: {webhook_response.event_type}")
+        
+        # If payment succeeded, update user subscription
+        if webhook_response.event_type == "checkout.session.completed":
+            if webhook_response.payment_status == "paid":
+                metadata = webhook_response.metadata or {}
+                user_email = metadata.get("user_email")
+                tier = metadata.get("tier")
+                package_id = metadata.get("package_id")
+                
+                if user_email and tier:
+                    # Update transaction
+                    await db.payment_transactions.update_one(
+                        {"session_id": webhook_response.session_id},
+                        {
+                            "$set": {
+                                "payment_status": "paid",
+                                "updated_at": datetime.now(timezone.utc).isoformat()
+                            }
+                        }
+                    )
+                    
+                    # Update user subscription
+                    await db.users.update_one(
+                        {"email": user_email},
+                        {
+                            "$set": {
+                                "subscription_tier": tier,
+                                "subscription_updated_at": datetime.now(timezone.utc).isoformat(),
+                                "subscription_package": package_id
+                            }
+                        }
+                    )
+                    logger.info(f"Webhook: Upgraded {user_email} to {tier}")
+        
+        return {"status": "success"}
+        
+    except Exception as e:
+        logger.error(f"Stripe webhook error: {str(e)}")
+        return {"status": "error", "message": str(e)}
 
 app.add_middleware(
     CORSMiddleware,
