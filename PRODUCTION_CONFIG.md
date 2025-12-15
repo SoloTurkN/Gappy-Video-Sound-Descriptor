@@ -28,7 +28,7 @@ LLM_PROVIDER=openai
 LLM_MODEL=gpt-4o
 ELEVENLABS_API_KEY=sk_bbae26d0d9d0240492cca81fec8dd76dad19d39b02c9b2b1
 EMERGENT_AUTH_API=https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data
-STRIPE_API_KEY=sk_test_emergent
+STRIPE_API_KEY=sk_test_51SeRn61C9UmyFmLMMAGm8DwRFJads97VZDk5LvA4k3urJN34UvOZXbv26lbjPjuXNvq7tARwWp50y0ffTyia5KAf00CLosMWDh
 ```
 
 ⚠️ **IMPORTANT**: For production, replace `sk_test_emergent` with your live Stripe API key from the Stripe Dashboard.
