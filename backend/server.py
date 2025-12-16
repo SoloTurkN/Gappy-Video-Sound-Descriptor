@@ -252,6 +252,7 @@ def ensure_ffmpeg_available() -> str:
         '/usr/bin/ffmpeg',
         '/usr/local/bin/ffmpeg',
         '/bin/ffmpeg',
+        '/opt/ffmpeg/bin/ffmpeg',
     ]
     
     for path in common_paths:
@@ -268,7 +269,17 @@ def ensure_ffmpeg_available() -> str:
     except Exception:
         pass
     
-    raise FileNotFoundError("FFmpeg is not installed on this system")
+    # Method 4: Try using 'command -v'
+    try:
+        result = subprocess.run(['sh', '-c', 'command -v ffmpeg'], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0 and result.stdout.strip():
+            path = result.stdout.strip()
+            if os.path.exists(path):
+                return path
+    except Exception:
+        pass
+    
+    raise FileNotFoundError("FFmpeg is not installed on this system. Video export features are unavailable.")
 
 
 async def generate_description(frame_base64: str, language: str = "en", num_sentences: str = "1") -> str:
