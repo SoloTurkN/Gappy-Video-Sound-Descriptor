@@ -1324,6 +1324,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Health check endpoint for deployment
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Kubernetes deployment"""
+    return {"status": "healthy", "service": "gappy-describe-api"}
+
 @app.on_event("startup")
 async def startup_db():
     """Store database instance in app state for dependency injection"""
