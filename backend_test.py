@@ -19,19 +19,17 @@ class VideoDescriptionAPITester:
         self.user_data = None
         self.scene_id = None
         self.checkout_session_id = None
-        # Generate unique email for each test run
-        import uuid
-        unique_id = str(uuid.uuid4())[:8]
+        # Use tester accounts from CSV file for transcript testing
         self.test_users = {
             'free_user': {
-                'name': 'Alice Johnson',
-                'email': f'alice.johnson.{unique_id}@testmail.com',
-                'password': 'TestPass123'
+                'name': 'Tester 1',
+                'email': 'tester1@gappylabs.com',
+                'password': 'GappyTest2024!'
             },
             'pro_user': {
-                'name': 'Bob Smith', 
-                'email': f'bob.smith.{unique_id}@testmail.com',
-                'password': 'TestPass456'
+                'name': 'Tester 2', 
+                'email': 'tester2@gappylabs.com',
+                'password': 'GappyTest2024!'
             }
         }
 
