@@ -637,6 +637,7 @@ test_plan:
   completed_features:
     - "Scene deletion feature - implementation verified, ready for use"
     - "Stripe Payment Integration - all endpoints tested and working correctly"
+    - "Transcript & Closed Captioning - all new endpoints tested and working correctly"
 
 agent_communication:
     - agent: "testing"
