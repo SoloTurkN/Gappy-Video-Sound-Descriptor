@@ -263,6 +263,63 @@ class VideoDescriptionAPITester:
             except:
                 pass
 
+    def test_upload_video_with_transcript_options(self):
+        """Test video upload with new transcript and caption options"""
+        video_path = self.create_test_video(5)  # 5 second video for better transcription
+        if not video_path:
+            print("❌ Failed to create test video")
+            return False
+        
+        try:
+            with open(video_path, 'rb') as f:
+                files = {'file': ('test_transcript_video.mp4', f, 'video/mp4')}
+                data = {
+                    'language': 'en',
+                    'voice_id': '21m00Tcm4TlvDq8ikWAM',
+                    'description_length': '1',
+                    'generate_transcript': 'true',  # New transcript option
+                    'generate_captions': 'true',   # New captions option
+                    'embed_captions': 'false'      # New embed option
+                }
+                
+                url = f"{self.api_url}/upload"
+                response = requests.post(url, files=files, data=data, cookies=self.session_cookies, timeout=60)
+                
+                self.tests_run += 1
+                print(f"\n🔍 Testing Upload Video with Transcript Options...")
+                
+                if response.status_code == 200:
+                    self.tests_passed += 1
+                    print(f"✅ Passed - Status: {response.status_code}")
+                    
+                    try:
+                        resp_data = response.json()
+                        if 'id' in resp_data:
+                            # Store this project ID for transcript testing
+                            if not hasattr(self, 'transcript_project_id'):
+                                self.transcript_project_id = resp_data['id']
+                            print(f"✅ Transcript Project ID: {resp_data['id']}")
+                            print(f"✅ Generate transcript: {resp_data.get('generate_transcript')}")
+                            print(f"✅ Generate captions: {resp_data.get('generate_captions')}")
+                            print(f"✅ Embed captions: {resp_data.get('embed_captions')}")
+                            return True
+                    except:
+                        pass
+                else:
+                    print(f"❌ Failed - Expected 200, got {response.status_code}")
+                    try:
+                        print(f"Response: {response.json()}")
+                    except:
+                        print(f"Response: {response.text}")
+                
+                return False
+        finally:
+            # Clean up temp file
+            try:
+                os.unlink(video_path)
+            except:
+                pass
+
     def test_usage_counter(self):
         """Test that usage counter increments after upload"""
         success, response = self.run_test(
