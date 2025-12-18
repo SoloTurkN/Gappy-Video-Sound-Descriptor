@@ -1351,6 +1351,14 @@ async def api_health_check():
 async def startup_db():
     """Store database instance in app state for dependency injection"""
     app.state.db = db
+    
+    # Check FFmpeg availability (moved from start_with_ffmpeg.sh for deployment compatibility)
+    import shutil
+    ffmpeg_path = shutil.which("ffmpeg")
+    if ffmpeg_path:
+        logger.info(f"FFmpeg available at: {ffmpeg_path}")
+    else:
+        logger.warning("FFmpeg not found - video export functionality may not work")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
