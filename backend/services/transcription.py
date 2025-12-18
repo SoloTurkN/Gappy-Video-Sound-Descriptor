@@ -75,8 +75,15 @@ async def transcribe_audio(audio_path: str, language: str = "en") -> Optional[di
         
         # Extract segments with timestamps
         segments = []
+        logger.info(f"Response type: {type(response)}")
+        logger.info(f"Response has segments: {hasattr(response, 'segments')}")
+        
         if hasattr(response, 'segments') and response.segments:
-            for segment in response.segments:
+            logger.info(f"Number of segments: {len(response.segments)}")
+            for i, segment in enumerate(response.segments):
+                logger.info(f"Segment {i} type: {type(segment)}")
+                logger.info(f"Segment {i} content: {segment}")
+                
                 # Handle both object attributes and dictionary keys
                 if hasattr(segment, 'start'):
                     # Object with attributes
