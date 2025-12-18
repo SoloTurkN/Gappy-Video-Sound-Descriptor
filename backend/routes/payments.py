@@ -132,10 +132,13 @@ async def create_checkout_session(
         
         # Check if user already has this tier or higher
         current_tier = current_user.get("subscription_tier", "free")
-        if current_tier == "enterprise":
-            raise HTTPException(status_code=400, detail="You already have the highest tier subscription")
-        if current_tier == "pro" and package["tier"] == "pro":
-            raise HTTPException(status_code=400, detail="You already have a Pro subscription")
+        tier_hierarchy = {"free": 0, "creator": 1, "pro": 2, "enterprise": 3}
+        
+        current_level = tier_hierarchy.get(current_tier, 0)
+        target_level = tier_hierarchy.get(package["tier"], 0)
+        
+        if current_level >= target_level:
+            raise HTTPException(status_code=400, detail=f"You already have {current_tier.title()} subscription or higher")
         
         # Get Stripe API key
         stripe_api_key = os.environ.get("STRIPE_API_KEY")
