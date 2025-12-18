@@ -645,6 +645,119 @@ async def analyze_video(project_id: str, current_user: dict = Depends(get_curren
         )
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# Transcription endpoints
+@api_router.post("/transcribe/{project_id}")
+async def transcribe_video(project_id: str, current_user: dict = Depends(get_current_user)):
+    """Generate transcript and captions for a video (requires authentication)"""
+    try:
+        from services.transcription import process_video_transcription
+        
+        # Get project and verify ownership
+        project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        if project.get("user_email") != current_user["email"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        video_path = project.get("video_path")
+        if not video_path or not os.path.exists(video_path):
+            raise HTTPException(status_code=404, detail="Video file not found")
+        
+        language = project.get("language", "en")
+        
+        # Process transcription
+        transcript_text, srt_content, vtt_content = await process_video_transcription(
+            video_path, language
+        )
+        
+        if not transcript_text:
+            raise HTTPException(status_code=500, detail="Transcription failed")
+        
+        # Update project with transcript data
+        await db.projects.update_one(
+            {"id": project_id},
+            {"$set": {
+                "transcript_text": transcript_text,
+                "transcript_srt": srt_content,
+                "transcript_vtt": vtt_content,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        return {
+            "success": True,
+            "transcript_text": transcript_text,
+            "has_srt": srt_content is not None,
+            "has_vtt": vtt_content is not None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error transcribing video: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/transcript/{project_id}")
+async def get_transcript(project_id: str, current_user: dict = Depends(get_current_user)):
+    """Get transcript data for a project"""
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    if project.get("user_email") != current_user["email"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    return {
+        "transcript_text": project.get("transcript_text"),
+        "has_srt": project.get("transcript_srt") is not None,
+        "has_vtt": project.get("transcript_vtt") is not None
+    }
+
+
+@api_router.get("/captions/{project_id}/{format}")
+async def download_captions(
+    project_id: str, 
+    format: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Download captions in SRT or VTT format"""
+    if format not in ["srt", "vtt", "txt"]:
+        raise HTTPException(status_code=400, detail="Invalid format. Use 'srt', 'vtt', or 'txt'")
+    
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    if project.get("user_email") != current_user["email"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if format == "srt":
+        content = project.get("transcript_srt")
+        media_type = "application/x-subrip"
+        filename = f"{project.get('original_filename', 'captions')}.srt"
+    elif format == "vtt":
+        content = project.get("transcript_vtt")
+        media_type = "text/vtt"
+        filename = f"{project.get('original_filename', 'captions')}.vtt"
+    else:  # txt
+        content = project.get("transcript_text")
+        media_type = "text/plain"
+        filename = f"{project.get('original_filename', 'transcript')}.txt"
+    
+    if not content:
+        raise HTTPException(status_code=404, detail=f"No {format.upper()} content available. Generate transcript first.")
+    
+    from fastapi.responses import Response
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
 @api_router.get("/projects", response_model=List[ProjectData])
 async def get_projects(folder: str = "all", search: str = None, current_user: dict = Depends(get_current_user)):
     """Get all projects for the current user, optionally filtered by folder and search"""
