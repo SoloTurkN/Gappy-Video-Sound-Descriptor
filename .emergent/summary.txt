@@ -4,172 +4,162 @@ The user wants to build a web app named Gappy Descripe that generates a video vo
 PRODUCT REQUIREMENTS:
 1.  **Video Upload**: Users can upload a video file. The UI should have language, voice, and description length selectors.
 2.  **Scene Analysis**: The app analyzes the video to detect scene cuts.
-3.  **AI Description**: For each scene, it generates an AI-powered description. The description length should be standardized to 1 sentence (max 10 words).
-4.  **Audio Generation**: It converts the description into high-quality speech using the ElevenLabs API.
-5.  **Video Export**: The app creates a new video where each scene is preceded by a pause on its first frame with the audio description playing over it.
-6.  **Editor**: An editor page where users can review detected scenes, play the audio, edit the text, and delete individual scenes.
-7.  **Dashboard**: A project dashboard with a list view, folder organization (including a trash folder), drag-and-drop, bulk actions, and search/filter capabilities.
-8.  **UI/Branding**: The app should have a clean, professional UI with a landing page, pricing tiers, a user dashboard, and login/signup pages. The latest branding and color scheme have been applied.
-9.  **Authentication**: The service is subscription-based, requiring user accounts with options for Google OAuth and Email/Password.
-10. **Privacy Policy**: A dedicated privacy policy page linked from the footer.
-11. **Future Goal**: Canvas LMS LTI integration.
+3.  **AI Description**: For each scene, it generates an AI-powered description (1 sentence, max 10 words).
+4.  **Audio Generation**: Converts descriptions into speech using the ElevenLabs API.
+5.  **Video Export**: Creates a new video with audio descriptions overlaid on paused first frames of each scene.
+6.  **Editor**: An editor page to review, edit, and delete scenes.
+7.  **Dashboard**: A project dashboard with list view, folder organization (including trash), drag-and-drop, and search/filter.
+8.  **UI/Branding**: A professional UI with a landing page, pricing, dashboard, and login/signup pages.
+9.  **Authentication**: Subscription-based with Google OAuth and Email/Password options.
+10. **Privacy Policy**: A dedicated privacy policy page.
+11. **Stripe Integration**: Integrate Stripe to handle subscription payments.
+12. **Future Goal**: Canvas LMS LTI integration.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with a FastAPI backend and a React frontend using MongoDB. The app has a complete authentication system, a production-ready deployment setup (separating local dev DB from production Atlas DB), and a fully integrated ElevenLabs API for high-quality TTS. The UI has been extensively updated with new branding, a feature-rich dashboard (list view, folders, trash, drag-and-drop), and an enhanced upload page with language/voice selectors and a progress bar. A Privacy Policy page has also been created.
+A full-stack application with a FastAPI backend and a React frontend using MongoDB. The app has a complete authentication system, a feature-rich dashboard (folders, trash, drag-and-drop), and is integrated with ElevenLabs for TTS. The Delete Scene feature is confirmed to be fully functional. A complete Stripe payment integration has been added, allowing users to purchase subscriptions via a new pricing page and checkout flow. The application is functionally complete locally but is currently blocked from deploying to production.
 
 **Last working item**:
--   **Last item agent was working**: Implementing the final user-requested changes before professional testing. Specifically, the agent was in the middle of adding the scene deletion feature. The backend API endpoint () and the delete button in the UI () have been created. The agent's last action was preparing to write the  frontend function.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: Frontend testing agent. After implementing the delete function, the agent should test the end-to-end flow: click the delete button, confirm the scene is removed from the UI, and verify the project state is correctly updated.
+-   **Last item agent was working**: Debugging a critical deployment failure. The deployment build fails because the Kubernetes entrypoint script cannot find the custom backend startup script (). The error is . This happens because the deployment system extracts the command from a  supervisor config file but does not have the script's directory () in its executable .
+-   **Status**: BLOCKED
+-   **Agent Testing Done**: N/A
+-   **Which testing method agent to use?**: Troubleshoot agent. The agent has exhausted standard debugging steps (verifying script, checking PATH, consulting support). The next step is to use the  to find a definitive solution for making a custom startup script work within the constraints of the Emergent deployment environment.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Complete the Delete Scene feature (P0)
--   Issue 2: Implement automatic monthly cleanup for the Trash folder (P2)
+-   Issue 1: Deployment is Blocked (P0)
 
 **Issues Detail**:
 -   **Issue 1**:
-    -   **Attempted fixes**: The backend endpoint and frontend UI button have been created. The agent was starting to write the  function in  before being interrupted.
+    -   **Attempted fixes**:
+        -   Verified the script  is correct, executable, and tracked by Git.
+        -   Added a  endpoint to  to satisfy deployment health checks.
+        -   Refactored startup code to use  for safer access to environment variables.
+        -   Updated the startup script to use the correct Python virtual environment path for .
+        -   Consulted the , confirming that Emergent deployments prefer standard FastAPI startup patterns and that the custom script is the likely cause.
+        -   Identified the root cause: The deployment system uses a  supervisor config to get the startup command name but doesn't resolve its path correctly.
     -   **Next debug checklist**:
-        1.  Complete writing the  function in . This function should call the  endpoint.
-        2.  On a successful response, update the local  state to remove the deleted scene.
-        3.  Add a confirmation modal () before deleting to prevent accidental clicks.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical feature for the editor, allowing users to correct the AI's scene detection by removing irrelevant or incorrect scenes. It's the last remaining item from the user's pre-testing request list.
-    -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: None
-
--   **Issue 2**:
-    -   **Attempted fixes**: None. The agent has implemented the trash folder and the ability to move items to it, but not the automatic cleanup.
-    -   **Next debug checklist**:
-        1.  Research and implement a scheduled task runner for FastAPI (e.g., , ).
-        2.  Create a function in  that runs daily or weekly to find projects where  is true and  is older than 30 days.
-        3.  Delete those projects and their associated files (video, scenes, audio) from the database and storage.
-    -   **Why fix this issue and what will be achieved with the fix?**: Fulfills the user's request for an auto-cleaning trash folder, which helps manage storage and keeps the database clean.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend
+        1.  Invoke the  to get an expert solution for this specific deployment environment problem.
+        2.  The key question for the troubleshooter is: Given a supervisor.conf that specifies , how can I ensure the script is found by the deployment entrypoint, which only searches in the system ?
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker preventing the user from deploying their application to a live website. Resolving it will allow the user to activate their Stripe account and launch the service.
+    -   **Status**: BLOCKED
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Deployment is the test.
     -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   **Task 1**: Pre-Testing Polish (P0)
-    -   **Where to resume**: . Implement the  function.
-    -   **What will be achieved with this?**: Complete all user-requested changes, making the app ready for professional user testing.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on something**: None
+-   None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   **Production Deployment (P0)**: Once the user approves the current changes, deploy the application to . The environment is prepared, and the instructions are in .
-    -   **Implement Monthly Trash Cleanup (P1)**: Add a backend scheduled task to automatically delete items from the trash folder after 30 days.
+    -   **Production Deployment (P0)**: Deploy the application to  once the startup script issue is resolved.
 -   **Future Tasks**:
     -   **Canvas LMS LTI Integration (P1)**: Implement LTI 1.3 to allow the app to launch from Canvas.
-    -   **Stripe Payment Integration (P2)**: Integrate Stripe to handle subscription payments.
-    -   **Add More Languages (P3)**: Expand the list of available languages for description generation via the ElevenLabs integration.
-    -   **Agent-Suggested Improvements (P3)**: Implement a video processing queue, better error recovery, keyboard shortcuts, and more advanced filtering options.
+    -   **Add More Languages (P3)**: Expand the list of available languages for description generation.
+    -   **Agent-Suggested Improvements (P3)**: Implement a video processing queue, better error recovery, and keyboard shortcuts.
 
 **Completed work in this session**
--   **ElevenLabs TTS Integration**: Replaced gTTS with ElevenLabs for high-quality audio, including adding language/voice selection on the upload page and successfully debugging a 401 API key error.
--   **Major Dashboard Overhaul**: Replaced the old card view with a professional list view, featuring folders, a trash system, drag-and-drop organization, bulk actions, and search/filtering.
--   **Production Environment Preparation**: Guided the user through setting up MongoDB Atlas and established a best-practice separation between the local development database and the production database. Created  for deployment guidance.
--   **UI/UX Refinements**:
-    -   Updated the entire application's branding (logo, icon, color palette).
-    -   Added an upload progress bar.
-    -   Fixed a critical audio playback bug in the editor.
-    -   Standardized AI description length to 1 sentence, 10 words max by removing the UI selector.
-    -   Polished the Login and Signup pages (removed clutter, updated button styles and icons).
--   **Administrative & Content**:
-    -   Created and linked a .
-    -   Generated 50 pro tier tester accounts and saved them to .
-    -   Updated marketing text (e.g., GPT-4o to Gappy AI, WCAG Level A to AA).
+-   **Scene Deletion Feature Verified**: Confirmed that the Delete Scene feature, including the backend API and frontend UI, was already fully implemented and functional.
+-   **Stripe Payment Integration (DONE)**:
+    -   Integrated Stripe using the  library.
+    -   Created backend routes for subscription packages, checkout sessions, and webhook handling ().
+    -   Revamped the  with a dynamic UI and functional checkout buttons.
+    -   Created a  and updated  to refresh user subscription status after a successful payment.
+    -   Tested the full payment flow from the UI to the backend.
+-   **Deployment Readiness Fixes**:
+    -   Fixed a hardcoded URL in .
+    -   Added a mandatory  endpoint to  for deployment health checks.
+    -   Improved startup robustness by changing  to .
+    -   Updated  with new environment variables (, ).
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1**: Monthly trash cleanup. The user requested that the trash folder auto-deletes items monthly. The agent implemented the trash folder but not the scheduled cleanup task.
-    -   **Debug checklist**: Implement a scheduled task on the backend (e.g., using ) to delete projects where  is true and  is older than 30 days.
-    -   **Why to solve this issue and what will be achieved with this?**: Fulfills a user requirement and prevents indefinite storage of deleted files.
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Is recurring issue?**: N
+-   **Issue 1**: Monthly trash cleanup.
+    -   **Reason not fixed**: The user explicitly requested to skip this feature for now, stating: We will avoid the Monthly Trash Cleanup.
 
 **Known issue recurrence from previous fork**
--   None. The persistent FFmpeg issue from the previous job was resolved and did not recur.
+-   None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI, Motor, , ,  (for ElevenLabs API).
--   **Frontend**: React, React Router,  (with ), React Context API,  for drag-and-drop.
--   **Third-Party APIs**: **ElevenLabs** for Text-to-Speech.
--   **Deployment Strategy**: Clear separation of  (local MongoDB) and  (MongoDB Atlas via deployment environment variables) environments.
+-   **Backend**: FastAPI, Motor, , .
+-   **Frontend**: React, React Router, , React Context API, .
+-   **Third-Party APIs**: **ElevenLabs**, **Stripe** (via ), **LiteLLM**.
+-   **Deployment Strategy**: Separation of  and  environments. Currently blocked by a startup script issue in the Kubernetes deployment environment.
 
 **key DB schema**
--   : { ..., : str, : bool, : datetime, : float, : str, : str, : str }
--   : { uid=0(root) gid=0(root) groups=0(root), , , , ,  }
--   : { , , , , ,  }
+-   : { ..., : str, : bool, : datetime }
+-   : { uid=0(root) gid=0(root) groups=0(root), , ,  }
+-   : { ..., : str, : str }
 
 **changes in tech stack**
--   **gTTS** has been replaced with the **ElevenLabs API** for text-to-speech.
--    has been added for dashboard drag-and-drop functionality.
+-   **** library added to handle the Stripe payment integration.
 
 **All files of reference**
 -   **Updated**:
-    -   : Major updates for folder management, trash, scene deletion, ElevenLabs integration, and updated data models.
-    -   : Complete rewrite to implement list view, folders, drag-and-drop, and other advanced features.
-    -   : Updated to include language/voice selectors and an upload progress bar.
-    -   : Updated to add a scene delete button and completely refactor the audio playback logic.
-    -   : UI polished for professional testing.
+    -   : Added payment routes, a  endpoint, and safer  calls.
+    -   Warning: FFmpeg not found - video export may not work
+Starting uvicorn from venv...: Modified to use absolute venv path for .
+    -   : Completely overhauled for a live Stripe checkout flow.
+    -   : Added  to update subscription status.
+    -   : Added route for the payment success page.
+    -   : Documented new environment variables for deployment.
+    -   : Added keys for Stripe and Emergent Auth.
 -   **Created**:
-    -   : Contains the application's privacy policy.
-    -   : A critical document detailing the environment variables needed for production deployment.
-    -   : Contains credentials for 50 test users.
+    -   : Contains all Stripe-related API endpoints.
+    -   : The landing page after a successful payment.
+
+**Areas that need refactoring**:
+-   The use of  is a workaround because  is readonly. The ideal long-term solution, if possible, would be to modify the deployment configuration to use a standard  command directly, removing the need for a custom startup script.
+
+**key api endpoints**
+-   : (GET) Fetches available subscription plans.
+-   : (POST) Creates a Stripe checkout session for a user.
+-   : (POST) Handles Stripe webhook events to update user subscription status.
+-   : (GET) Simple health check endpoint for the deployment environment.
 
 **Critical Info for New Agent**
--   **Complete Scene Deletion First**: Your immediate priority is to finish the scene deletion feature in . This is the last blocker before the user can begin professional testing.
--   **Separate Dev vs. Prod Databases**: The workspace is configured for **local** MongoDB. For production deployment, the  must be set in the deployment environment variables using the connection string from . Do not modify  with production credentials.
--   **ElevenLabs API is Live**: The app uses the user's paid ElevenLabs API key for high-quality audio. The key is stored in . A gTTS fallback exists in the code but is currently bypassed.
+-   **DEPLOYMENT IS BLOCKED**: Do not attempt to re-implement features. Your first and only priority is to solve the deployment issue. The application works perfectly locally.
+-   **The Core Problem**: A  supervisor config () specifies a custom startup script (). The Kubernetes deployment environment's entrypoint tries to execute this script by name but fails with  because the script's directory is not in the system's .
+-   **What Won't Work**: You cannot edit the supervisor config. You cannot make changes to  that persist in the deployment.
+-   **Next Step**: Immediately call the  to get a definitive solution for this environment-specific configuration problem. Explain the constraints clearly (readonly config,  issue).
 
 **documents created in this job**
--   
--   
--   
--   
--   
+-   None.  was updated.
 
 **Last 10 User Messages and any pending user messages**
-1.  **Request for ElevenLabs & Dashboard v1 Simplification (Completed)**: User asked to remove dashboard icons, change duration to format, and add ElevenLabs integration with language/voice selection.
-2.  **Provided ElevenLabs API Key (Completed)**: User provided the API key and specifications for language/voice options.
-3.  **Request for Upload Page UI (Completed)**: User asked for language/voice/description selectors to be on the upload page, not the editor.
-4.  **UI Title Change & Bug Report (Completed)**: User requested new titles for the selectors and reported a Failed to play audio bug.
-5.  **Runtime Error Report (Completed)**: User provided a console error related to the audio playback bug.
-6.  **Persistent Audio Bug & Docs Link (Completed)**: User confirmed the audio issue persisted and shared a link to ElevenLabs documentation.
-7.  **Inquiry about OpenAI TTS (Completed)**: User asked about OpenAI TTS pricing after the agent diagnosed the ElevenLabs issue and implemented a gTTS fallback.
-8.  **ElevenLabs Plan Upgraded (Completed)**: User confirmed they upgraded their ElevenLabs plan and asked the agent to re-test.
-9.  **Final Pre-Testing Edits (In Progress)**: User provided a final list of UI tweaks: remove sparkles on login, change login button color, remove feature text, standardize sentence count, add upload progress bar, add scene deletion, and fix Google signup icon.
-10. **Confirmation to Proceed (Completed)**: User sent a short message (A) likely confirming the agent's plan to implement the final edits.
+1.  **Skip Trash Cleanup**: User confirmed to skip the Monthly Trash Cleanup feature. (Request handled)
+2.  **Ready for Deployment**: User agreed the app was ready for deployment. (In progress, now blocked)
+3.  **Add Stripe Payments**: User requested to add Stripe integration. (Completed)
+4.  **Provide Website for Stripe**: User asked for the Stripe website URL. (Completed)
+5.  **Find Live Key**: User asked for instructions on finding the Stripe live key. (Completed)
+6.  **Deploy First**: User requested to deploy the app to get a live URL for Stripe account activation. (In progress, now blocked)
+7.  **Call Deployer Agent**: User requested to run the deployment agent and health checks. (Completed)
+8.  **First Deployment Failure**: User shared deployment logs showing a failure. (Issue diagnosed)
+9.  **Second Deployment Failure**: User shared new logs after fixes were attempted. (Issue re-diagnosed)
+10. **Frustration Query**: User asked for the exact cause of the repeated deployment failures. (Explanation provided, issue still blocked)
 
 **Project Health Check:**
--   **Broken**: The Delete Scene feature is incomplete.
--   **Mocked**: The pricing page UI exists but is not connected to a payment flow. Subscription tiers are enforced on the backend, but there is no UI for users to upgrade/downgrade.
+-   **Broken**: The entire deployment pipeline is broken due to the startup script  error in the production environment.
+-   **Mocked**: None.
 
 **3rd Party Integrations**
--   **LiteLLM (via )**: For AI description generation, using the Emergent LLM Key.
--   **ElevenLabs**: For text-to-speech, requiring a User API Key.
--   **Google OAuth**: For authentication, using standard OAuth 2.0 flow.
+-   **LiteLLM**: For AI description generation.
+-   **ElevenLabs**: For text-to-speech, requires a User API Key.
+-   **Google OAuth**: For authentication.
+-   **Stripe**: For subscription payments, requires a User API Key ( is used for testing).
 
 **Testing status**
--   **Testing agent used after significant changes**: NO (Agent used screenshots and manual checks extensively for the latest changes).
--   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: 
+-   **Testing agent used after significant changes**: YES (for scene deletion verification).
+-   **Troubleshoot agent used after agent stuck in loop**: NO (This is the recommended next step).
+-   **Test files created**: None.
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
--   Use the signup flow to create a new test user.
--   Alternatively, use one of the 50 pre-generated tester accounts from . All are on the pro tier. (e.g., , password ).
+-   Create a new user via the signup page.
+-   Use a pre-generated pro tier account from  (e.g., , password ).
 
 **What agent forgot to execute**
--   The agent did not implement the user's request for a monthly automatic cleanup of the Trash folder. The trash functionality exists, but items will remain there indefinitely until this is addressed.</analysis>
+-   Nothing. The agent correctly prioritized the user's request for Stripe integration and is now correctly focused on the critical deployment blocker. The Monthly Trash Cleanup was explicitly deferred by the user.</analysis>
