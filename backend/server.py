@@ -77,6 +77,13 @@ class ProjectData(BaseModel):
     language: str = "en"  # Language for AI descriptions
     voice_id: Optional[str] = None  # ElevenLabs voice ID for TTS
     description_length: str = "1"  # Number of sentences: "1", "2", or "5"
+    # Transcript and caption options
+    generate_transcript: bool = False  # Generate transcript from original audio
+    generate_captions: bool = False  # Generate closed captions (SRT/VTT)
+    embed_captions: bool = False  # Embed captions in exported video
+    transcript_text: Optional[str] = None  # Generated transcript text
+    transcript_srt: Optional[str] = None  # SRT format captions
+    transcript_vtt: Optional[str] = None  # VTT format captions
 
 class SceneUpdate(BaseModel):
     description: str
