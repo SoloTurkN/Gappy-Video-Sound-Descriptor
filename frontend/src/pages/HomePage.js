@@ -16,6 +16,10 @@ const HomePage = () => {
   const [voices, setVoices] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [selectedVoice, setSelectedVoice] = useState('');
+  // Transcript and caption options
+  const [generateTranscript, setGenerateTranscript] = useState(false);
+  const [generateCaptions, setGenerateCaptions] = useState(false);
+  const [embedCaptions, setEmbedCaptions] = useState(false);
   const navigate = useNavigate();
 
   const handleDrag = (e) => {
