@@ -21,8 +21,8 @@ const PricingPage = () => {
       yearlyPrice: 0,
       description: 'Perfect for trying out Gappy',
       features: [
-        '3 videos per month',
-        'Up to 5 minutes each',
+        '2 videos per month',
+        'Up to 3 minutes each',
         'MP4 export only',
         'Basic scene detection',
         'Community support'
@@ -31,39 +31,57 @@ const PricingPage = () => {
       highlighted: false
     },
     {
-      id: 'pro',
-      name: 'Pro',
-      monthlyPrice: 9.99,
-      yearlyPrice: 99.99,
+      id: 'creator',
+      name: 'Creator',
+      monthlyPrice: 15,
+      yearlyPrice: 150,
       description: 'For content creators & educators',
       features: [
-        '50 videos per month',
-        'Unlimited video length',
+        '20 videos per month',
+        'Up to 10 minutes each',
         'All export formats (MP4, AVI, MOV)',
         'High-quality ElevenLabs voices',
         'Priority processing',
         'Email support'
       ],
-      tier: 'pro',
+      tier: 'creator',
       highlighted: true
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      monthlyPrice: 49,
+      yearlyPrice: 490,
+      description: 'For professionals & teams',
+      features: [
+        '50 videos per month',
+        'Up to 20 minutes each',
+        'All export formats (MP4, AVI, MOV)',
+        'High-quality ElevenLabs voices',
+        'Priority processing',
+        'Priority email support'
+      ],
+      tier: 'pro',
+      highlighted: false
     },
     {
       id: 'enterprise',
       name: 'Enterprise',
-      monthlyPrice: 49.99,
-      yearlyPrice: 499.99,
-      description: 'For organizations & teams',
+      monthlyPrice: null,
+      yearlyPrice: null,
+      description: 'For organizations at scale',
       features: [
-        'Unlimited videos',
+        'Usage-based pricing',
+        'Unlimited video length',
         'API access',
         'Custom integrations',
-        'Priority support',
+        'Dedicated support',
         'SLA guarantee',
-        'Team management',
         'Canvas LMS integration'
       ],
       tier: 'enterprise',
-      highlighted: false
+      highlighted: false,
+      contactSales: true
     }
   ];
 
