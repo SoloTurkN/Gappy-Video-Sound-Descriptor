@@ -98,6 +98,9 @@ const HomePage = () => {
     formData.append('language', selectedLanguage);
     formData.append('voice_id', selectedVoice);
     formData.append('description_length', '1'); // Always use 1 sentence
+    formData.append('generate_transcript', generateTranscript);
+    formData.append('generate_captions', generateCaptions);
+    formData.append('embed_captions', embedCaptions);
 
     try {
       const response = await axios.post(`${API}/upload`, formData, {
