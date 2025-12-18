@@ -408,6 +408,275 @@ class VideoDescriptionAPITester:
             return True
         return success
 
+    # ========== TRANSCRIPT AND CAPTION TESTS ==========
+
+    def test_transcribe_video(self):
+        """Test POST /api/transcribe/{project_id} - Generate transcript and captions"""
+        if not hasattr(self, 'transcript_project_id'):
+            print("❌ No transcript project ID available")
+            return False
+        
+        print("⏳ This may take 30-60 seconds for Whisper transcription...")
+        success, response = self.run_test(
+            "Transcribe Video",
+            "POST",
+            f"transcribe/{self.transcript_project_id}",
+            200
+        )
+        
+        if success:
+            print(f"✅ Transcription result: {response}")
+            
+            # Check required response fields
+            if response.get('success'):
+                print("✅ Transcription successful")
+            else:
+                print("❌ Transcription not successful")
+                return False
+            
+            if response.get('transcript_text'):
+                print(f"✅ Transcript text generated: {response['transcript_text'][:100]}...")
+            else:
+                print("❌ No transcript text in response")
+                return False
+            
+            # Check SRT and VTT flags
+            has_srt = response.get('has_srt', False)
+            has_vtt = response.get('has_vtt', False)
+            
+            print(f"✅ Has SRT: {has_srt}")
+            print(f"✅ Has VTT: {has_vtt}")
+            
+            return True
+        return success
+
+    def test_get_transcript(self):
+        """Test GET /api/transcript/{project_id} - Get transcript data"""
+        if not hasattr(self, 'transcript_project_id'):
+            print("❌ No transcript project ID available")
+            return False
+        
+        success, response = self.run_test(
+            "Get Transcript",
+            "GET",
+            f"transcript/{self.transcript_project_id}",
+            200
+        )
+        
+        if success:
+            print(f"✅ Transcript data retrieved")
+            
+            # Check response structure
+            if 'transcript_text' in response:
+                transcript_text = response['transcript_text']
+                if transcript_text:
+                    print(f"✅ Transcript text: {transcript_text[:100]}...")
+                else:
+                    print("⚠️ Transcript text is empty")
+            
+            has_srt = response.get('has_srt', False)
+            has_vtt = response.get('has_vtt', False)
+            
+            print(f"✅ Has SRT: {has_srt}")
+            print(f"✅ Has VTT: {has_vtt}")
+            
+            return True
+        return success
+
+    def test_download_captions_srt(self):
+        """Test GET /api/captions/{project_id}/srt - Download SRT captions"""
+        if not hasattr(self, 'transcript_project_id'):
+            print("❌ No transcript project ID available")
+            return False
+        
+        url = f"{self.api_url}/captions/{self.transcript_project_id}/srt"
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Download SRT Captions...")
+        
+        try:
+            response = requests.get(url, cookies=self.session_cookies, timeout=30)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check content type
+                content_type = response.headers.get('Content-Type', '')
+                if 'subrip' in content_type or 'srt' in content_type:
+                    print(f"✅ Correct content type: {content_type}")
+                else:
+                    print(f"⚠️ Content type: {content_type}")
+                
+                # Check content disposition (download header)
+                content_disposition = response.headers.get('Content-Disposition', '')
+                if 'attachment' in content_disposition and '.srt' in content_disposition:
+                    print(f"✅ Correct download header: {content_disposition}")
+                
+                # Check SRT content format
+                content = response.text
+                if content and ('-->' in content):
+                    print(f"✅ SRT format detected in content")
+                    print(f"✅ Content preview: {content[:200]}...")
+                else:
+                    print("⚠️ Content doesn't appear to be SRT format")
+                
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    print(f"Response: {response.json()}")
+                except:
+                    print(f"Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+
+    def test_download_captions_vtt(self):
+        """Test GET /api/captions/{project_id}/vtt - Download VTT captions"""
+        if not hasattr(self, 'transcript_project_id'):
+            print("❌ No transcript project ID available")
+            return False
+        
+        url = f"{self.api_url}/captions/{self.transcript_project_id}/vtt"
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Download VTT Captions...")
+        
+        try:
+            response = requests.get(url, cookies=self.session_cookies, timeout=30)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check content type
+                content_type = response.headers.get('Content-Type', '')
+                if 'vtt' in content_type:
+                    print(f"✅ Correct content type: {content_type}")
+                else:
+                    print(f"⚠️ Content type: {content_type}")
+                
+                # Check content disposition
+                content_disposition = response.headers.get('Content-Disposition', '')
+                if 'attachment' in content_disposition and '.vtt' in content_disposition:
+                    print(f"✅ Correct download header: {content_disposition}")
+                
+                # Check VTT content format
+                content = response.text
+                if content and ('WEBVTT' in content and '-->' in content):
+                    print(f"✅ VTT format detected in content")
+                    print(f"✅ Content preview: {content[:200]}...")
+                else:
+                    print("⚠️ Content doesn't appear to be VTT format")
+                
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    print(f"Response: {response.json()}")
+                except:
+                    print(f"Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+
+    def test_download_captions_txt(self):
+        """Test GET /api/captions/{project_id}/txt - Download plain text transcript"""
+        if not hasattr(self, 'transcript_project_id'):
+            print("❌ No transcript project ID available")
+            return False
+        
+        url = f"{self.api_url}/captions/{self.transcript_project_id}/txt"
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Download TXT Transcript...")
+        
+        try:
+            response = requests.get(url, cookies=self.session_cookies, timeout=30)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check content type
+                content_type = response.headers.get('Content-Type', '')
+                if 'text/plain' in content_type:
+                    print(f"✅ Correct content type: {content_type}")
+                else:
+                    print(f"⚠️ Content type: {content_type}")
+                
+                # Check content disposition
+                content_disposition = response.headers.get('Content-Disposition', '')
+                if 'attachment' in content_disposition and '.txt' in content_disposition:
+                    print(f"✅ Correct download header: {content_disposition}")
+                
+                # Check text content
+                content = response.text
+                if content and len(content.strip()) > 0:
+                    print(f"✅ Text content found")
+                    print(f"✅ Content preview: {content[:200]}...")
+                else:
+                    print("⚠️ No text content found")
+                
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    print(f"Response: {response.json()}")
+                except:
+                    print(f"Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+
+    def test_download_captions_invalid_format(self):
+        """Test GET /api/captions/{project_id}/invalid - Invalid format should return 400"""
+        if not hasattr(self, 'transcript_project_id'):
+            print("❌ No transcript project ID available")
+            return False
+        
+        success, response = self.run_test(
+            "Download Captions Invalid Format",
+            "GET",
+            f"captions/{self.transcript_project_id}/invalid",
+            400
+        )
+        
+        if success:
+            print("✅ Invalid format correctly rejected")
+        return success
+
+    def test_transcript_without_auth(self):
+        """Test transcript endpoints without authentication"""
+        fake_project_id = "00000000-0000-0000-0000-000000000000"
+        
+        endpoints_to_test = [
+            ("POST", f"transcribe/{fake_project_id}", "Transcribe Video"),
+            ("GET", f"transcript/{fake_project_id}", "Get Transcript"),
+            ("GET", f"captions/{fake_project_id}/srt", "Download SRT"),
+        ]
+        
+        all_passed = True
+        for method, endpoint, name in endpoints_to_test:
+            success, response = self.run_test(
+                f"Unauthorized {name}",
+                method,
+                endpoint,
+                401,
+                auth_required=False
+            )
+            if not success:
+                all_passed = False
+        
+        return all_passed
+
     # ========== PROJECT MANAGEMENT TESTS ==========
 
     def test_get_projects(self):
