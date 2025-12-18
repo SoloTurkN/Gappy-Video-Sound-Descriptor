@@ -154,6 +154,8 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
       setAuthenticated(false);
+      // Redirect to landing page after logout
+      window.location.href = '/';
     }
   };
 
