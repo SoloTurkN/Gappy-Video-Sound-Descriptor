@@ -1336,10 +1336,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Health check endpoint for deployment
+# Health check endpoints for deployment
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for Kubernetes deployment"""
+    """Health check endpoint for Kubernetes deployment (internal)"""
+    return {"status": "healthy", "service": "gappy-describe-api"}
+
+@app.get("/api/health")
+async def api_health_check():
+    """Health check endpoint accessible via Kubernetes ingress (external)"""
     return {"status": "healthy", "service": "gappy-describe-api"}
 
 @app.on_event("startup")
