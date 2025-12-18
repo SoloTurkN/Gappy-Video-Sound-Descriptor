@@ -1322,6 +1322,18 @@ def main():
         tester.test_scene_editing,
     ]
     
+    print("\n" + "=" * 20 + " TRANSCRIPT & CAPTION TESTS " + "=" * 16)
+    transcript_tests = [
+        tester.test_upload_video_with_transcript_options,
+        tester.test_transcribe_video,
+        tester.test_get_transcript,
+        tester.test_download_captions_srt,
+        tester.test_download_captions_vtt,
+        tester.test_download_captions_txt,
+        tester.test_download_captions_invalid_format,
+        tester.test_transcript_without_auth,
+    ]
+    
     print("\n" + "=" * 20 + " PROJECT MANAGEMENT " + "=" * 22)
     project_tests = [
         tester.test_get_projects,
