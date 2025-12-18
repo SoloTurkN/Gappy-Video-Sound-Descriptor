@@ -75,13 +75,33 @@ async def transcribe_audio(audio_path: str, language: str = "en") -> Optional[di
         
         # Extract segments with timestamps
         segments = []
-        if hasattr(response, 'segments'):
+        if hasattr(response, 'segments') and response.segments:
             for segment in response.segments:
-                segments.append({
-                    "start": segment.start,
-                    "end": segment.end,
-                    "text": segment.text.strip()
-                })
+                # Handle both object attributes and dictionary keys
+                if hasattr(segment, 'start'):
+                    # Object with attributes
+                    segments.append({
+                        "start": segment.start,
+                        "end": segment.end,
+                        "text": segment.text.strip()
+                    })
+                elif isinstance(segment, dict):
+                    # Dictionary format
+                    segments.append({
+                        "start": segment.get("start", 0.0),
+                        "end": segment.get("end", 0.0),
+                        "text": segment.get("text", "").strip()
+                    })
+                else:
+                    logger.warning(f"Unknown segment format: {type(segment)}")
+        else:
+            logger.info("No segments found in response, creating default segment")
+            # If no segments, create one segment for the entire text
+            segments = [{
+                "start": 0.0,
+                "end": 5.0,  # Default duration
+                "text": response.text if hasattr(response, 'text') else ""
+            }]
         
         return {
             "text": response.text,
