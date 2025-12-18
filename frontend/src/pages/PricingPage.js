@@ -86,6 +86,12 @@ const PricingPage = () => {
   ];
 
   const handleSubscribe = async (plan) => {
+    // Handle Enterprise contact sales
+    if (plan.contactSales) {
+      window.location.href = 'mailto:sales@gappylabs.com?subject=Enterprise%20Plan%20Inquiry';
+      return;
+    }
+
     if (!user) {
       toast.info('Please sign up or login first');
       navigate('/signup');
@@ -103,7 +109,12 @@ const PricingPage = () => {
       return;
     }
 
-    if (user.subscription_tier === 'enterprise' && plan.tier === 'pro') {
+    if (user.subscription_tier === 'enterprise') {
+      toast.info('You already have the highest tier subscription');
+      return;
+    }
+
+    if (user.subscription_tier === 'pro' && plan.tier === 'creator') {
       toast.info('You already have a higher tier subscription');
       return;
     }
