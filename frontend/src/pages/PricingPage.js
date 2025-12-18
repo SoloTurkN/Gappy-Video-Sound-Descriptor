@@ -135,21 +135,25 @@ const PricingPage = () => {
 
   const getPrice = (plan) => {
     if (plan.id === 'free') return '$0';
+    if (plan.contactSales) return 'Custom';
     const price = billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
-    return `$${price.toFixed(2)}`;
+    return `$${price}`;
   };
 
   const getPeriod = (plan) => {
     if (plan.id === 'free') return 'forever';
+    if (plan.contactSales) return 'pricing';
     return billingPeriod === 'monthly' ? 'per month' : 'per year';
   };
 
   const getButtonText = (plan) => {
+    if (plan.contactSales) return 'Contact Sales';
     if (!user) return plan.id === 'free' ? 'Get Started Free' : `Get ${plan.name}`;
     
     if (user.subscription_tier === plan.tier) return 'Current Plan';
     if (plan.tier === 'free') return 'Free Plan';
-    if (user.subscription_tier === 'enterprise' && plan.tier === 'pro') return 'Downgrade';
+    if (user.subscription_tier === 'enterprise') return 'Current Plan';
+    if (user.subscription_tier === 'pro' && plan.tier === 'creator') return 'Downgrade';
     
     return `Upgrade to ${plan.name}`;
   };
