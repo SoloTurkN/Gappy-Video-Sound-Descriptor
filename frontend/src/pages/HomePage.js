@@ -258,6 +258,42 @@ const HomePage = () => {
                   </label>
                 </div>
 
+                {/* Transcript and Caption Options */}
+                <div style={styles.optionsSection}>
+                  <p style={styles.optionsSectionTitle}>Additional Options</p>
+                  
+                  <label style={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={generateTranscript}
+                      onChange={(e) => setGenerateTranscript(e.target.checked)}
+                      style={styles.checkbox}
+                    />
+                    <span>Generate Transcript (from original audio)</span>
+                  </label>
+                  
+                  <label style={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={generateCaptions}
+                      onChange={(e) => setGenerateCaptions(e.target.checked)}
+                      style={styles.checkbox}
+                    />
+                    <span>Generate Closed Captions (SRT/VTT)</span>
+                  </label>
+                  
+                  <label style={{ ...styles.checkboxLabel, opacity: generateCaptions ? 1 : 0.5 }}>
+                    <input
+                      type="checkbox"
+                      checked={embedCaptions}
+                      onChange={(e) => setEmbedCaptions(e.target.checked)}
+                      disabled={!generateCaptions}
+                      style={styles.checkbox}
+                    />
+                    <span>Embed captions in exported video</span>
+                  </label>
+                </div>
+
               </>
             )}
 
