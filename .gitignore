@@ -77,25 +77,7 @@ agenthub/agents/youtube/db
 .cache/
 
 # Mobile development
-android-sdk/ -e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
-backend/uploads/ef02e51c-ca8c-4f57-92e9-e5f5c016a510.mp4
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
-backend/uploads/bc761778-b55b-4778-882d-77aed394b04a.mp4
+android-sdk/
+
+# Large uploaded files (keep .env files for deployment)
+backend/uploads/*.mp4
