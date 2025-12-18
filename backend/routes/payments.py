@@ -26,64 +26,63 @@ logger = logging.getLogger(__name__)
 
 # Subscription packages - prices defined server-side only (security)
 SUBSCRIPTION_PACKAGES = {
-    "pro_monthly": {
-        "name": "Pro Monthly",
-        "amount": 9.99,
+    "creator_monthly": {
+        "name": "Creator Monthly",
+        "amount": 15.00,
         "currency": "usd",
-        "tier": "pro",
+        "tier": "creator",
         "billing_period": "monthly",
         "features": [
-            "50 videos per month",
-            "Unlimited video duration",
+            "20 videos per month",
+            "Up to 10 minutes each",
             "All export formats (MP4, AVI, MOV)",
             "Priority processing"
         ]
     },
-    "pro_yearly": {
-        "name": "Pro Yearly",
-        "amount": 99.99,
+    "creator_yearly": {
+        "name": "Creator Yearly",
+        "amount": 150.00,
         "currency": "usd",
-        "tier": "pro",
+        "tier": "creator",
         "billing_period": "yearly",
         "features": [
-            "50 videos per month",
-            "Unlimited video duration",
+            "20 videos per month",
+            "Up to 10 minutes each",
             "All export formats (MP4, AVI, MOV)",
             "Priority processing",
             "2 months free!"
         ]
     },
-    "enterprise_monthly": {
-        "name": "Enterprise Monthly",
-        "amount": 49.99,
+    "pro_monthly": {
+        "name": "Pro Monthly",
+        "amount": 49.00,
         "currency": "usd",
-        "tier": "enterprise",
+        "tier": "pro",
         "billing_period": "monthly",
         "features": [
-            "Unlimited videos",
-            "Unlimited video duration",
-            "All export formats",
-            "Priority support",
-            "API access",
-            "Custom integrations"
+            "50 videos per month",
+            "Up to 20 minutes each",
+            "All export formats (MP4, AVI, MOV)",
+            "Priority processing",
+            "Priority support"
         ]
     },
-    "enterprise_yearly": {
-        "name": "Enterprise Yearly",
-        "amount": 499.99,
+    "pro_yearly": {
+        "name": "Pro Yearly",
+        "amount": 490.00,
         "currency": "usd",
-        "tier": "enterprise",
+        "tier": "pro",
         "billing_period": "yearly",
         "features": [
-            "Unlimited videos",
-            "Unlimited video duration",
-            "All export formats",
+            "50 videos per month",
+            "Up to 20 minutes each",
+            "All export formats (MP4, AVI, MOV)",
+            "Priority processing",
             "Priority support",
-            "API access",
-            "Custom integrations",
             "2 months free!"
         ]
     }
+    # Enterprise is handled via contact sales, not automated checkout
 }
 
 
