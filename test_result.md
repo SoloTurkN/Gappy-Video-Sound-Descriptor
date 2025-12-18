@@ -550,6 +550,78 @@ frontend:
           agent: "testing"
           comment: "✅ Cross-user payment access prevention working correctly. Created two separate test users and verified that User A cannot access User B's payment status or transaction history. Payment status endpoint returns 403 when attempting to access another user's session_id. Payment history is properly filtered by user_email to show only the authenticated user's transactions."
 
+  - task: "Transcript & Caption - Upload with Transcript Options"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Upload endpoint with transcript options working correctly. POST /api/upload accepts new form fields: generate_transcript, generate_captions, embed_captions as boolean values. These options are properly stored in the project document and can be retrieved."
+
+  - task: "Transcript & Caption - Video Transcription"
+    implemented: true
+    working: true
+    file: "/app/backend/services/transcription.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ POST /api/transcribe/{project_id} working correctly. Extracts audio from video using FFmpeg, generates transcript using OpenAI Whisper via Emergent LLM Key, creates SRT and VTT format captions with timestamps. Returns proper response: {success: true, transcript_text: '...', has_srt: true/false, has_vtt: true/false}. Fixed issue with Whisper API response format - segments are returned as dictionaries, not objects with attributes."
+
+  - task: "Transcript & Caption - Get Transcript Data"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/transcript/{project_id} working correctly. Returns transcript data for a project with proper structure: {transcript_text: '...', has_srt: true/false, has_vtt: true/false}. Requires authentication and verifies project ownership."
+
+  - task: "Transcript & Caption - Download Captions"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/captions/{project_id}/{format} working correctly. Supports SRT, VTT, and TXT formats. Returns downloadable files with proper content types (application/x-subrip, text/vtt, text/plain) and Content-Disposition headers. Correctly rejects invalid formats with 400 status. Requires authentication and verifies project ownership."
+
+  - task: "Transcript & Caption - Authentication Requirements"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ All transcript and caption endpoints properly require authentication. POST /api/transcribe/{project_id}, GET /api/transcript/{project_id}, and GET /api/captions/{project_id}/{format} all return 401 for unauthenticated requests. Project ownership verification working correctly."
+
+  - task: "System Dependency - FFmpeg Installation"
+    implemented: true
+    working: true
+    file: "/app/backend/services/transcription.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ FFmpeg dependency resolved. Initially missing from system causing audio extraction failures. Installed FFmpeg 5.1.8 and verified functionality. Audio extraction from video files now working correctly for transcription pipeline."
+
 metadata:
   created_by: "testing_agent"
   version: "2.0"
