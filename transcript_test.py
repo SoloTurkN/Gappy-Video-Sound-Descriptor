@@ -48,14 +48,14 @@ class TranscriptTester:
     def create_test_video_with_audio(self, duration_seconds=5):
         """Create a test video with synthetic audio for transcription testing"""
         try:
-            # Create a temporary video file
-            temp_file = tempfile.NamedTemporaryFile(suffix='.mp4', delete=False)
-            temp_file.close()
+            # Create a temporary video file (without audio first)
+            temp_video = tempfile.NamedTemporaryFile(suffix='_video.mp4', delete=False)
+            temp_video.close()
             
             # Create a simple video with OpenCV
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')
             fps = 2.0
-            out = cv2.VideoWriter(temp_file.name, fourcc, fps, (640, 480))
+            out = cv2.VideoWriter(temp_video.name, fourcc, fps, (640, 480))
             
             # Create frames with text that could be "spoken"
             total_frames = int(duration_seconds * fps)
@@ -70,7 +70,35 @@ class TranscriptTester:
                 out.write(frame)
             
             out.release()
-            return temp_file.name
+            
+            # Now add a synthetic audio track using FFmpeg
+            temp_final = tempfile.NamedTemporaryFile(suffix='.mp4', delete=False)
+            temp_final.close()
+            
+            # Create a sine wave audio track
+            import subprocess
+            cmd = [
+                'ffmpeg', '-i', temp_video.name,
+                '-f', 'lavfi', '-i', f'sine=frequency=440:duration={duration_seconds}',
+                '-c:v', 'copy', '-c:a', 'aac', '-shortest', '-y',
+                temp_final.name
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            
+            # Clean up intermediate file
+            try:
+                os.unlink(temp_video.name)
+            except:
+                pass
+            
+            if result.returncode == 0:
+                return temp_final.name
+            else:
+                print(f"FFmpeg error adding audio: {result.stderr}")
+                # If FFmpeg fails, return the video-only file
+                return temp_video.name
+                
         except Exception as e:
             print(f"Error creating test video: {e}")
             return None
