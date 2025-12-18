@@ -495,9 +495,12 @@ async def upload_video(
     language: str = Form("en"),
     voice_id: str = Form(...),
     description_length: str = Form("1"),
+    generate_transcript: bool = Form(False),
+    generate_captions: bool = Form(False),
+    embed_captions: bool = Form(False),
     current_user: dict = Depends(get_current_user)
 ):
-    """Upload a video file with language, voice, and description length selection (requires authentication)"""
+    """Upload a video file with language, voice, description length, and transcript/caption options (requires authentication)"""
     try:
         # Generate unique filename
         project_id = str(uuid.uuid4())
@@ -533,7 +536,10 @@ async def upload_video(
             duration=video_duration,
             language=language,
             voice_id=voice_id,
-            description_length=description_length
+            description_length=description_length,
+            generate_transcript=generate_transcript,
+            generate_captions=generate_captions,
+            embed_captions=embed_captions
         )
         
         doc = project.model_dump()
