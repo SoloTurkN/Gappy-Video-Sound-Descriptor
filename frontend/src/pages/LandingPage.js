@@ -9,7 +9,7 @@ const LandingPage = () => {
     {
       icon: <Video size={28} color="#E91E8C" />,
       title: 'Smart Scene Detection',
-      description: 'AI automatically detects scene changes and key moments in your video for precise audio descriptions.'
+      description: 'Gappy AI automatically detects scene changes and key moments in your video for precise audio descriptions.'
     },
     {
       icon: <Sparkles size={28} color="#00D4D4" />,
