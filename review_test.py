@@ -100,7 +100,20 @@ class GappyDescribeReviewTester:
         """Test authentication endpoints"""
         print("\n" + "=" * 20 + " AUTHENTICATION FLOW " + "=" * 20)
         
-        # Test login with existing tester account
+        # First create a new test user
+        signup_success, signup_response = self.run_test(
+            "POST /api/auth/signup/email",
+            "POST",
+            "auth/signup/email",
+            200,
+            data=self.test_user,
+            auth_required=False
+        )
+        
+        if signup_success and signup_response.get('success'):
+            print(f"✅ User created: {self.test_user['email']}")
+        
+        # Test login with the new user
         login_data = {
             'email': self.test_user['email'],
             'password': self.test_user['password']
@@ -165,7 +178,7 @@ class GappyDescribeReviewTester:
                 self.session_cookies = response.cookies
                 print("✅ Re-logged in for subsequent tests")
         
-        return login_success and me_success and logout_success
+        return signup_success and login_success and me_success and logout_success
 
     def test_api_endpoints(self):
         """Test core API endpoints"""
