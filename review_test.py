@@ -18,10 +18,13 @@ class GappyDescribeReviewTester:
         self.session_cookies = None
         self.user_data = None
         
-        # Use existing tester account
+        # Create new test user for this review
+        import uuid
+        unique_id = str(uuid.uuid4())[:8]
         self.test_user = {
-            'email': 'tester1@gappylabs.com',
-            'password': 'GappyTest2024!'
+            'name': 'Review Tester',
+            'email': f'review.tester.{unique_id}@testmail.com',
+            'password': 'ReviewTest2024!'
         }
 
     def run_test(self, name, method, endpoint, expected_status, data=None, auth_required=True):
