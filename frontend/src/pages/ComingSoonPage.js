@@ -79,12 +79,12 @@ const ComingSoonPage = () => {
 
         {/* Footer links */}
         <div style={styles.footer} data-testid="coming-soon-footer">
-          <a href="https://gappy.com" style={styles.footerLink} target="_blank" rel="noopener noreferrer">
-            gappy.com
+          <a href="https://gappylabs.com" style={styles.footerLink} target="_blank" rel="noopener noreferrer">
+            gappylabs.com
           </a>
           <span style={styles.footerDivider}>/</span>
-          <a href="mailto:hello@gappylabs.com" style={styles.footerLink}>
-            hello@gappylabs.com
+          <a href="mailto:gappylabs@gmail.com" style={styles.footerLink}>
+            gappylabs@gmail.com
           </a>
         </div>
       </div>
