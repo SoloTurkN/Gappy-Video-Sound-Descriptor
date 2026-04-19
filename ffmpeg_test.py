@@ -36,7 +36,7 @@ def create_test_video(duration_seconds=3):
         return None
 
 def test_ffmpeg_features():
-    base_url = "https://describebot.preview.emergentagent.com"
+    base_url = "https://scene-describe-1.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Create test user and login
