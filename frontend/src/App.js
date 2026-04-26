@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
-import ComingSoonPage from './pages/ComingSoonPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -29,14 +28,24 @@ function ProtectedRoute({ children }) {
   return authenticated ? children : <Navigate to="/login" />;
 }
 
+function RootPage() {
+  const { authenticated, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <img src="/gappy-icon1.png" alt="Loading" style={{ width: '60px', height: '60px' }} className="spin-icon" />
+      </div>
+    );
+  }
+  
+  return authenticated ? <Navigate to="/dashboard" /> : <LandingPage />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
-      {/* Coming Soon as the public index */}
-      <Route path="/" element={<ComingSoonPage />} />
-
-      {/* App routes kept accessible for internal development */}
-      <Route path="/app" element={<LandingPage />} />
+      <Route path="/" element={<RootPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/pricing" element={<PricingPage />} />
