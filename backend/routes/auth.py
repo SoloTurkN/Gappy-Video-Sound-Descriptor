@@ -281,9 +281,9 @@ async def login_with_email(
         return {
             "success": True,
             "user": {
-                "id": user["id"],
+                "id": user.get("id", ""),
                 "email": user["email"],
-                "name": user["name"],
+                "name": user.get("name", ""),
                 "picture": user.get("picture", ""),
                 "subscription_tier": user.get("subscription_tier", "free")
             }
