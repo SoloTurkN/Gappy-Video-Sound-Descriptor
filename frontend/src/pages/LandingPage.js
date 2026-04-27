@@ -1,111 +1,135 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Video, CheckCircle2, BarChart3, FileText, ArrowRight } from 'lucide-react';
+import { ArrowRight, Check, Shield, Users, Upload, Sparkles, FileText } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
 
-  const features = [
-    {
-      icon: <Video size={28} color="#E91E8C" />,
-      title: 'Smart Scene Detection',
-      description: 'Gappy AI automatically detects scene changes and key moments in your video for precise audio descriptions.'
-    },
-    {
-      icon: <Sparkles size={28} color="#00D4D4" />,
-      title: 'AI-Powered Descriptions',
-      description: 'Gappy AI generates WCAG 1.2.3 Level AA compliant audio descriptions that meet accessibility standards.'
-    },
-    {
-      icon: <BarChart3 size={28} color="#6B5DD3" />,
-      title: 'Easy Editing & Export',
-      description: 'Review, edit, and export your videos in multiple formats (MP4, AVI, MOV) with embedded audio descriptions.'
-    }
-  ];
-
   return (
-    <div style={styles.container}>
+    <div style={styles.page} data-testid="landing-page">
       {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerContent}>
-          <div style={{...styles.logoContainer, cursor: 'pointer'}} onClick={() => navigate('/')}>
-            <img src="/gappy-logo1.png" alt="Gappy Describe" style={styles.logoText} />
+      <header style={styles.header} data-testid="landing-header">
+        <div style={styles.headerInner}>
+          <div style={styles.logoWrap} onClick={() => navigate('/')}>
+            <img src="/gappy-logo1.png" alt="Gappy Labs" style={styles.logo} />
           </div>
           <nav style={styles.nav}>
-            <button onClick={() => navigate('/pricing')} style={{...styles.navLink, background: 'none', border: 'none', cursor: 'pointer'}}>Pricing</button>
-            <button onClick={() => navigate('/login')} className="btn-secondary" style={{ padding: '10px 24px' }}>
-              Login
-            </button>
-            <button onClick={() => navigate('/signup')} className="btn-primary" style={{ padding: '10px 24px' }}>
-              Sign Up
-            </button>
+            <button onClick={() => navigate('/pricing')} style={styles.navLink} data-testid="nav-pricing">Pricing</button>
+            <button onClick={() => navigate('/login')} style={styles.loginBtn} data-testid="nav-login">Login</button>
+            <button onClick={() => navigate('/signup')} style={styles.signupBtn} data-testid="nav-signup">Sign Up</button>
           </nav>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section style={styles.hero}>
-        <div style={styles.heroContent}>
-          <h1 style={styles.heroTitle}>
-            Make Your Videos Accessible with <span style={styles.highlight}>Gappy Describe.</span>
-          </h1>
-          <p style={styles.heroSubtitle}>
-            Automatically generate WCAG-compliant audio descriptions for your videos.
-            <br />
-            Upload, analyze, and export in minutes.
-          </p>
-          <div style={styles.heroCta}>
-            <button onClick={() => navigate('/signup')} className="btn-primary" style={{ padding: '16px 32px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              Get Started Free
-              <ArrowRight size={20} style={{ marginLeft: '8px' }} />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section style={styles.featuresSection}>
-        <div style={styles.sectionContent}>
-          <h2 style={styles.sectionTitle}>How It Works</h2>
-          <div style={styles.featuresGrid}>
-            {features.map((feature, index) => (
-              <div key={index} className="card" style={styles.featureCard}>
-                <div style={styles.featureIcon}>{feature.icon}</div>
-                <h3 style={styles.featureTitle}>{feature.title}</h3>
-                <p style={styles.featureDescription}>{feature.description}</p>
+      <section style={styles.hero} data-testid="hero-section">
+        <div style={styles.heroInner}>
+          <div style={styles.heroLeft}>
+            <span style={styles.badge} data-testid="hero-badge">AI-POWERED ACCESSIBILITY</span>
+            <h1 style={styles.heroTitle} data-testid="hero-title">
+              Make Your Videos<br />Accessible with<br />
+              <span style={styles.heroHighlight}>Gappy Describe.</span>
+            </h1>
+            <p style={styles.heroSub} data-testid="hero-subtitle">
+              Automatically generate WCAG-compliant audio descriptions
+              for your videos. Upload, analyze, and export in minutes.
+            </p>
+            <div style={styles.heroCta}>
+              <button onClick={() => navigate('/signup')} style={styles.ctaBtn} data-testid="hero-cta">
+                Get Started Free <ArrowRight size={16} style={{ marginLeft: 8 }} />
+              </button>
+              <span style={styles.noCc}>
+                <Check size={14} style={{ marginRight: 6, color: '#6A39F5' }} />
+                No credit card required
+              </span>
+            </div>
+            <div style={styles.trustRow} data-testid="hero-trust-badges">
+              <div style={styles.trustItem}>
+                <Shield size={18} color="#6A39F5" />
+                <div>
+                  <div style={styles.trustTitle}>WCAG 1.2.3</div>
+                  <div style={styles.trustSub}>Level AA Compliant</div>
+                </div>
               </div>
-            ))}
+              <div style={styles.trustItem}>
+                <Shield size={18} color="#6A39F5" />
+                <div>
+                  <div style={styles.trustTitle}>Enterprise-Grade</div>
+                  <div style={styles.trustSub}>Security</div>
+                </div>
+              </div>
+              <div style={styles.trustItem}>
+                <Users size={18} color="#6A39F5" />
+                <div>
+                  <div style={styles.trustTitle}>Trusted by Educators</div>
+                  <div style={styles.trustSub}>& Organizations</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={styles.heroRight}>
+            <DashboardMockup />
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section style={styles.ctaSection}>
-        <div style={styles.ctaContent}>
-          <h2 style={styles.ctaTitle}>Ready to Make Your Videos Accessible?</h2>
-          <p style={styles.ctaSubtitle}>Join thousands of creators making their content accessible to everyone.</p>
-          <button 
-            onClick={() => navigate('/signup')} 
-            className="btn-primary" 
-            style={{ padding: '16px 40px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            Start Free Today
-            <ArrowRight size={20} style={{ marginLeft: '8px' }} />
-          </button>
+      {/* How It Works */}
+      <section style={styles.howSection} data-testid="how-it-works-section">
+        <h2 style={styles.sectionTitle}>How It Works</h2>
+        <p style={styles.sectionSub}>Three simple steps to make your content accessible to everyone.</p>
+        <div style={styles.stepsGrid}>
+          <StepCard
+            icon={<Upload size={22} color="#6A39F5" />}
+            number="1"
+            title="Upload Your Video"
+            desc="Upload your video file and our AI automatically analyzes the content, detecting scenes and key moments."
+          />
+          <StepCard
+            icon={<Sparkles size={22} color="#6A39F5" />}
+            number="2"
+            title="AI Generates Descriptions"
+            desc="Gappy AI creates WCAG 1.2.3 Level AA compliant audio descriptions that meet accessibility standards."
+          />
+          <StepCard
+            icon={<FileText size={22} color="#6A39F5" />}
+            number="3"
+            title="Review & Export"
+            desc="Edit and refine descriptions with our built-in editor, then export in multiple formats or embed directly."
+          />
         </div>
+      </section>
+
+      {/* Bottom CTA */}
+      <section style={styles.bottomCta} data-testid="bottom-cta-section">
+        <h2 style={styles.bottomCtaTitle}>Ready to Make Your Videos Accessible?</h2>
+        <p style={styles.bottomCtaSub}>Join thousands of educators and organizations creating inclusive content.</p>
+        <button onClick={() => navigate('/signup')} style={styles.ctaBtn} data-testid="bottom-cta-btn">
+          Start Free Today <ArrowRight size={16} style={{ marginLeft: 8 }} />
+        </button>
+        <span style={{ ...styles.noCc, marginTop: 16 }}>
+          <Check size={14} style={{ marginRight: 6, color: '#6A39F5' }} />
+          No credit card required
+        </span>
       </section>
 
       {/* Footer */}
-      <footer style={styles.footer}>
-        <div style={styles.footerContent}>
+      <footer style={styles.footer} data-testid="landing-footer">
+        <div style={styles.footerInner}>
           <div style={styles.footerLeft}>
-            <img src="/gappy-labs-logo-white-text.png" alt="Gappy Labs" style={styles.footerLogo} />
-            <p style={styles.footerText}>© 2025 All rights reserved.</p>
+            <div style={styles.footerBrand}>GAPPY<span style={{ color: '#6A39F5' }}>LABS</span></div>
+            <p style={styles.footerDesc}>
+              AI-powered tools for accessible video.<br />
+              Built for educators, creators, and<br />
+              organizations committed to inclusion.
+            </p>
           </div>
-          <div style={styles.footerLinks}>
-            <button onClick={() => navigate('/privacy')} style={{...styles.footerLink, background: 'none', border: 'none', cursor: 'pointer'}}>Privacy</button>
+          <div style={styles.footerCenter}>
+            <span style={styles.footerCopy}>&copy; 2025 Gappy Labs. All rights reserved.</span>
+          </div>
+          <div style={styles.footerRight}>
+            <a href="/privacy" style={styles.footerLink}>Privacy</a>
             <a href="#" style={styles.footerLink}>Terms</a>
-            <a href="#" style={styles.footerLink}>Contact</a>
+            <a href="mailto:gappylabs@gmail.com" style={styles.footerLink}>Contact</a>
           </div>
         </div>
       </footer>
@@ -113,182 +137,438 @@ const LandingPage = () => {
   );
 };
 
+/* Step Card Component */
+const StepCard = ({ icon, number, title, desc }) => (
+  <div style={styles.stepCard} data-testid={`step-card-${number}`}>
+    <div style={styles.stepTop}>
+      <div style={styles.stepIcon}>{icon}</div>
+      <span style={styles.stepNumber}>{number}</span>
+    </div>
+    <h3 style={styles.stepTitle}>{title}</h3>
+    <p style={styles.stepDesc}>{desc}</p>
+  </div>
+);
+
+/* Dashboard Mockup Component */
+const DashboardMockup = () => (
+  <div style={styles.mockup} data-testid="dashboard-mockup">
+    {/* Mockup Header */}
+    <div style={styles.mockupHeader}>
+      <span style={{ fontSize: 11, fontWeight: 600, color: '#6A39F5' }}>Gappy Describe</span>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e5e7eb' }} />
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e5e7eb' }} />
+      </div>
+    </div>
+    <div style={styles.mockupBody}>
+      {/* Sidebar */}
+      <div style={styles.mockupSidebar}>
+        {['Dashboard', 'Videos', 'Projects', 'Exports', 'Settings'].map((item, i) => (
+          <div key={item} style={{ ...styles.mockupNavItem, ...(i === 0 ? { background: '#EAE8FF', color: '#6A39F5', fontWeight: 600 } : {}) }}>
+            {item}
+          </div>
+        ))}
+      </div>
+      {/* Main Content */}
+      <div style={styles.mockupContent}>
+        <div style={styles.mockupTopBar}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 12, color: '#1a1a2e' }}>Dashboard</div>
+            <div style={{ fontSize: 8, color: '#9ca3af' }}>Welcome back! Here's what's happening.</div>
+          </div>
+          <div style={styles.mockupUploadBtn}>Upload Video</div>
+        </div>
+        {/* Stats */}
+        <div style={styles.mockupStats}>
+          {[
+            { val: '24', label: 'Videos Processed' },
+            { val: '18', label: 'Descriptions Generated' },
+            { val: '6.2 hrs', label: 'Time Saved' },
+            { val: '98%', label: 'Accuracy Rate' },
+          ].map((s) => (
+            <div key={s.label} style={styles.mockupStat}>
+              <div style={{ fontWeight: 700, fontSize: 13, color: '#1a1a2e' }}>{s.val}</div>
+              <div style={{ fontSize: 7, color: '#9ca3af' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+        {/* Recent Activity */}
+        <div style={{ marginTop: 10 }}>
+          <div style={{ fontSize: 9, fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Recent Activity</div>
+          {[
+            { title: 'Lecture: Renaissance Art History', time: '2 min ago', status: 'Completed' },
+            { title: 'Campus Tour Video', time: '15 min ago', status: 'Completed' },
+            { title: 'Physics Lab Demonstration', time: '32 min ago', status: 'Processing' },
+          ].map((item) => (
+            <div key={item.title} style={styles.mockupActivity}>
+              <div style={styles.mockupThumb} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 8, fontWeight: 600, color: '#1a1a2e' }}>{item.title}</div>
+                <div style={{ fontSize: 7, color: '#9ca3af' }}>MP4 &middot; {item.time}</div>
+              </div>
+              <span style={{ fontSize: 7, color: item.status === 'Completed' ? '#10b981' : '#f59e0b', fontWeight: 500 }}>
+                {item.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const styles = {
-  container: {
+  page: {
     minHeight: '100vh',
-    background: 'white',
+    background: '#ffffff',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    color: '#1a1a2e',
   },
+  /* Header */
   header: {
-    borderBottom: '1px solid #e5e7eb',
-    padding: '16px 0',
+    borderBottom: '1px solid #f0f0f0',
+    background: '#ffffff',
     position: 'sticky',
     top: 0,
-    background: 'white',
-    zIndex: 50,
+    zIndex: 100,
   },
-  headerContent: {
-    maxWidth: '1200px',
+  headerInner: {
+    maxWidth: 1200,
     margin: '0 auto',
-    padding: '0 24px',
+    padding: '16px 32px',
     display: 'flex',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
-  logoContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    cursor: 'pointer',
-  },
-  logoIcon: {
-    height: '40px',
-    width: 'auto',
-  },
-  logoText: {
-    height: '32px',
-    width: 'auto',
-  },
-  nav: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '24px',
-  },
+  logoWrap: { cursor: 'pointer' },
+  logo: { height: 32, objectFit: 'contain' },
+  nav: { display: 'flex', alignItems: 'center', gap: 12 },
   navLink: {
-    fontSize: '16px',
-    color: '#4a5568',
-    textDecoration: 'none',
-    transition: 'color 0.2s',
+    background: 'none',
+    border: 'none',
+    fontSize: 14,
+    fontWeight: 500,
+    color: '#374151',
     cursor: 'pointer',
-    fontFamily: 'inherit',
+    padding: '8px 16px',
+    fontFamily: "'Inter', sans-serif",
   },
+  loginBtn: {
+    background: '#ffffff',
+    border: '1px solid #e5e7eb',
+    fontSize: 14,
+    fontWeight: 500,
+    color: '#374151',
+    cursor: 'pointer',
+    padding: '8px 20px',
+    borderRadius: 8,
+    fontFamily: "'Inter', sans-serif",
+  },
+  signupBtn: {
+    background: '#6A39F5',
+    border: 'none',
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#ffffff',
+    cursor: 'pointer',
+    padding: '8px 20px',
+    borderRadius: 8,
+    fontFamily: "'Inter', sans-serif",
+  },
+  /* Hero */
   hero: {
-    padding: '80px 24px',
-    textAlign: 'center',
-  },
-  heroContent: {
-    maxWidth: '800px',
+    padding: '80px 32px 60px',
+    maxWidth: 1200,
     margin: '0 auto',
+  },
+  heroInner: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 60,
+  },
+  heroLeft: { flex: 1 },
+  heroRight: { flex: 1, display: 'flex', justifyContent: 'center' },
+  badge: {
+    display: 'inline-block',
+    background: '#EAE8FF',
+    color: '#6A39F5',
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: '0.05em',
+    padding: '6px 14px',
+    borderRadius: 4,
+    border: '1px solid #d4d0fb',
+    marginBottom: 24,
   },
   heroTitle: {
-    fontSize: '56px',
-    fontWeight: '800',
-    lineHeight: '1.2',
-    marginBottom: '24px',
-    color: '#1a202c',
+    fontSize: 'clamp(2rem, 4vw, 3rem)',
+    fontWeight: 800,
+    lineHeight: 1.15,
+    color: '#1a1a2e',
+    marginBottom: 20,
+    letterSpacing: '-0.02em',
   },
-  highlight: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-    whiteSpace: 'nowrap',
+  heroHighlight: {
+    color: '#6A39F5',
   },
-  heroSubtitle: {
-    fontSize: '20px',
-    color: '#4a5568',
-    marginBottom: '32px',
-    lineHeight: '1.6',
+  heroSub: {
+    fontSize: 16,
+    color: '#6b7280',
+    lineHeight: 1.7,
+    marginBottom: 32,
+    maxWidth: 420,
   },
   heroCta: {
     display: 'flex',
-    justifyContent: 'center',
-    gap: '16px',
+    alignItems: 'center',
+    gap: 20,
+    marginBottom: 48,
+    flexWrap: 'wrap',
   },
-  featuresSection: {
-    padding: '80px 24px',
-    background: '#f7fafc',
+  ctaBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    background: '#1a1a2e',
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: 600,
+    padding: '14px 28px',
+    borderRadius: 10,
+    border: 'none',
+    cursor: 'pointer',
+    fontFamily: "'Inter', sans-serif",
+    transition: 'background 0.2s',
   },
-  sectionContent: {
-    maxWidth: '1200px',
+  noCc: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: 13,
+    color: '#6b7280',
+  },
+  trustRow: {
+    display: 'flex',
+    gap: 32,
+    flexWrap: 'wrap',
+  },
+  trustItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+  trustTitle: { fontSize: 12, fontWeight: 600, color: '#374151' },
+  trustSub: { fontSize: 11, color: '#9ca3af' },
+  /* How It Works */
+  howSection: {
+    padding: '80px 32px',
+    maxWidth: 1200,
     margin: '0 auto',
+    textAlign: 'center',
   },
   sectionTitle: {
-    fontSize: '40px',
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: '48px',
-    color: '#1a202c',
+    fontSize: 'clamp(1.5rem, 3vw, 2.25rem)',
+    fontWeight: 800,
+    color: '#1a1a2e',
+    marginBottom: 12,
+    letterSpacing: '-0.02em',
   },
-  featuresGrid: {
+  sectionSub: {
+    fontSize: 15,
+    color: '#6b7280',
+    marginBottom: 48,
+  },
+  stepsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: '32px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: 24,
   },
-  featureCard: {
-    padding: '32px',
-    textAlign: 'center',
+  stepCard: {
+    background: '#ffffff',
+    border: '1px solid #f0f0f0',
+    borderRadius: 14,
+    padding: '28px 24px',
+    textAlign: 'left',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
   },
-  featureIcon: {
-    marginBottom: '20px',
+  stepTop: {
     display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+  },
+  stepIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    background: '#EAE8FF',
+    display: 'flex',
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  featureTitle: {
-    fontSize: '24px',
-    fontWeight: '600',
-    marginBottom: '12px',
-    color: '#1a202c',
+  stepNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: '50%',
+    border: '2px solid #6A39F5',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 13,
+    fontWeight: 700,
+    color: '#6A39F5',
   },
-  featureDescription: {
-    fontSize: '16px',
-    color: '#4a5568',
-    lineHeight: '1.6',
+  stepTitle: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: '#1a1a2e',
+    marginBottom: 8,
   },
-  ctaSection: {
-    padding: '80px 24px',
-    background: 'white',
-    color: '#1a202c',
+  stepDesc: {
+    fontSize: 13,
+    color: '#6b7280',
+    lineHeight: 1.6,
+  },
+  /* Bottom CTA */
+  bottomCta: {
+    background: '#f9f8fe',
+    padding: '80px 32px',
     textAlign: 'center',
   },
-  ctaContent: {
-    maxWidth: '800px',
-    margin: '0 auto',
+  bottomCtaTitle: {
+    fontSize: 'clamp(1.5rem, 3vw, 2rem)',
+    fontWeight: 800,
+    color: '#1a1a2e',
+    marginBottom: 12,
+    letterSpacing: '-0.02em',
   },
-  ctaTitle: {
-    fontSize: '40px',
-    fontWeight: '700',
-    marginBottom: '16px',
-    color: '#1a202c',
+  bottomCtaSub: {
+    fontSize: 15,
+    color: '#6b7280',
+    marginBottom: 28,
   },
-  ctaSubtitle: {
-    fontSize: '20px',
-    marginBottom: '32px',
-    color: '#4a5568',
-  },
+  /* Footer */
   footer: {
-    padding: '48px 24px',
-    background: '#1a202c',
+    background: '#1a1a2e',
+    padding: '48px 32px',
   },
-  footerContent: {
-    maxWidth: '1200px',
+  footerInner: {
+    maxWidth: 1200,
     margin: '0 auto',
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 32,
+  },
+  footerLeft: {},
+  footerBrand: {
+    fontSize: 18,
+    fontWeight: 800,
+    color: '#ffffff',
+    marginBottom: 10,
+    letterSpacing: '-0.01em',
+  },
+  footerDesc: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.5)',
+    lineHeight: 1.7,
+  },
+  footerCenter: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  footerCopy: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.4)',
+  },
+  footerRight: {
+    display: 'flex',
+    gap: 24,
+  },
+  footerLink: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.7)',
+    textDecoration: 'none',
+    fontWeight: 500,
+  },
+  /* Dashboard Mockup */
+  mockup: {
+    width: '100%',
+    maxWidth: 480,
+    background: '#ffffff',
+    borderRadius: 14,
+    border: '1px solid #e5e7eb',
+    boxShadow: '0 20px 60px rgba(106, 57, 245, 0.08), 0 4px 20px rgba(0,0,0,0.04)',
+    overflow: 'hidden',
+  },
+  mockupHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '10px 14px',
+    borderBottom: '1px solid #f0f0f0',
+  },
+  mockupBody: {
+    display: 'flex',
+    minHeight: 280,
+  },
+  mockupSidebar: {
+    width: 90,
+    borderRight: '1px solid #f0f0f0',
+    padding: '10px 6px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+  },
+  mockupNavItem: {
+    fontSize: 8,
+    padding: '6px 8px',
+    borderRadius: 5,
+    color: '#6b7280',
+    cursor: 'default',
+  },
+  mockupContent: {
+    flex: 1,
+    padding: '12px 14px',
+  },
+  mockupTopBar: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 10,
   },
-  footerLeft: {
+  mockupUploadBtn: {
+    background: '#6A39F5',
+    color: '#fff',
+    fontSize: 8,
+    fontWeight: 600,
+    padding: '5px 10px',
+    borderRadius: 5,
+  },
+  mockupStats: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: 6,
+  },
+  mockupStat: {
+    background: '#f9fafb',
+    borderRadius: 6,
+    padding: '8px 6px',
+    textAlign: 'center',
+    border: '1px solid #f0f0f0',
+  },
+  mockupActivity: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: 8,
+    padding: '6px 0',
+    borderBottom: '1px solid #f9fafb',
   },
-  footerLogo: {
-    height: '28px',
-    width: 'auto',
-  },
-  footerText: {
-    color: '#a0aec0',
-    fontSize: '14px',
-    margin: 0,
-  },
-  footerLinks: {
-    display: 'flex',
-    gap: '24px',
-  },
-  footerLink: {
-    color: '#a0aec0',
-    fontSize: '14px',
-    textDecoration: 'none',
-    transition: 'color 0.2s',
+  mockupThumb: {
+    width: 28,
+    height: 20,
+    borderRadius: 3,
+    background: 'linear-gradient(135deg, #EAE8FF 0%, #d4d0fb 100%)',
+    flexShrink: 0,
   },
 };
 
