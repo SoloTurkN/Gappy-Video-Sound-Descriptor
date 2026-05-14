@@ -32,6 +32,7 @@ const EditorPage = () => {
   const [merging, setMerging] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
   const [transcriptData, setTranscriptData] = useState(null);
+  const [generatingTranscript, setGeneratingTranscript] = useState(false);
 
   useEffect(() => {
     loadProject();
@@ -221,6 +222,25 @@ const EditorPage = () => {
     } catch (error) {
       console.error('Download error:', error);
       toast.error(`No ${format.toUpperCase()} captions available`);
+    }
+  };
+
+  const triggerTranscription = async () => {
+    setGeneratingTranscript(true);
+    toast.info('Generating transcript... This may take a minute.');
+    try {
+      await axios.post(`${API}/transcribe/${projectId}`, {}, {
+        withCredentials: true,
+        timeout: 300000
+      });
+      toast.success('Transcript generated successfully!');
+      const res = await axios.get(`${API}/transcript/${projectId}`, { withCredentials: true });
+      setTranscriptData(res.data);
+    } catch (error) {
+      console.error('Transcription error:', error);
+      toast.error(error.response?.data?.detail || 'Transcription failed');
+    } finally {
+      setGeneratingTranscript(false);
     }
   };
 
@@ -444,17 +464,15 @@ const EditorPage = () => {
                   Merge Scenes
                 </button>
               )}
-              {(project?.generate_transcript || project?.generate_captions) && (
-                <button
-                  onClick={loadTranscript}
-                  className="btn-secondary"
-                  style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13 }}
-                  data-testid="transcript-button"
-                >
-                  <FileText size={16} />
-                  Transcript & CC
-                </button>
-              )}
+              <button
+                onClick={loadTranscript}
+                className="btn-secondary"
+                style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13 }}
+                data-testid="transcript-button"
+              >
+                <FileText size={16} />
+                Transcript & CC
+              </button>
               <button
                 onClick={() => setShowExportDialog(true)}
                 className="btn-primary"
@@ -653,7 +671,7 @@ const EditorPage = () => {
       {/* Transcript & CC Panel */}
       {showTranscript && (
         <div style={styles.modalOverlay} onClick={() => setShowTranscript(false)}>
-          <div style={{ ...styles.modalContent, maxWidth: 600 }} onClick={(e) => e.stopPropagation()} data-testid="transcript-panel">
+          <div style={{ background: '#ffffff', borderRadius: 16, padding: 32, width: '90%', maxWidth: 600, position: 'relative' }} onClick={(e) => e.stopPropagation()} data-testid="transcript-panel">
             <div style={styles.modalHeader}>
               <h3 style={styles.modalTitle}>Transcript & Closed Captions</h3>
               <button onClick={() => setShowTranscript(false)} style={styles.closeButton} data-testid="transcript-close">
@@ -718,9 +736,30 @@ const EditorPage = () => {
                 </div>
               </>
             ) : (
-              <p style={{ color: '#6b7280', fontSize: 14, textAlign: 'center', padding: '20px 0' }}>
-                No transcript available. Transcription may still be processing or was not enabled during upload.
-              </p>
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 16 }}>
+                  No transcript available yet.
+                </p>
+                <button
+                  onClick={triggerTranscription}
+                  disabled={generatingTranscript}
+                  className="btn-primary"
+                  style={{ padding: '10px 24px', display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14 }}
+                  data-testid="generate-transcript-btn"
+                >
+                  {generatingTranscript ? (
+                    <>
+                      <div className="spinner" style={{ width: 14, height: 14, borderTopColor: 'white' }} />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <FileText size={16} />
+                      Generate Transcript Now
+                    </>
+                  )}
+                </button>
+              </div>
             )}
           </div>
         </div>
