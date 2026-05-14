@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Save, Download, Edit2, Play, X, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Download, Edit2, Play, X, Trash2, Merge, CheckSquare, Square } from 'lucide-react';
 import { toast } from 'sonner';
 import Navbar from '../components/Navbar';
 
@@ -27,6 +27,9 @@ const EditorPage = () => {
   const [editingName, setEditingName] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [abortController, setAbortController] = useState(null);
+  const [mergeMode, setMergeMode] = useState(false);
+  const [selectedScenes, setSelectedScenes] = useState(new Set());
+  const [merging, setMerging] = useState(false);
 
   useEffect(() => {
     loadProject();
@@ -125,11 +128,9 @@ const EditorPage = () => {
       await axios.delete(`${API}/scenes/${sceneId}`, { withCredentials: true });
       toast.success('Scene deleted successfully');
       
-      // Reload scenes
       const response = await axios.get(`${API}/projects/${projectId}/scenes`, { withCredentials: true });
       setScenes(response.data);
       
-      // Update project info
       setProject(prev => ({
         ...prev,
         total_scenes: response.data.length
@@ -138,6 +139,55 @@ const EditorPage = () => {
       console.error('Delete error:', error);
       toast.error('Failed to delete scene');
     }
+  };
+
+  const toggleSceneSelection = (sceneId) => {
+    setSelectedScenes(prev => {
+      const next = new Set(prev);
+      if (next.has(sceneId)) {
+        next.delete(sceneId);
+      } else {
+        next.add(sceneId);
+      }
+      return next;
+    });
+  };
+
+  const handleMergeScenes = async () => {
+    if (selectedScenes.size < 2) {
+      toast.error('Select at least 2 scenes to merge');
+      return;
+    }
+
+    const count = selectedScenes.size;
+    if (!window.confirm(`Merge ${count} scenes? The earliest scene's description will be kept. This cannot be undone.`)) {
+      return;
+    }
+
+    setMerging(true);
+    try {
+      await axios.post(`${API}/scenes/merge`, {
+        scene_ids: Array.from(selectedScenes)
+      }, { withCredentials: true });
+
+      toast.success(`${count} scenes merged successfully`);
+
+      const response = await axios.get(`${API}/projects/${projectId}/scenes`, { withCredentials: true });
+      setScenes(response.data);
+      setProject(prev => ({ ...prev, total_scenes: response.data.length }));
+      setSelectedScenes(new Set());
+      setMergeMode(false);
+    } catch (error) {
+      console.error('Merge error:', error);
+      toast.error(error.response?.data?.detail || 'Failed to merge scenes');
+    } finally {
+      setMerging(false);
+    }
+  };
+
+  const exitMergeMode = () => {
+    setMergeMode(false);
+    setSelectedScenes(new Set());
   };
 
   const handleExport = async () => {
@@ -320,15 +370,58 @@ const EditorPage = () => {
           <ArrowLeft size={16} />
           Back to Dashboard
         </button>
-        <button
-          onClick={() => setShowExportDialog(true)}
-          className="btn-primary"
-          style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13 }}
-          data-testid="export-button"
-        >
-          <Download size={16} />
-          Export
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {mergeMode ? (
+            <>
+              <button
+                onClick={handleMergeScenes}
+                disabled={selectedScenes.size < 2 || merging}
+                className="btn-primary"
+                style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13, opacity: selectedScenes.size < 2 ? 0.5 : 1 }}
+                data-testid="merge-confirm-button"
+              >
+                {merging ? (
+                  <div className="spinner" style={{ width: 14, height: 14, borderTopColor: 'white' }} />
+                ) : (
+                  <Merge size={16} />
+                )}
+                Merge {selectedScenes.size > 0 ? `(${selectedScenes.size})` : ''}
+              </button>
+              <button
+                onClick={exitMergeMode}
+                className="btn-secondary"
+                style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13 }}
+                data-testid="merge-cancel-button"
+              >
+                <X size={16} />
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              {scenes.length >= 2 && (
+                <button
+                  onClick={() => setMergeMode(true)}
+                  className="btn-secondary"
+                  style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13 }}
+                  data-testid="merge-mode-button"
+                >
+                  <Merge size={16} />
+                  Merge Scenes
+                </button>
+              )}
+              <button
+                onClick={() => setShowExportDialog(true)}
+                className="btn-primary"
+                style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13 }}
+                data-testid="export-button"
+              >
+                <Download size={16} />
+                Export
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Content */}
@@ -372,13 +465,40 @@ const EditorPage = () => {
           </div>
         </div>
 
+        {mergeMode && (
+          <div style={styles.mergeBanner} data-testid="merge-banner">
+            <Merge size={16} />
+            <span>Select scenes to merge. The earliest scene's description and thumbnail will be kept.</span>
+          </div>
+        )}
+
         <div style={styles.scenesGrid}>
           {scenes.map((scene, index) => {
             const thumbnailFileName = scene.thumbnail_path.split('/').pop();
             const thumbnailUrl = `${API}/thumbnail/${projectId}/${thumbnailFileName}`;
+            const isSelected = selectedScenes.has(scene.id);
             
             return (
-              <div key={scene.id} className="card fade-in" style={styles.sceneCard} data-testid={`scene-card-${index}`}>
+              <div
+                key={scene.id}
+                className="card fade-in"
+                style={{
+                  ...styles.sceneCard,
+                  ...(mergeMode && isSelected ? styles.sceneCardSelected : {}),
+                  ...(mergeMode ? { cursor: 'pointer' } : {})
+                }}
+                onClick={mergeMode ? () => toggleSceneSelection(scene.id) : undefined}
+                data-testid={`scene-card-${index}`}
+              >
+                {mergeMode && (
+                  <div style={styles.checkboxWrap} data-testid={`scene-checkbox-${index}`}>
+                    {isSelected ? (
+                      <CheckSquare size={22} color="#6A39F5" />
+                    ) : (
+                      <Square size={22} color="#d1d5db" />
+                    )}
+                  </div>
+                )}
                 <div style={styles.sceneHeader}>
                   <span style={styles.sceneNumber}>Scene {index + 1}</span>
                   <span style={styles.timestamp}>{scene.timestamp.toFixed(2)}s</span>
@@ -682,6 +802,7 @@ const styles = {
   sceneCard: {
     overflow: 'hidden',
     transition: 'transform 0.2s, box-shadow 0.2s',
+    position: 'relative',
   },
   sceneHeader: {
     display: 'flex',
@@ -763,6 +884,34 @@ const styles = {
     display: 'flex',
     gap: '12px',
     marginTop: '24px',
+  },
+  mergeBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    background: '#EAE8FF',
+    color: '#6A39F5',
+    padding: '12px 16px',
+    borderRadius: 10,
+    fontSize: 14,
+    fontWeight: 500,
+    marginBottom: 24,
+  },
+  sceneCardSelected: {
+    outline: '2px solid #6A39F5',
+    outlineOffset: -2,
+    background: '#f9f8fe',
+  },
+  checkboxWrap: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    zIndex: 2,
+    background: '#fff',
+    borderRadius: 4,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 };
 

@@ -1174,6 +1174,73 @@ async def get_scenes(project_id: str, current_user: dict = Depends(get_current_u
     scenes = await db.scenes.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
     return scenes
 
+@api_router.post("/scenes/merge")
+async def merge_scenes(request: Request, current_user: dict = Depends(get_current_user)):
+    """Merge multiple scenes into one, keeping the first scene's description and thumbnail."""
+    try:
+        body = await request.json()
+        scene_ids = body.get("scene_ids", [])
+        
+        if len(scene_ids) < 2:
+            raise HTTPException(status_code=400, detail="At least 2 scenes are required to merge")
+        
+        # Fetch all scenes and verify ownership
+        scenes_to_merge = []
+        for sid in scene_ids:
+            scene = await db.scenes.find_one({"id": sid}, {"_id": 0})
+            if not scene:
+                raise HTTPException(status_code=404, detail=f"Scene {sid} not found")
+            scenes_to_merge.append(scene)
+        
+        # Verify all scenes belong to the same project
+        project_ids = set(s["project_id"] for s in scenes_to_merge)
+        if len(project_ids) > 1:
+            raise HTTPException(status_code=400, detail="All scenes must belong to the same project")
+        
+        project_id = scenes_to_merge[0]["project_id"]
+        project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+        if not project or project.get("user_email") != current_user["email"]:
+            raise HTTPException(status_code=403, detail="You don't have permission to modify these scenes")
+        
+        # Sort by timestamp to keep the earliest scene
+        scenes_to_merge.sort(key=lambda s: s.get("timestamp", 0))
+        
+        # Keep the first scene (earliest timestamp), delete the rest
+        keep_scene = scenes_to_merge[0]
+        delete_scenes = scenes_to_merge[1:]
+        
+        # Delete the merged-away scenes and their files
+        project_dir = UPLOADS_DIR / project_id
+        for scene in delete_scenes:
+            if scene.get("audio_path"):
+                audio_file = project_dir / Path(scene["audio_path"]).name
+                if audio_file.exists():
+                    os.remove(str(audio_file))
+            if scene.get("thumbnail_path"):
+                thumb_file = project_dir / Path(scene["thumbnail_path"]).name
+                if thumb_file.exists():
+                    os.remove(str(thumb_file))
+            await db.scenes.delete_one({"id": scene["id"]})
+        
+        # Update project total_scenes count
+        remaining = await db.scenes.count_documents({"project_id": project_id})
+        await db.projects.update_one(
+            {"id": project_id},
+            {"$set": {"total_scenes": remaining}}
+        )
+        
+        return {
+            "status": "success",
+            "kept_scene_id": keep_scene["id"],
+            "deleted_count": len(delete_scenes),
+            "remaining_scenes": remaining
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logging.error(f"Error merging scenes: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.put("/scenes/{scene_id}")
 async def update_scene(scene_id: str, update: SceneUpdate, current_user: dict = Depends(get_current_user)):
     """Update scene description and regenerate audio (requires authentication)"""

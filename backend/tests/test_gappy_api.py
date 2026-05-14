@@ -217,17 +217,19 @@ class TestSceneMerging:
         assert callable(compare_scene_similarity)
         print("✓ Scene merging functions exist and are callable")
     
-    def test_merge_similar_scenes_empty_list(self):
+    @pytest.mark.asyncio
+    async def test_merge_similar_scenes_empty_list(self):
         """Test merge_similar_scenes with empty list"""
         import sys
         sys.path.insert(0, '/app/backend')
         from server import merge_similar_scenes
         
-        result = merge_similar_scenes([])
+        result = await merge_similar_scenes([])
         assert result == []
         print("✓ merge_similar_scenes handles empty list")
     
-    def test_merge_similar_scenes_single_scene(self):
+    @pytest.mark.asyncio
+    async def test_merge_similar_scenes_single_scene(self):
         """Test merge_similar_scenes with single scene"""
         import sys
         import numpy as np
@@ -238,9 +240,69 @@ class TestSceneMerging:
         dummy_frame = np.zeros((100, 100, 3), dtype=np.uint8)
         scenes = [{'frame_number': 0, 'timestamp': 0.0, 'frame': dummy_frame}]
         
-        result = merge_similar_scenes(scenes)
+        result = await merge_similar_scenes(scenes)
         assert len(result) == 1
         print("✓ merge_similar_scenes handles single scene")
+
+
+class TestMergeScenesEndpoint:
+    """Tests for POST /api/scenes/merge endpoint (manual scene merging feature)"""
+    
+    @pytest.fixture
+    def authenticated_session(self):
+        """Create an authenticated session"""
+        session = requests.Session()
+        response = session.post(
+            f"{BASE_URL}/api/auth/login/email",
+            json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
+        )
+        assert response.status_code == 200
+        return session
+    
+    def test_merge_requires_auth(self):
+        """Test POST /api/scenes/merge returns 401 without authentication"""
+        response = requests.post(
+            f"{BASE_URL}/api/scenes/merge",
+            json={"scene_ids": ["id1", "id2"]}
+        )
+        assert response.status_code == 401
+        print("✓ Merge endpoint correctly requires authentication")
+    
+    def test_merge_returns_400_with_empty_list(self, authenticated_session):
+        """Test POST /api/scenes/merge returns 400 when scene_ids is empty"""
+        response = authenticated_session.post(
+            f"{BASE_URL}/api/scenes/merge",
+            json={"scene_ids": []}
+        )
+        assert response.status_code == 400
+        data = response.json()
+        assert "detail" in data
+        assert "2 scenes" in data["detail"].lower() or "at least" in data["detail"].lower()
+        print("✓ Merge endpoint returns 400 for empty scene_ids list")
+    
+    def test_merge_returns_400_with_single_scene(self, authenticated_session):
+        """Test POST /api/scenes/merge returns 400 when only 1 scene_id provided"""
+        response = authenticated_session.post(
+            f"{BASE_URL}/api/scenes/merge",
+            json={"scene_ids": ["single-scene-id"]}
+        )
+        assert response.status_code == 400
+        data = response.json()
+        assert "detail" in data
+        assert "2 scenes" in data["detail"].lower() or "at least" in data["detail"].lower()
+        print("✓ Merge endpoint returns 400 for single scene_id")
+    
+    def test_merge_returns_404_for_nonexistent_scenes(self, authenticated_session):
+        """Test POST /api/scenes/merge returns 404 when scene_ids don't exist"""
+        response = authenticated_session.post(
+            f"{BASE_URL}/api/scenes/merge",
+            json={"scene_ids": ["nonexistent-id-1", "nonexistent-id-2"]}
+        )
+        assert response.status_code == 404
+        data = response.json()
+        assert "detail" in data
+        assert "not found" in data["detail"].lower()
+        print("✓ Merge endpoint returns 404 for non-existent scene_ids")
 
 
 class TestAuthInactivityTimeout:
