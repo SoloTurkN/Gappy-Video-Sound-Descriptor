@@ -243,21 +243,18 @@ def detect_scene_cuts(video_path: str, threshold: float = 30.0):
 
 def compare_scene_similarity(frame_a, frame_b, threshold: float = 0.75) -> bool:
     """
-    Compare two frames using color histogram correlation.
-    Returns True if the scenes are visually similar (same environment/setting).
-    This detects cases like a concert filmed from multiple angles.
+    Quick pre-filter using color histogram correlation.
+    Returns True if scenes share a very similar color palette.
+    Used to skip AI comparison for obviously identical frames.
     """
     try:
-        # Resize to consistent size for comparison
         size = (128, 128)
         a = cv2.resize(frame_a, size)
         b = cv2.resize(frame_b, size)
         
-        # Convert to HSV for better color comparison
         hsv_a = cv2.cvtColor(a, cv2.COLOR_BGR2HSV)
         hsv_b = cv2.cvtColor(b, cv2.COLOR_BGR2HSV)
         
-        # Calculate histograms for H and S channels
         h_bins, s_bins = 50, 60
         hist_size = [h_bins, s_bins]
         ranges = [0, 180, 0, 256]
@@ -269,20 +266,57 @@ def compare_scene_similarity(frame_a, frame_b, threshold: float = 0.75) -> bool:
         cv2.normalize(hist_a, hist_a, 0, 1, cv2.NORM_MINMAX)
         cv2.normalize(hist_b, hist_b, 0, 1, cv2.NORM_MINMAX)
         
-        # Compare using correlation method (1.0 = identical, -1.0 = opposite)
         similarity = cv2.compareHist(hist_a, hist_b, cv2.HISTCMP_CORREL)
-        
         return similarity >= threshold
     except Exception as e:
-        logging.warning(f"Scene comparison failed: {e}")
+        logging.warning(f"Histogram comparison failed: {e}")
         return False
 
 
-def merge_similar_scenes(scenes: list) -> list:
+async def ai_compare_scenes(frame_a, frame_b) -> bool:
     """
-    Merge consecutive scenes that are visually similar.
-    For example, a concert scene with multiple camera angle cuts
-    will be merged into a single scene using the first frame.
+    Use AI vision to determine if two frames are from the same continuous
+    scene/event/setting (e.g., same concert from different angles, same
+    sunset from different perspectives). Returns True if they should be merged.
+    """
+    try:
+        llm_provider = os.environ.get('LLM_PROVIDER', 'openai')
+        llm_model = os.environ.get('LLM_MODEL', 'gpt-4o')
+        
+        b64_a = frame_to_base64(frame_a)
+        b64_b = frame_to_base64(frame_b)
+        
+        chat = LlmChat(
+            api_key=API_KEY,
+            session_id=f"merge_{uuid.uuid4()}",
+            system_message="You determine whether two video frames are from the same continuous scene, event, or setting. Respond with ONLY 'YES' or 'NO'. Answer YES if they show the same location, event, or setting from different angles or moments. Answer NO if they show clearly different locations or unrelated content."
+        ).with_model(llm_provider, llm_model)
+        
+        image_a = ImageContent(image_base64=b64_a)
+        image_b = ImageContent(image_base64=b64_b)
+        
+        user_message = UserMessage(
+            text="Are these two frames from the same scene, event, or setting? Reply ONLY 'YES' or 'NO'.",
+            file_contents=[image_a, image_b]
+        )
+        
+        response = await chat.send_message(user_message)
+        answer = response.strip().upper()
+        
+        is_same = answer.startswith("YES")
+        logging.info(f"AI scene comparison: {answer} -> {'merge' if is_same else 'keep separate'}")
+        return is_same
+    except Exception as e:
+        logging.warning(f"AI scene comparison failed: {e}, falling back to histogram")
+        return compare_scene_similarity(frame_a, frame_b)
+
+
+async def merge_similar_scenes(scenes: list) -> list:
+    """
+    Merge consecutive scenes that are from the same setting/event.
+    Uses AI vision to understand semantic similarity (e.g., same concert
+    from different camera angles, same sunset from different perspectives).
+    Falls back to histogram comparison if AI is unavailable.
     """
     if len(scenes) <= 1:
         return scenes
@@ -293,11 +327,17 @@ def merge_similar_scenes(scenes: list) -> list:
         current = scenes[i]
         last_merged = merged[-1]
         
+        # First try quick histogram check - if very similar, merge immediately
         if compare_scene_similarity(last_merged['frame'], current['frame']):
-            # Scenes are similar - skip the current scene (keep the earlier one)
-            logging.info(f"Merging scene at {current['timestamp']:.1f}s with scene at {last_merged['timestamp']:.1f}s (similar environment)")
+            logging.info(f"Merging scene at {current['timestamp']:.1f}s (histogram match)")
+            continue
+        
+        # Use AI to check semantic similarity
+        should_merge = await ai_compare_scenes(last_merged['frame'], current['frame'])
+        
+        if should_merge:
+            logging.info(f"Merging scene at {current['timestamp']:.1f}s with scene at {last_merged['timestamp']:.1f}s (AI: same setting)")
         else:
-            # Scenes are different - keep the current scene
             merged.append(current)
     
     if len(merged) < len(scenes):
@@ -650,7 +690,7 @@ async def analyze_video(project_id: str, current_user: dict = Depends(get_curren
         raw_scenes = detect_scene_cuts(video_path)
         
         # Merge consecutive similar scenes (e.g., same concert from different angles)
-        scenes = merge_similar_scenes(raw_scenes)
+        scenes = await merge_similar_scenes(raw_scenes)
         
         # Create project directory for thumbnails and audio
         project_dir = UPLOADS_DIR / project_id
