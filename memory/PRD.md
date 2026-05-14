@@ -1,28 +1,27 @@
 # Gappy Describe - Product Requirements Document
 
 ## Original Problem Statement
-Build a web app named "Gappy Describe" that generates a "video voice description" to comply with WCAG 1.2.3. Features include video upload, AI scene analysis, audio description generation (ElevenLabs), video export, scene editor, project dashboard, auth, Stripe payments, and Canvas LMS LTI integration.
+Build a web app named "Gappy Describe" that generates a "video voice description" to comply with WCAG 1.2.3.
 
 ## Current State
-**Status:** App fully functional with shared navigation, scene merging, and improved error handling.
+**Status:** App fully functional with AI scene merging, manual scene merging in editor, shared navigation, and improved error handling.
 
 ### What's Been Implemented
-- **Shared Navbar** (Feb 2026): Consistent top navigation across ALL pages (Landing, Login, Signup, Dashboard, Editor, Upload, Pricing, Privacy). Shows Pricing/Login/SignUp when unauthenticated; Pricing/Dashboard/LogOut when authenticated.
-- **Scene Merging** (Feb 2026): After detecting scene cuts, consecutive visually similar scenes (e.g., same concert from different camera angles) are automatically merged using HSV histogram correlation. Reduces redundant scene descriptions.
-- **Improved Error Handling** (Feb 2026): Upload and analyze steps have separate error messages. Analyze failures redirect to dashboard instead of showing generic error. Auth inactivity timeout increased from 10min to 30min.
-- **Landing Page Cleanup** (Feb 2026): "How it Works" section removed per user request.
-- **Coming Soon Page**: Available at ComingSoonPage.js for future use.
-- **Authentication**: Google OAuth + Email/Password (JWT + httpOnly cookies)
+- **Manual Scene Merging in Editor** (Feb 2026): Checkbox-based selection on scene cards with "Merge Scenes" toolbar button. Keeps earliest scene's description/thumbnail, deletes the rest. Backend endpoint: POST /api/scenes/merge.
+- **AI-Powered Scene Merging** (Feb 2026): After detecting scene cuts, AI vision (GPT-4o) compares consecutive frames to determine if they're from the same setting/event (e.g., concert from different angles). Falls back to histogram comparison.
+- **Shared Navbar** (Feb 2026): Consistent top navigation across ALL pages. Shows Pricing/Login/SignUp when unauthenticated; Pricing/Dashboard/LogOut when authenticated.
+- **Landing Page**: Professional design matching brand mockup (no "How It Works" section). Purple (#6A39F5) brand color, dashboard mockup, CTA.
+- **Authentication**: Google OAuth + Email/Password (JWT + httpOnly cookies), 30min inactivity timeout
 - **Project Dashboard**: List/grid view, folder organization, drag-and-drop, search/filter, usage stats
-- **Video Upload**: Language (10 languages), voice (5 voices), description length selectors, transcript/caption checkboxes
-- **AI Scene Analysis**: Detects scene cuts, generates AI descriptions via LiteLLM, merges similar consecutive scenes
-- **Audio Generation**: ElevenLabs TTS integration with gTTS fallback
-- **Video Export**: New video with audio descriptions overlaid (requires FFmpeg)
-- **Scene Editor**: Review, edit, delete scenes
-- **Stripe Payments**: Free, Creator, Pro, Enterprise tiers with monthly/yearly toggle
-- **Transcription & Closed Captioning**: OpenAI Whisper integration
+- **Video Upload**: Language, voice, description length selectors, transcript/caption checkboxes
+- **AI Scene Analysis**: Scene detection + AI descriptions via LiteLLM
+- **Audio Generation**: ElevenLabs TTS with gTTS fallback
+- **Video Export**: FFmpeg-based video with overlaid audio descriptions
+- **Scene Editor**: Review, edit, delete, merge scenes
+- **Stripe Payments**: Free, Creator, Pro, Enterprise tiers
+- **Transcription & Closed Captioning**: OpenAI Whisper
 - **Privacy Policy Page**
-- **Health Endpoints**: `/api/health` for Kubernetes
+- **Coming Soon Page**: Available at ComingSoonPage.js
 
 ## Architecture
 ```
@@ -30,44 +29,39 @@ Build a web app named "Gappy Describe" that generates a "video voice description
 ├── backend/ (FastAPI + Motor/MongoDB)
 │   ├── routes/ (auth.py, payments.py)
 │   ├── services/ (transcription.py)
-│   ├── auth_helpers.py
-│   ├── dependencies.py
-│   └── server.py (scene detection, merging, analysis, export)
+│   └── server.py (scene detection, AI merging, manual merge API, analysis, export)
 ├── frontend/ (React + React Router)
 │   └── src/
-│       ├── components/ (Navbar.js - shared navigation)
-│       ├── pages/ (ComingSoonPage, Dashboard, Editor, HomePage, Login, Signup, Pricing, Privacy, etc.)
-│       ├── context/ (AuthContext.js - 30min timeout)
+│       ├── components/ (Navbar.js)
+│       ├── pages/ (ComingSoon, Dashboard, Editor, HomePage, Landing, Login, Signup, Pricing, Privacy)
+│       ├── context/ (AuthContext.js)
 │       └── App.js
 ```
 
-## Key Backend Functions
-- `detect_scene_cuts()`: Frame difference analysis for scene detection
-- `compare_scene_similarity()`: HSV histogram correlation (threshold 0.75)
-- `merge_similar_scenes()`: Merges consecutive similar scenes
-- `generate_description()`: LLM-powered WCAG audio descriptions
-- `generate_audio()`: ElevenLabs TTS with gTTS fallback
+## Key API Endpoints
+- POST /api/scenes/merge — Manual scene merging (must be before /scenes/{scene_id} routes)
+- POST /api/analyze/{project_id} — AI scene detection + auto-merging
+- POST /api/upload — Video upload
+- GET /api/projects/{id}/scenes — Get scenes for a project
+- PUT /api/scenes/{id} — Update scene description
+- DELETE /api/scenes/{id} — Delete a scene
 
 ## 3rd Party Integrations
 - ElevenLabs (TTS) — User API Key
 - OpenAI Whisper (Transcription) — Emergent LLM Key
-- LiteLLM (AI Generation) — Emergent LLM Key
+- LiteLLM/GPT-4o (AI Descriptions + Scene Comparison) — Emergent LLM Key
 - Stripe (Payments) — User API Key
 - Google OAuth — Emergent-managed keys
 
 ## Prioritized Backlog
-
 ### P1
 - Canvas LMS LTI 1.3 Integration
-
 ### P2
-- Coming Soon page toggle (ComingSoonPage.js ready for reuse)
-- UI redesign for all internal pages (Dashboard, Editor, Upload) to match new landing page style
-
+- UI redesign for internal pages (Dashboard, Editor, Upload) to match landing page style
+- Coming Soon page toggle
 ### P3
-- Add more languages for description generation
+- Add more languages
 - Video processing queue
-- Better error recovery
 - Keyboard shortcuts
 - Monthly trash cleanup (deferred)
 
@@ -76,7 +70,6 @@ Build a web app named "Gappy Describe" that generates a "video voice description
 
 ## Critical Notes
 - DO NOT reintroduce custom startup bash scripts
-- All API keys must be in .env, never hardcoded
-- Scene merging uses HSV histogram comparison with 0.75 correlation threshold
+- POST /api/scenes/merge MUST be declared before /scenes/{scene_id} routes (FastAPI route ordering)
+- AI scene comparison uses GPT-4o vision with histogram pre-filter
 - Auth inactivity timeout is 30 minutes
-- FFmpeg not installed in preview — video export won't work in preview
