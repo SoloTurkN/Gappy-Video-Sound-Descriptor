@@ -750,11 +750,46 @@ async def analyze_video(project_id: str, current_user: dict = Depends(get_curren
             }
         )
         
+        # Auto-trigger transcription if requested during upload
+        transcript_result = None
+        if project.get("generate_transcript") or project.get("generate_captions"):
+            try:
+                logging.info(f"Auto-generating transcript for project {project_id}")
+                from services.transcription import process_video_transcription
+                
+                language = project.get("language", "en")
+                transcript_text, srt_content, vtt_content = await process_video_transcription(
+                    video_path, language
+                )
+                
+                if transcript_text:
+                    await db.projects.update_one(
+                        {"id": project_id},
+                        {"$set": {
+                            "transcript_text": transcript_text,
+                            "transcript_srt": srt_content,
+                            "transcript_vtt": vtt_content,
+                        }}
+                    )
+                    transcript_result = {
+                        "has_transcript": True,
+                        "has_srt": srt_content is not None,
+                        "has_vtt": vtt_content is not None
+                    }
+                    logging.info(f"Transcription complete for project {project_id}")
+                else:
+                    logging.warning(f"Transcription returned empty for project {project_id}")
+                    transcript_result = {"has_transcript": False}
+            except Exception as te:
+                logging.error(f"Transcription failed for project {project_id}: {te}")
+                transcript_result = {"has_transcript": False, "error": str(te)}
+        
         return {
             "status": "success",
             "total_scenes": len(scene_docs),
             "scenes_detected": len(raw_scenes),
-            "scenes_merged": len(raw_scenes) - len(scenes)
+            "scenes_merged": len(raw_scenes) - len(scenes),
+            "transcription": transcript_result
         }
     except HTTPException as e:
         raise e

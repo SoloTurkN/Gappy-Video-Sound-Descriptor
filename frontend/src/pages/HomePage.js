@@ -125,7 +125,12 @@ const HomePage = () => {
         
         const merged = analyzeRes.data.scenes_merged || 0;
         const total = analyzeRes.data.total_scenes || 0;
-        toast.success(`Analysis complete! ${total} scene${total !== 1 ? 's' : ''} detected${merged > 0 ? ` (${merged} similar scenes merged)` : ''}`);
+        const transcription = analyzeRes.data.transcription;
+        
+        let msg = `Analysis complete! ${total} scene${total !== 1 ? 's' : ''} detected`;
+        if (merged > 0) msg += ` (${merged} similar scenes merged)`;
+        if (transcription?.has_transcript) msg += '. Transcript generated!';
+        toast.success(msg);
         navigate(`/editor/${projectId}`);
       } catch (analyzeError) {
         console.error('Analysis error:', analyzeError);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Save, Download, Edit2, Play, X, Trash2, Merge, CheckSquare, Square } from 'lucide-react';
+import { ArrowLeft, Save, Download, Edit2, Play, X, Trash2, Merge, CheckSquare, Square, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import Navbar from '../components/Navbar';
 
@@ -30,6 +30,8 @@ const EditorPage = () => {
   const [mergeMode, setMergeMode] = useState(false);
   const [selectedScenes, setSelectedScenes] = useState(new Set());
   const [merging, setMerging] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [transcriptData, setTranscriptData] = useState(null);
 
   useEffect(() => {
     loadProject();
@@ -188,6 +190,38 @@ const EditorPage = () => {
   const exitMergeMode = () => {
     setMergeMode(false);
     setSelectedScenes(new Set());
+  };
+
+  const loadTranscript = async () => {
+    try {
+      const res = await axios.get(`${API}/transcript/${projectId}`, { withCredentials: true });
+      setTranscriptData(res.data);
+      setShowTranscript(true);
+    } catch (error) {
+      console.error('Transcript load error:', error);
+      toast.error('No transcript available. Was transcription enabled during upload?');
+    }
+  };
+
+  const downloadCaption = async (format) => {
+    try {
+      const res = await axios.get(`${API}/captions/${projectId}/${format}`, {
+        withCredentials: true,
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${project?.original_filename || 'captions'}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success(`${format.toUpperCase()} downloaded`);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error(`No ${format.toUpperCase()} captions available`);
+    }
   };
 
   const handleExport = async () => {
@@ -410,6 +444,17 @@ const EditorPage = () => {
                   Merge Scenes
                 </button>
               )}
+              {(project?.generate_transcript || project?.generate_captions) && (
+                <button
+                  onClick={loadTranscript}
+                  className="btn-secondary"
+                  style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13 }}
+                  data-testid="transcript-button"
+                >
+                  <FileText size={16} />
+                  Transcript & CC
+                </button>
+              )}
               <button
                 onClick={() => setShowExportDialog(true)}
                 className="btn-primary"
@@ -604,6 +649,82 @@ const EditorPage = () => {
           })}
         </div>
       </div>
+
+      {/* Transcript & CC Panel */}
+      {showTranscript && (
+        <div style={styles.modalOverlay} onClick={() => setShowTranscript(false)}>
+          <div style={{ ...styles.modalContent, maxWidth: 600 }} onClick={(e) => e.stopPropagation()} data-testid="transcript-panel">
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Transcript & Closed Captions</h3>
+              <button onClick={() => setShowTranscript(false)} style={styles.closeButton} data-testid="transcript-close">
+                <X size={20} />
+              </button>
+            </div>
+
+            {transcriptData?.transcript_text ? (
+              <>
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 8 }}>
+                    Transcript
+                  </label>
+                  <div style={{
+                    background: '#f9fafb',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 8,
+                    padding: 14,
+                    fontSize: 14,
+                    lineHeight: 1.7,
+                    color: '#1f2937',
+                    maxHeight: 250,
+                    overflowY: 'auto',
+                    whiteSpace: 'pre-wrap'
+                  }} data-testid="transcript-text">
+                    {transcriptData.transcript_text}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => downloadCaption('txt')}
+                    className="btn-secondary"
+                    style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
+                    data-testid="download-txt"
+                  >
+                    <Download size={14} />
+                    Download TXT
+                  </button>
+                  {transcriptData.has_srt && (
+                    <button
+                      onClick={() => downloadCaption('srt')}
+                      className="btn-secondary"
+                      style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
+                      data-testid="download-srt"
+                    >
+                      <Download size={14} />
+                      Download SRT
+                    </button>
+                  )}
+                  {transcriptData.has_vtt && (
+                    <button
+                      onClick={() => downloadCaption('vtt')}
+                      className="btn-secondary"
+                      style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
+                      data-testid="download-vtt"
+                    >
+                      <Download size={14} />
+                      Download VTT
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <p style={{ color: '#6b7280', fontSize: 14, textAlign: 'center', padding: '20px 0' }}>
+                No transcript available. Transcription may still be processing or was not enabled during upload.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Export Dialog */}
       {showExportDialog && (
