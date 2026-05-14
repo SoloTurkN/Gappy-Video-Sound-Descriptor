@@ -92,7 +92,7 @@ const LoginPage = () => {
     <div style={styles.container}>
       <Navbar />
       <div style={styles.content} className="fade-in">
-        {/* Login Card */}
+        <div style={{ width: '100%', maxWidth: 480, textAlign: 'center' }}>
         <div className="glass-card hover-lift" style={styles.loginCard}>
           <div style={styles.cardHeader}>
             <h2 style={styles.title}>Welcome Back!</h2>
@@ -194,7 +194,7 @@ const LoginPage = () => {
             </p>
           </div>
         </div>
-
+        </div>
       </div>
     </div>
   );
@@ -204,17 +204,15 @@ const styles = {
   container: {
     minHeight: '100vh',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px',
+    flexDirection: 'column',
     background: '#ffffff',
   },
   content: {
-    position: 'relative',
-    zIndex: 1,
-    width: '100%',
-    maxWidth: '480px',
-    textAlign: 'center',
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px',
   },
   logoSection: {
     marginBottom: '40px',

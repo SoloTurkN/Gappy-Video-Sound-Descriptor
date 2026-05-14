@@ -105,6 +105,7 @@ const SignupPage = () => {
     <div style={styles.container}>
       <Navbar />
       <div style={styles.content}>
+        <div style={{ width: '100%', maxWidth: 480 }}>
         <div style={styles.logoSection}>
           <img src="/gappy-logo1.png" alt="Gappy Descripe" style={styles.logo} />
         </div>
@@ -218,6 +219,7 @@ const SignupPage = () => {
         <p style={styles.terms}>
           By signing up, you agree to our Terms of Service and Privacy Policy
         </p>
+        </div>
       </div>
     </div>
   );
@@ -227,14 +229,15 @@ const styles = {
   container: {
     minHeight: '100vh',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '24px',
+    flexDirection: 'column',
     background: '#f9fafb',
   },
   content: {
-    width: '100%',
-    maxWidth: '480px',
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '24px',
   },
   logoSection: {
     textAlign: 'center',
