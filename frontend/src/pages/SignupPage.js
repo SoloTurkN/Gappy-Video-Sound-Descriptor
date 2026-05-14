@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, Mail, Lock, User } from 'lucide-react';
+import { ArrowRight, Mail, Lock, User, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
+import Navbar from '../components/Navbar';
 
 const SignupPage = () => {
   const [name, setName] = useState('');
@@ -102,6 +103,7 @@ const SignupPage = () => {
 
   return (
     <div style={styles.container}>
+      <Navbar />
       <div style={styles.content}>
         <div style={styles.logoSection}>
           <img src="/gappy-logo1.png" alt="Gappy Descripe" style={styles.logo} />

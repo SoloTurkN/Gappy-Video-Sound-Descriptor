@@ -203,5 +203,59 @@ class TestAuthenticatedEndpoints:
         print("✓ Projects endpoint correctly requires authentication")
 
 
+class TestSceneMerging:
+    """Tests for scene merging functionality (Task 2)"""
+    
+    def test_scene_merging_functions_exist(self):
+        """Verify merge_similar_scenes and compare_scene_similarity functions exist in server.py"""
+        import sys
+        sys.path.insert(0, '/app/backend')
+        from server import merge_similar_scenes, compare_scene_similarity
+        
+        # Verify functions are callable
+        assert callable(merge_similar_scenes)
+        assert callable(compare_scene_similarity)
+        print("✓ Scene merging functions exist and are callable")
+    
+    def test_merge_similar_scenes_empty_list(self):
+        """Test merge_similar_scenes with empty list"""
+        import sys
+        sys.path.insert(0, '/app/backend')
+        from server import merge_similar_scenes
+        
+        result = merge_similar_scenes([])
+        assert result == []
+        print("✓ merge_similar_scenes handles empty list")
+    
+    def test_merge_similar_scenes_single_scene(self):
+        """Test merge_similar_scenes with single scene"""
+        import sys
+        import numpy as np
+        sys.path.insert(0, '/app/backend')
+        from server import merge_similar_scenes
+        
+        # Create a dummy scene with a frame
+        dummy_frame = np.zeros((100, 100, 3), dtype=np.uint8)
+        scenes = [{'frame_number': 0, 'timestamp': 0.0, 'frame': dummy_frame}]
+        
+        result = merge_similar_scenes(scenes)
+        assert len(result) == 1
+        print("✓ merge_similar_scenes handles single scene")
+
+
+class TestAuthInactivityTimeout:
+    """Tests for auth inactivity timeout (Task 4)"""
+    
+    def test_auth_context_timeout_is_30_minutes(self):
+        """Verify AuthContext.js has 30 minute inactivity timeout"""
+        with open('/app/frontend/src/context/AuthContext.js', 'r') as f:
+            content = f.read()
+        
+        # Check for 30 minute timeout (30 * 60 * 1000 = 1800000 ms)
+        assert '30 * 60 * 1000' in content or '1800000' in content
+        assert 'INACTIVITY_TIMEOUT' in content
+        print("✓ AuthContext.js has 30 minute inactivity timeout")
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

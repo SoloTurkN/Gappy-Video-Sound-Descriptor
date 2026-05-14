@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Sparkles, Video, ArrowRight, Play, Wand2, CheckCircle2 } from 'lucide-react';
+import { Upload, Video, ArrowRight, Wand2, Play, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import Navbar from '../components/Navbar';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -112,17 +113,30 @@ const HomePage = () => {
         }
       });
 
-      toast.success('Video uploaded!');
+      toast.success('Video uploaded successfully!');
       const projectId = response.data.id;
       
-      toast.info('Analyzing video...');
-      await axios.post(`${API}/analyze/${projectId}`, {}, { withCredentials: true });
-      
-      toast.success('Analysis complete!');
-      navigate(`/editor/${projectId}`);
+      toast.info('Analyzing video scenes... This may take a moment.');
+      try {
+        const analyzeRes = await axios.post(`${API}/analyze/${projectId}`, {}, { 
+          withCredentials: true,
+          timeout: 300000 // 5 minute timeout for analysis
+        });
+        
+        const merged = analyzeRes.data.scenes_merged || 0;
+        const total = analyzeRes.data.total_scenes || 0;
+        toast.success(`Analysis complete! ${total} scene${total !== 1 ? 's' : ''} detected${merged > 0 ? ` (${merged} similar scenes merged)` : ''}`);
+        navigate(`/editor/${projectId}`);
+      } catch (analyzeError) {
+        console.error('Analysis error:', analyzeError);
+        const detail = analyzeError.response?.data?.detail || 'Video analysis failed. You can retry from the dashboard.';
+        toast.error(detail);
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload video');
+      const detail = error.response?.data?.detail || 'Failed to upload video';
+      toast.error(detail);
     } finally {
       setUploading(false);
     }
@@ -130,16 +144,7 @@ const HomePage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Navbar */}
-      <nav className="navbar">
-        <div style={styles.navContent}>
-          <img src="/gappy-logo1.png" alt="Gappy Descripe" style={styles.logo} />
-          <div className="badge">
-            <Sparkles size={14} style={{ marginRight: '6px' }} />
-            WCAG Compliant
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero */}
       <section style={styles.hero}>

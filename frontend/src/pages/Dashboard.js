@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  Upload, Video, Clock, CheckCircle, Settings, LogOut, User, Trash2,
+  Upload, Video, Clock, CheckCircle, Trash2,
   Folder, Search, MoreVertical, Edit2, Archive, RefreshCw, Download,
   X, Check, AlertCircle, Play, Pause
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
+import Navbar from '../components/Navbar';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -230,41 +231,26 @@ const Dashboard = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerContent}>
-          <div style={{...styles.logoContainer, cursor: 'pointer'}} onClick={() => navigate('/')}>
-            <img src="/gappy-logo1.png" alt="Gappy Describe" style={styles.logo} />
-          </div>
-          
-          <div style={styles.headerRight}>
-            <div style={styles.usageBadge}>
-              <span style={styles.planName}>{usage.plan}</span>
-              <span style={styles.usageText}>
-                {usage.videosThisMonth}/{usage.videosLimit === 'Unlimited' ? '∞' : usage.videosLimit} videos
-              </span>
-            </div>
-            
-            <button
-              onClick={() => navigate('/upload')}
-              className="btn-primary"
-              style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
-              aria-label="Upload new video"
-            >
-              <Upload size={18} />
-              Upload Video
-            </button>
-            
-            <button
-              onClick={logout}
-              style={styles.logoutBtn}
-              aria-label="Logout"
-            >
-              <LogOut size={20} />
-            </button>
-          </div>
+      <Navbar />
+
+      {/* Dashboard Header */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={styles.usageBadge}>
+          <span style={styles.planName}>{usage.plan}</span>
+          <span style={styles.usageText}>
+            {usage.videosThisMonth}/{usage.videosLimit === 'Unlimited' ? '∞' : usage.videosLimit} videos
+          </span>
         </div>
-      </header>
+        <button
+          onClick={() => navigate('/upload')}
+          className="btn-primary"
+          style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
+          aria-label="Upload new video"
+        >
+          <Upload size={18} />
+          Upload Video
+        </button>
+      </div>
 
       <div style={styles.mainContent}>
         {/* Sidebar with Folders */}

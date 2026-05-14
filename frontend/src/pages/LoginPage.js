@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Mail, Lock } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
+import Navbar from '../components/Navbar';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -89,6 +90,7 @@ const LoginPage = () => {
 
   return (
     <div style={styles.container}>
+      <Navbar />
       <div style={styles.content} className="fade-in">
         {/* Login Card */}
         <div className="glass-card hover-lift" style={styles.loginCard}>

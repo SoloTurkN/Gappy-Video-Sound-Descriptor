@@ -1,23 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 const PrivacyPage = () => {
-  const navigate = useNavigate();
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerContent}>
-          <div style={{...styles.logoContainer, cursor: 'pointer'}} onClick={() => navigate('/')}>
-            <img src="/gappy-logo1.png" alt="Gappy Describe" style={styles.logoText} />
-          </div>
-          <nav style={styles.nav}>
-            <button onClick={() => navigate('/')} style={{...styles.navLink, background: 'none', border: 'none', cursor: 'pointer'}}>Home</button>
-            <button onClick={() => navigate('/pricing')} style={{...styles.navLink, background: 'none', border: 'none', cursor: 'pointer'}}>Pricing</button>
-          </nav>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Privacy Policy Content */}
       <div style={styles.content}>

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Save, Download, Edit2, Play, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import Navbar from '../components/Navbar';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -306,32 +307,29 @@ const EditorPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Navbar */}
-      <nav className="navbar">
-        <div style={styles.navContent}>
-          <button
-            onClick={() => navigate('/')}
-            className="btn-secondary"
-            style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
-            data-testid="back-button"
-          >
-            <ArrowLeft size={18} />
-            Back
-          </button>
-          
-          <img src="/gappy-logo1.png" alt="Gappy" style={styles.navLogo} />
-          
-          <button
-            onClick={() => setShowExportDialog(true)}
-            className="btn-primary"
-            style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
-            data-testid="export-button"
-          >
-            <Download size={18} />
-            Export
-          </button>
-        </div>
-      </nav>
+      <Navbar />
+
+      {/* Editor Toolbar */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '12px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="btn-secondary"
+          style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13 }}
+          data-testid="back-button"
+        >
+          <ArrowLeft size={16} />
+          Back to Dashboard
+        </button>
+        <button
+          onClick={() => setShowExportDialog(true)}
+          className="btn-primary"
+          style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: 13 }}
+          data-testid="export-button"
+        >
+          <Download size={16} />
+          Export
+        </button>
+      </div>
 
       {/* Content */}
       <div style={styles.content}>

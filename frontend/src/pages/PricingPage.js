@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import Navbar from '../components/Navbar';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -175,16 +176,7 @@ const PricingPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Navbar */}
-      <nav className="navbar">
-        <div style={styles.navContent}>
-          <img src="/gappy-logo1.png" alt="Gappy" style={styles.logo} onClick={() => navigate('/')} />
-          <button onClick={() => navigate(-1)} className="btn-secondary" style={{ padding: '10px 20px' }}>
-            <ArrowLeft size={18} style={{ marginRight: '6px' }} />
-            Back
-          </button>
-        </div>
-      </nav>
+      <Navbar />
 
       <div style={styles.content}>
         <div style={styles.header}>

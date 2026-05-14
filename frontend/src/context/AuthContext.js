@@ -15,11 +15,11 @@ export function AuthProvider({ children }) {
     checkAuth();
   }, []);
 
-  // Auto-logout after 10 minutes of inactivity
+  // Auto-logout after 30 minutes of inactivity
   useEffect(() => {
     if (!authenticated) return;
 
-    const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
     // Update last activity on user interaction
     const updateActivity = () => setLastActivity(Date.now());

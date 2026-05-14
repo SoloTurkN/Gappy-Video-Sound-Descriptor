@@ -1,25 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Check, Shield, Users, Upload, Sparkles, FileText } from 'lucide-react';
+import { ArrowRight, Check, Shield, Users } from 'lucide-react';
+import Navbar from '../components/Navbar';
 
 const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
     <div style={styles.page} data-testid="landing-page">
-      {/* Header */}
-      <header style={styles.header} data-testid="landing-header">
-        <div style={styles.headerInner}>
-          <div style={styles.logoWrap} onClick={() => navigate('/')}>
-            <img src="/gappy-logo1.png" alt="Gappy Labs" style={styles.logo} />
-          </div>
-          <nav style={styles.nav}>
-            <button onClick={() => navigate('/pricing')} style={styles.navLink} data-testid="nav-pricing">Pricing</button>
-            <button onClick={() => navigate('/login')} style={styles.loginBtn} data-testid="nav-login">Login</button>
-            <button onClick={() => navigate('/signup')} style={styles.signupBtn} data-testid="nav-signup">Sign Up</button>
-          </nav>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero Section */}
       <section style={styles.hero} data-testid="hero-section">
@@ -73,32 +62,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section style={styles.howSection} data-testid="how-it-works-section">
-        <h2 style={styles.sectionTitle}>How It Works</h2>
-        <p style={styles.sectionSub}>Three simple steps to make your content accessible to everyone.</p>
-        <div style={styles.stepsGrid}>
-          <StepCard
-            icon={<Upload size={22} color="#6A39F5" />}
-            number="1"
-            title="Upload Your Video"
-            desc="Upload your video file and our AI automatically analyzes the content, detecting scenes and key moments."
-          />
-          <StepCard
-            icon={<Sparkles size={22} color="#6A39F5" />}
-            number="2"
-            title="AI Generates Descriptions"
-            desc="Gappy AI creates WCAG 1.2.3 Level AA compliant audio descriptions that meet accessibility standards."
-          />
-          <StepCard
-            icon={<FileText size={22} color="#6A39F5" />}
-            number="3"
-            title="Review & Export"
-            desc="Edit and refine descriptions with our built-in editor, then export in multiple formats or embed directly."
-          />
-        </div>
-      </section>
-
       {/* Bottom CTA */}
       <section style={styles.bottomCta} data-testid="bottom-cta-section">
         <h2 style={styles.bottomCtaTitle}>Ready to Make Your Videos Accessible?</h2>
@@ -136,18 +99,6 @@ const LandingPage = () => {
     </div>
   );
 };
-
-/* Step Card Component */
-const StepCard = ({ icon, number, title, desc }) => (
-  <div style={styles.stepCard} data-testid={`step-card-${number}`}>
-    <div style={styles.stepTop}>
-      <div style={styles.stepIcon}>{icon}</div>
-      <span style={styles.stepNumber}>{number}</span>
-    </div>
-    <h3 style={styles.stepTitle}>{title}</h3>
-    <p style={styles.stepDesc}>{desc}</p>
-  </div>
-);
 
 /* Dashboard Mockup Component */
 const DashboardMockup = () => (
@@ -223,57 +174,6 @@ const styles = {
     background: '#ffffff',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
     color: '#1a1a2e',
-  },
-  /* Header */
-  header: {
-    borderBottom: '1px solid #f0f0f0',
-    background: '#ffffff',
-    position: 'sticky',
-    top: 0,
-    zIndex: 100,
-  },
-  headerInner: {
-    maxWidth: 1200,
-    margin: '0 auto',
-    padding: '16px 32px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  logoWrap: { cursor: 'pointer' },
-  logo: { height: 32, objectFit: 'contain' },
-  nav: { display: 'flex', alignItems: 'center', gap: 12 },
-  navLink: {
-    background: 'none',
-    border: 'none',
-    fontSize: 14,
-    fontWeight: 500,
-    color: '#374151',
-    cursor: 'pointer',
-    padding: '8px 16px',
-    fontFamily: "'Inter', sans-serif",
-  },
-  loginBtn: {
-    background: '#ffffff',
-    border: '1px solid #e5e7eb',
-    fontSize: 14,
-    fontWeight: 500,
-    color: '#374151',
-    cursor: 'pointer',
-    padding: '8px 20px',
-    borderRadius: 8,
-    fontFamily: "'Inter', sans-serif",
-  },
-  signupBtn: {
-    background: '#6A39F5',
-    border: 'none',
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#ffffff',
-    cursor: 'pointer',
-    padding: '8px 20px',
-    borderRadius: 8,
-    fontFamily: "'Inter', sans-serif",
   },
   /* Hero */
   hero: {
@@ -357,76 +257,6 @@ const styles = {
   },
   trustTitle: { fontSize: 12, fontWeight: 600, color: '#374151' },
   trustSub: { fontSize: 11, color: '#9ca3af' },
-  /* How It Works */
-  howSection: {
-    padding: '80px 32px',
-    maxWidth: 1200,
-    margin: '0 auto',
-    textAlign: 'center',
-  },
-  sectionTitle: {
-    fontSize: 'clamp(1.5rem, 3vw, 2.25rem)',
-    fontWeight: 800,
-    color: '#1a1a2e',
-    marginBottom: 12,
-    letterSpacing: '-0.02em',
-  },
-  sectionSub: {
-    fontSize: 15,
-    color: '#6b7280',
-    marginBottom: 48,
-  },
-  stepsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: 24,
-  },
-  stepCard: {
-    background: '#ffffff',
-    border: '1px solid #f0f0f0',
-    borderRadius: 14,
-    padding: '28px 24px',
-    textAlign: 'left',
-    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
-  },
-  stepTop: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 18,
-  },
-  stepIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    background: '#EAE8FF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: '50%',
-    border: '2px solid #6A39F5',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 13,
-    fontWeight: 700,
-    color: '#6A39F5',
-  },
-  stepTitle: {
-    fontSize: 16,
-    fontWeight: 700,
-    color: '#1a1a2e',
-    marginBottom: 8,
-  },
-  stepDesc: {
-    fontSize: 13,
-    color: '#6b7280',
-    lineHeight: 1.6,
-  },
   /* Bottom CTA */
   bottomCta: {
     background: '#f9f8fe',

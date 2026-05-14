@@ -240,6 +240,71 @@ def detect_scene_cuts(video_path: str, threshold: float = 30.0):
     cap.release()
     return scenes
 
+
+def compare_scene_similarity(frame_a, frame_b, threshold: float = 0.75) -> bool:
+    """
+    Compare two frames using color histogram correlation.
+    Returns True if the scenes are visually similar (same environment/setting).
+    This detects cases like a concert filmed from multiple angles.
+    """
+    try:
+        # Resize to consistent size for comparison
+        size = (128, 128)
+        a = cv2.resize(frame_a, size)
+        b = cv2.resize(frame_b, size)
+        
+        # Convert to HSV for better color comparison
+        hsv_a = cv2.cvtColor(a, cv2.COLOR_BGR2HSV)
+        hsv_b = cv2.cvtColor(b, cv2.COLOR_BGR2HSV)
+        
+        # Calculate histograms for H and S channels
+        h_bins, s_bins = 50, 60
+        hist_size = [h_bins, s_bins]
+        ranges = [0, 180, 0, 256]
+        channels = [0, 1]
+        
+        hist_a = cv2.calcHist([hsv_a], channels, None, hist_size, ranges)
+        hist_b = cv2.calcHist([hsv_b], channels, None, hist_size, ranges)
+        
+        cv2.normalize(hist_a, hist_a, 0, 1, cv2.NORM_MINMAX)
+        cv2.normalize(hist_b, hist_b, 0, 1, cv2.NORM_MINMAX)
+        
+        # Compare using correlation method (1.0 = identical, -1.0 = opposite)
+        similarity = cv2.compareHist(hist_a, hist_b, cv2.HISTCMP_CORREL)
+        
+        return similarity >= threshold
+    except Exception as e:
+        logging.warning(f"Scene comparison failed: {e}")
+        return False
+
+
+def merge_similar_scenes(scenes: list) -> list:
+    """
+    Merge consecutive scenes that are visually similar.
+    For example, a concert scene with multiple camera angle cuts
+    will be merged into a single scene using the first frame.
+    """
+    if len(scenes) <= 1:
+        return scenes
+    
+    merged = [scenes[0]]
+    
+    for i in range(1, len(scenes)):
+        current = scenes[i]
+        last_merged = merged[-1]
+        
+        if compare_scene_similarity(last_merged['frame'], current['frame']):
+            # Scenes are similar - skip the current scene (keep the earlier one)
+            logging.info(f"Merging scene at {current['timestamp']:.1f}s with scene at {last_merged['timestamp']:.1f}s (similar environment)")
+        else:
+            # Scenes are different - keep the current scene
+            merged.append(current)
+    
+    if len(merged) < len(scenes):
+        logging.info(f"Scene merging: {len(scenes)} scenes reduced to {len(merged)} scenes")
+    
+    return merged
+
 def frame_to_base64(frame):
     """Convert OpenCV frame to base64 string"""
     _, buffer = cv2.imencode('.jpg', frame)
@@ -582,7 +647,10 @@ async def analyze_video(project_id: str, current_user: dict = Depends(get_curren
         video_path = project['video_path']
         
         # Detect scenes
-        scenes = detect_scene_cuts(video_path)
+        raw_scenes = detect_scene_cuts(video_path)
+        
+        # Merge consecutive similar scenes (e.g., same concert from different angles)
+        scenes = merge_similar_scenes(raw_scenes)
         
         # Create project directory for thumbnails and audio
         project_dir = UPLOADS_DIR / project_id
@@ -591,34 +659,39 @@ async def analyze_video(project_id: str, current_user: dict = Depends(get_curren
         # Process each scene
         scene_docs = []
         for i, scene in enumerate(scenes):
-            # Save thumbnail
-            thumbnail_path = project_dir / f"frame_{i}.jpg"
-            cv2.imwrite(str(thumbnail_path), scene['frame'])
-            
-            # Generate description
-            frame_base64 = frame_to_base64(scene['frame'])
-            language = project.get('language', 'en')
-            description_length = project.get('description_length', '1')
-            description = await generate_description(frame_base64, language, description_length)
-            
-            # Generate audio
-            audio_path = project_dir / f"audio_{i}.mp3"
-            voice_id = project.get('voice_id', '21m00Tcm4TlvDq8ikWAM')  # Default to Rachel
-            duration = await generate_audio(description, str(audio_path), voice_id)
-            
-            # Create scene document
-            scene_data = SceneData(
-                project_id=project_id,
-                frame_number=scene['frame_number'],
-                timestamp=scene['timestamp'],
-                thumbnail_path=str(thumbnail_path),
-                description=description,
-                audio_path=str(audio_path),
-                duration=duration
-            )
-            
-            scene_doc = scene_data.model_dump()
-            scene_docs.append(scene_doc)
+            try:
+                # Save thumbnail
+                thumbnail_path = project_dir / f"frame_{i}.jpg"
+                cv2.imwrite(str(thumbnail_path), scene['frame'])
+                
+                # Generate description
+                frame_base64 = frame_to_base64(scene['frame'])
+                language = project.get('language', 'en')
+                description_length = project.get('description_length', '1')
+                description = await generate_description(frame_base64, language, description_length)
+                
+                # Generate audio
+                audio_path = project_dir / f"audio_{i}.mp3"
+                voice_id = project.get('voice_id', '21m00Tcm4TlvDq8ikWAM')  # Default to Rachel
+                duration = await generate_audio(description, str(audio_path), voice_id)
+                
+                # Create scene document
+                scene_data = SceneData(
+                    project_id=project_id,
+                    frame_number=scene['frame_number'],
+                    timestamp=scene['timestamp'],
+                    thumbnail_path=str(thumbnail_path),
+                    description=description,
+                    audio_path=str(audio_path),
+                    duration=duration
+                )
+                
+                scene_doc = scene_data.model_dump()
+                scene_docs.append(scene_doc)
+            except Exception as scene_err:
+                logging.error(f"Error processing scene {i}: {scene_err}")
+                # Continue with remaining scenes instead of failing entirely
+                continue
         
         # Save scenes to database
         if scene_docs:
@@ -631,19 +704,27 @@ async def analyze_video(project_id: str, current_user: dict = Depends(get_curren
                 "$set": {
                     "status": "analyzed",
                     "total_scenes": len(scene_docs),
+                    "scenes_before_merge": len(raw_scenes),
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }
             }
         )
         
-        return {"status": "success", "total_scenes": len(scene_docs)}
+        return {
+            "status": "success",
+            "total_scenes": len(scene_docs),
+            "scenes_detected": len(raw_scenes),
+            "scenes_merged": len(raw_scenes) - len(scenes)
+        }
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logging.error(f"Error analyzing video: {e}")
         await db.projects.update_one(
             {"id": project_id},
-            {"$set": {"status": "error"}}
+            {"$set": {"status": "error", "error_message": str(e)}}
         )
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
 # Transcription endpoints
