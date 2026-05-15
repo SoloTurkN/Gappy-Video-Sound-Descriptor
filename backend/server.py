@@ -1350,6 +1350,7 @@ async def get_audio(project_id: str, filename: str, current_user: dict = Depends
 
 class ExportRequest(BaseModel):
     format: str = "mp4"  # mp4, avi, mov
+    embed_captions: bool = False
 
 @api_router.post("/export/{project_id}")
 async def export_video(project_id: str, export_req: ExportRequest, current_user: dict = Depends(get_current_user)):
@@ -1541,6 +1542,24 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
         # except:
         #     pass
         logging.info(f"Kept segment files for debugging in {project_dir}")
+        
+        # Embed captions if requested
+        if export_req.embed_captions:
+            project_data = await db.projects.find_one({"id": project_id}, {"_id": 0})
+            srt_content = project_data.get("transcript_srt") if project_data else None
+            
+            if srt_content:
+                captioned_output = UPLOADS_DIR / f"captioned_{project_id}.{output_format}"
+                from services.transcription import embed_captions_in_video
+                success = await embed_captions_in_video(str(output_path), srt_content, str(captioned_output))
+                if success and captioned_output.exists():
+                    # Replace original with captioned version
+                    os.replace(str(captioned_output), str(output_path))
+                    logging.info("Captions embedded successfully")
+                else:
+                    logging.warning("Caption embedding failed, exporting without captions")
+            else:
+                logging.warning("No SRT content available for caption embedding")
         
         # Update project status
         await db.projects.update_one(

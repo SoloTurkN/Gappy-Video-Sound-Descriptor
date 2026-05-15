@@ -139,13 +139,14 @@ const Dashboard = () => {
 
       await axios.post(`${API}/projects/bulk-action`, payload, { withCredentials: true });
       
-      toast.success(`Bulk action completed for ${selectedProjects.length} project(s)`);
+      toast.success(`${action === 'delete_permanent' ? 'Permanently deleted' : 'Action completed for'} ${selectedProjects.length} project(s)`);
       setSelectedProjects([]);
       loadProjects();
       loadFolders();
     } catch (error) {
       console.error('Bulk action error:', error);
-      toast.error('Failed to complete bulk action');
+      const detail = error.response?.data?.detail || 'Failed to complete bulk action';
+      toast.error(detail);
     }
   };
 

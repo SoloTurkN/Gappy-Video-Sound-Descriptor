@@ -20,6 +20,7 @@ const EditorPage = () => {
   const [exporting, setExporting] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportFormat, setExportFormat] = useState('mp4');
+  const [embedCaptions, setEmbedCaptions] = useState(false);
   const [currentAudio, setCurrentAudio] = useState(null);
   const [exportProgress, setExportProgress] = useState(0);
   const [estimatedTime, setEstimatedTime] = useState(0);
@@ -206,23 +207,42 @@ const EditorPage = () => {
 
   const downloadCaption = async (format) => {
     try {
-      const res = await axios.get(`${API}/captions/${projectId}/${format}`, {
-        withCredentials: true,
-        responseType: 'blob'
-      });
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${project?.original_filename || 'captions'}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      let endpoint, filename, mimeType;
+      if (format === 'txt') {
+        const res = await axios.get(`${API}/transcript/${projectId}`, { withCredentials: true });
+        const blob = new Blob([res.data.transcript_text || ''], { type: 'text/plain' });
+        triggerBlobDownload(blob, `${project?.original_filename || 'transcript'}.txt`);
+        toast.success('TXT downloaded');
+        return;
+      }
+      
+      endpoint = `${API}/captions/${projectId}/${format}`;
+      filename = `${project?.original_filename || 'captions'}.${format}`;
+      mimeType = format === 'srt' ? 'text/plain' : 'text/vtt';
+      
+      const res = await axios.get(endpoint, { withCredentials: true });
+      const content = typeof res.data === 'string' ? res.data : JSON.stringify(res.data);
+      const blob = new Blob([content], { type: mimeType });
+      triggerBlobDownload(blob, filename);
       toast.success(`${format.toUpperCase()} downloaded`);
     } catch (error) {
       console.error('Download error:', error);
-      toast.error(`No ${format.toUpperCase()} captions available`);
+      toast.error(error.response?.data?.detail || `Failed to download ${format.toUpperCase()}`);
     }
+  };
+
+  const triggerBlobDownload = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 1000);
   };
 
   const triggerTranscription = async () => {
@@ -268,7 +288,8 @@ const EditorPage = () => {
       toast.info(`Exporting video as ${exportFormat.toUpperCase()}...`);
       
       const response = await axios.post(`${API}/export/${projectId}`, {
-        format: exportFormat
+        format: exportFormat,
+        embed_captions: embedCaptions
       }, { 
         withCredentials: true,
         signal: controller.signal,
@@ -283,20 +304,12 @@ const EditorPage = () => {
       const fullDownloadUrl = `${BACKEND_URL}${response.data.download_url}`;
       setDownloadUrl(fullDownloadUrl);
       
-      // Try automatic download
+      // Download via blob to handle cross-origin
       try {
-        const link = document.createElement('a');
-        link.href = fullDownloadUrl;
-        link.download = `exported_${project?.original_filename || 'video'}.${exportFormat}`;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        
-        setTimeout(() => {
-          document.body.removeChild(link);
-        }, 100);
-        
-        toast.success('Export complete! Download should start automatically. If not, click the Download button below.');
+        const fileRes = await axios.get(fullDownloadUrl, { responseType: 'blob' });
+        const blob = new Blob([fileRes.data], { type: 'video/mp4' });
+        triggerBlobDownload(blob, `exported_${project?.original_filename || 'video'}.${exportFormat}`);
+        toast.success('Export complete! Download started.');
       } catch (downloadError) {
         console.error('Auto-download error:', downloadError);
         toast.success('Export complete! Click the Download button below to get your video.');
@@ -819,6 +832,24 @@ const EditorPage = () => {
               </label>
             </div>
             
+            {/* CC Option */}
+            <div style={{ marginTop: 16, padding: '12px 14px', background: '#f9fafb', borderRadius: 10, border: '1px solid #e5e7eb' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: exporting ? 'not-allowed' : 'pointer', opacity: exporting ? 0.5 : 1 }}>
+                <input
+                  type="checkbox"
+                  checked={embedCaptions}
+                  onChange={(e) => setEmbedCaptions(e.target.checked)}
+                  disabled={exporting}
+                  style={{ width: 16, height: 16, accentColor: '#6A39F5' }}
+                  data-testid="embed-captions-checkbox"
+                />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#1f2937' }}>Embed Closed Captions</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>Burn subtitles into the exported video (requires transcript)</div>
+                </div>
+              </label>
+            </div>
+            
             {exporting && (
               <div style={{ marginTop: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -843,16 +874,23 @@ const EditorPage = () => {
             <div style={styles.modalActions}>
               {downloadUrl ? (
                 <>
-                  <a
-                    href={downloadUrl}
-                    download
+                  <button
+                    onClick={async () => {
+                      try {
+                        const fileRes = await axios.get(downloadUrl, { responseType: 'blob' });
+                        const blob = new Blob([fileRes.data], { type: 'video/mp4' });
+                        triggerBlobDownload(blob, `exported_${project?.original_filename || 'video'}.${exportFormat}`);
+                      } catch (e) {
+                        window.open(downloadUrl, '_blank');
+                      }
+                    }}
                     className="btn-primary"
-                    style={{ padding: '14px 32px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    style={{ padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     data-testid="download-button"
                   >
                     <Download size={18} />
                     Download Video
-                  </a>
+                  </button>
                   <button
                     onClick={() => {
                       setShowExportDialog(false);
