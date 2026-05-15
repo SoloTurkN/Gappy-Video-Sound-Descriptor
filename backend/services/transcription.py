@@ -1,10 +1,9 @@
 """
 Transcription Service using OpenAI Whisper
 Generates transcripts and closed captions (SRT/VTT) from video audio
+Uses pydub + imageio_ffmpeg for audio extraction (no system FFmpeg dependency)
 """
 import os
-import subprocess
-import tempfile
 import logging
 from pathlib import Path
 from typing import Optional, Tuple
@@ -15,29 +14,35 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
-async def extract_audio_from_video(video_path: str) -> Optional[str]:
-    """Extract audio from video file using FFmpeg"""
+def _get_ffmpeg_path():
+    """Get FFmpeg path from imageio_ffmpeg (bundled with moviepy)"""
     try:
-        # Create temp file for audio
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return "ffmpeg"
+
+
+async def extract_audio_from_video(video_path: str) -> Optional[str]:
+    """Extract audio from video file using pydub with bundled FFmpeg"""
+    try:
+        import subprocess
+        ffmpeg_path = _get_ffmpeg_path()
         audio_path = video_path.rsplit('.', 1)[0] + '_audio.mp3'
-        
-        # Use FFmpeg to extract audio
+
         cmd = [
-            'ffmpeg', '-i', video_path,
-            '-vn',  # No video
-            '-acodec', 'libmp3lame',
-            '-ar', '16000',  # Sample rate for Whisper
-            '-ac', '1',  # Mono
-            '-y',  # Overwrite
-            audio_path
+            ffmpeg_path, '-i', video_path,
+            '-vn', '-acodec', 'libmp3lame',
+            '-ar', '16000', '-ac', '1',
+            '-y', audio_path
         ]
-        
+
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-        
+
         if result.returncode != 0:
-            logger.error(f"FFmpeg error: {result.stderr}")
+            logger.error(f"Audio extraction error: {result.stderr}")
             return None
-            
+
         return audio_path
     except Exception as e:
         logger.error(f"Error extracting audio: {e}")
@@ -59,7 +64,6 @@ async def transcribe_audio(audio_path: str, language: str = "en") -> Optional[di
         
         stt = OpenAISpeechToText(api_key=api_key)
         
-        # Check file size (Whisper has 25MB limit)
         file_size = os.path.getsize(audio_path)
         if file_size > 25 * 1024 * 1024:
             logger.warning(f"Audio file too large ({file_size} bytes), may need chunking")
@@ -73,34 +77,26 @@ async def transcribe_audio(audio_path: str, language: str = "en") -> Optional[di
                 timestamp_granularities=["segment"]
             )
         
-        # Extract segments with timestamps
         segments = []
         
         if hasattr(response, 'segments') and response.segments:
             for segment in response.segments:
-                # Handle both object attributes and dictionary keys
                 if hasattr(segment, 'start'):
-                    # Object with attributes
                     segments.append({
                         "start": segment.start,
                         "end": segment.end,
                         "text": segment.text.strip()
                     })
                 elif isinstance(segment, dict):
-                    # Dictionary format
                     segments.append({
                         "start": segment.get("start", 0.0),
                         "end": segment.get("end", 0.0),
                         "text": segment.get("text", "").strip()
                     })
-                else:
-                    logger.warning(f"Unknown segment format: {type(segment)}")
         else:
-            logger.info("No segments found in response, creating default segment")
-            # If no segments, create one segment for the entire text
             segments = [{
                 "start": 0.0,
-                "end": 5.0,  # Default duration
+                "end": 5.0,
                 "text": response.text if hasattr(response, 'text') else ""
             }]
         
@@ -164,7 +160,6 @@ async def process_video_transcription(
     Returns: (transcript_text, srt_content, vtt_content)
     """
     try:
-        # Extract audio from video
         logger.info(f"Extracting audio from {video_path}")
         audio_path = await extract_audio_from_video(video_path)
         
@@ -173,7 +168,6 @@ async def process_video_transcription(
             return None, None, None
         
         try:
-            # Transcribe audio
             logger.info("Transcribing audio with Whisper...")
             result = await transcribe_audio(audio_path, language)
             
@@ -184,7 +178,6 @@ async def process_video_transcription(
             transcript_text = result["text"]
             segments = result["segments"]
             
-            # Generate caption formats
             srt_content = generate_srt(segments) if segments else None
             vtt_content = generate_vtt(segments) if segments else None
             
@@ -192,7 +185,6 @@ async def process_video_transcription(
             return transcript_text, srt_content, vtt_content
             
         finally:
-            # Cleanup audio file
             if audio_path and os.path.exists(audio_path):
                 os.remove(audio_path)
                 
@@ -206,32 +198,31 @@ async def embed_captions_in_video(
     srt_content: str, 
     output_path: str
 ) -> bool:
-    """Burn captions into video using FFmpeg"""
+    """Burn captions into video using bundled FFmpeg"""
     try:
-        # Write SRT to temp file
+        import subprocess
+        ffmpeg_path = _get_ffmpeg_path()
+        
         srt_path = video_path.rsplit('.', 1)[0] + '_captions.srt'
         with open(srt_path, 'w', encoding='utf-8') as f:
             f.write(srt_content)
         
         try:
-            # Use FFmpeg to burn subtitles
             cmd = [
-                'ffmpeg', '-i', video_path,
+                ffmpeg_path, '-i', video_path,
                 '-vf', f"subtitles='{srt_path}'",
                 '-c:a', 'copy',
-                '-y',
-                output_path
+                '-y', output_path
             ]
             
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
             
             if result.returncode != 0:
-                logger.error(f"FFmpeg subtitle burn error: {result.stderr}")
+                logger.error(f"Subtitle burn error: {result.stderr}")
                 return False
                 
             return True
         finally:
-            # Cleanup SRT file
             if os.path.exists(srt_path):
                 os.remove(srt_path)
                 

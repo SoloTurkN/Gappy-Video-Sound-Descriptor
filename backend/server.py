@@ -350,49 +350,22 @@ def frame_to_base64(frame):
     _, buffer = cv2.imencode('.jpg', frame)
     return base64.b64encode(buffer).decode('utf-8')
 
-def ensure_ffmpeg_available() -> str:
-    """
-    Ensures FFmpeg is available and returns its path.
-    Tries multiple detection methods.
-    """
-    # Method 1: Check if in PATH
-    ffmpeg_path = shutil.which('ffmpeg')
-    if ffmpeg_path and os.path.exists(ffmpeg_path):
-        return ffmpeg_path
-    
-    # Method 2: Check common installation paths
-    common_paths = [
-        '/usr/bin/ffmpeg',
-        '/usr/local/bin/ffmpeg',
-        '/bin/ffmpeg',
-        '/opt/ffmpeg/bin/ffmpeg',
-    ]
-    
-    for path in common_paths:
+def get_ffmpeg_path() -> str:
+    """Get FFmpeg path from imageio_ffmpeg (bundled with moviepy). No system install needed."""
+    try:
+        import imageio_ffmpeg
+        path = imageio_ffmpeg.get_ffmpeg_exe()
         if os.path.exists(path):
             return path
-    
-    # Method 3: Try to find it using 'which' command
-    try:
-        result = subprocess.run(['which', 'ffmpeg'], capture_output=True, text=True, timeout=5)
-        if result.returncode == 0 and result.stdout.strip():
-            path = result.stdout.strip()
-            if os.path.exists(path):
-                return path
     except Exception:
         pass
     
-    # Method 4: Try using 'command -v'
-    try:
-        result = subprocess.run(['sh', '-c', 'command -v ffmpeg'], capture_output=True, text=True, timeout=5)
-        if result.returncode == 0 and result.stdout.strip():
-            path = result.stdout.strip()
-            if os.path.exists(path):
-                return path
-    except Exception:
-        pass
+    # Fallback to system FFmpeg
+    ffmpeg_path = shutil.which('ffmpeg')
+    if ffmpeg_path:
+        return ffmpeg_path
     
-    raise FileNotFoundError("FFmpeg is not installed on this system. Video export features are unavailable.")
+    raise FileNotFoundError("FFmpeg binary not found. Please install moviepy: pip install moviepy")
 
 
 async def generate_description(frame_base64: str, language: str = "en", num_sentences: str = "1") -> str:
@@ -1421,15 +1394,15 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
         output_path = UPLOADS_DIR / output_filename
         project_dir = UPLOADS_DIR / project_id
         
-        # Check if FFmpeg is available
+        # Get bundled FFmpeg path (from moviepy/imageio_ffmpeg)
         try:
-            ffmpeg_path = ensure_ffmpeg_available()
-            logger.info(f"FFmpeg found at: {ffmpeg_path}")
+            ffmpeg_path = get_ffmpeg_path()
+            logger.info(f"Using FFmpeg at: {ffmpeg_path}")
         except FileNotFoundError as e:
             logger.error(f"FFmpeg not found: {str(e)}")
             raise HTTPException(
                 status_code=500, 
-                detail="FFmpeg is not installed on the server. The system administrator has been notified."
+                detail="Video processing libraries are not properly installed. Please contact support."
             )
         
         # Get video properties
@@ -1701,13 +1674,12 @@ async def startup_db():
     """Store database instance in app state for dependency injection"""
     app.state.db = db
     
-    # Check FFmpeg availability (moved from start_with_ffmpeg.sh for deployment compatibility)
-    import shutil
-    ffmpeg_path = shutil.which("ffmpeg")
-    if ffmpeg_path:
+    # Check FFmpeg availability via bundled imageio_ffmpeg
+    try:
+        ffmpeg_path = get_ffmpeg_path()
         logger.info(f"FFmpeg available at: {ffmpeg_path}")
-    else:
-        logger.warning("FFmpeg not found - video export functionality may not work")
+    except FileNotFoundError:
+        logger.warning("FFmpeg not found - video export functionality may not work. Install moviepy: pip install moviepy")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
