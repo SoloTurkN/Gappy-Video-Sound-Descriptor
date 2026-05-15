@@ -1392,7 +1392,7 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
         
         # Create output filename
         output_filename = f"exported_{project_id}.{output_format}"
-        output_path = UPLOADS_DIR / output_filename
+        output_path = Path(f"/tmp/{output_filename}")
         project_dir = UPLOADS_DIR / project_id
         
         # Get bundled FFmpeg path (from moviepy/imageio_ffmpeg)
@@ -1415,7 +1415,7 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
         
         # Create segments for each scene
         segment_files = []
-        concat_file = project_dir / "concat_list.txt"
+        concat_file = Path(f"/tmp/concat_list_{project_id}.txt")
         
         for i, scene in enumerate(scenes):
             # Calculate scene boundaries
@@ -1438,7 +1438,7 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
             audio_duration = scene['duration'] if scene['duration'] > 0 else 2.0
             
             # Step 1: Create still frame video with audio description (first frame paused)
-            still_output = project_dir / f"still_{i}.mp4"
+            still_output = Path(f"/tmp/still_{project_id}_{i}.mp4")
             
             still_cmd = [
                 ffmpeg_path, "-y",
@@ -1468,7 +1468,7 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
             # Step 2: Extract FULL video segment with SILENT audio track
             # This plays the entire scene from start to end (or next scene)
             # We add silent audio so concatenation maintains continuous audio stream
-            video_segment_output = project_dir / f"segment_{i}.mp4"
+            video_segment_output = Path(f"/tmp/segment_{project_id}_{i}.mp4")
             
             segment_cmd = [
                 ffmpeg_path, "-y",
@@ -1585,10 +1585,16 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
 @api_router.get("/download/{project_id}/{filename}")
 async def download_video(project_id: str, filename: str):
     """Download exported video"""
-    file_path = UPLOADS_DIR / filename
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(file_path, filename=filename, media_type="video/mp4")
+    for search_dir in [Path("/tmp"), UPLOADS_DIR]:
+        file_path = search_dir / filename
+        if file_path.exists():
+            return FileResponse(
+                file_path, 
+                filename=filename, 
+                media_type="application/octet-stream",
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+            )
+    raise HTTPException(status_code=404, detail="File not found")
 
 # Import auth routes
 from routes import auth as auth_routes

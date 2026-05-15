@@ -24,11 +24,13 @@ def _get_ffmpeg_path():
 
 
 async def extract_audio_from_video(video_path: str) -> Optional[str]:
-    """Extract audio from video file using pydub with bundled FFmpeg"""
+    """Extract audio from video file using bundled FFmpeg"""
     try:
         import subprocess
         ffmpeg_path = _get_ffmpeg_path()
-        audio_path = video_path.rsplit('.', 1)[0] + '_audio.mp3'
+        # Use /tmp for output to avoid path issues with static FFmpeg builds
+        basename = os.path.basename(video_path).rsplit('.', 1)[0]
+        audio_path = f"/tmp/{basename}_audio.mp3"
 
         cmd = [
             ffmpeg_path, '-i', video_path,
@@ -40,7 +42,11 @@ async def extract_audio_from_video(video_path: str) -> Optional[str]:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
 
         if result.returncode != 0:
-            logger.error(f"Audio extraction error: {result.stderr}")
+            logger.error(f"Audio extraction error: {result.stderr[:500]}")
+            return None
+
+        if not os.path.exists(audio_path):
+            logger.error("Audio extraction produced no output file")
             return None
 
         return audio_path

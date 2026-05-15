@@ -130,6 +130,8 @@ const Dashboard = () => {
     }
 
     try {
+      toast.info(`Processing ${selectedProjects.length} project(s)...`);
+      
       const payload = {
         project_ids: selectedProjects,
         action: action
@@ -137,16 +139,16 @@ const Dashboard = () => {
       
       if (folder) payload.folder = folder;
 
-      await axios.post(`${API}/projects/bulk-action`, payload, { withCredentials: true });
+      const response = await axios.post(`${API}/projects/bulk-action`, payload, { withCredentials: true });
       
       toast.success(`${action === 'delete_permanent' ? 'Permanently deleted' : 'Action completed for'} ${selectedProjects.length} project(s)`);
       setSelectedProjects([]);
-      loadProjects();
-      loadFolders();
+      await loadProjects();
+      await loadFolders();
     } catch (error) {
       console.error('Bulk action error:', error);
-      const detail = error.response?.data?.detail || 'Failed to complete bulk action';
-      toast.error(detail);
+      const detail = error.response?.data?.detail || error.message || 'Failed to complete action';
+      toast.error(`Error: ${detail}`);
     }
   };
 

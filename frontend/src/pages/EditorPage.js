@@ -207,23 +207,32 @@ const EditorPage = () => {
 
   const downloadCaption = async (format) => {
     try {
-      let endpoint, filename, mimeType;
+      let content, filename;
+      
       if (format === 'txt') {
         const res = await axios.get(`${API}/transcript/${projectId}`, { withCredentials: true });
-        const blob = new Blob([res.data.transcript_text || ''], { type: 'text/plain' });
-        triggerBlobDownload(blob, `${project?.original_filename || 'transcript'}.txt`);
-        toast.success('TXT downloaded');
+        content = res.data.transcript_text || '';
+        filename = `${project?.original_filename || 'transcript'}.txt`;
+      } else {
+        const res = await axios.get(`${API}/captions/${projectId}/${format}`, { withCredentials: true });
+        content = typeof res.data === 'string' ? res.data : JSON.stringify(res.data);
+        filename = `${project?.original_filename || 'captions'}.${format}`;
+      }
+      
+      if (!content) {
+        toast.error(`No ${format.toUpperCase()} content available. Generate transcript first.`);
         return;
       }
       
-      endpoint = `${API}/captions/${projectId}/${format}`;
-      filename = `${project?.original_filename || 'captions'}.${format}`;
-      mimeType = format === 'srt' ? 'text/plain' : 'text/vtt';
-      
-      const res = await axios.get(endpoint, { withCredentials: true });
-      const content = typeof res.data === 'string' ? res.data : JSON.stringify(res.data);
-      const blob = new Blob([content], { type: mimeType });
-      triggerBlobDownload(blob, filename);
+      // Data URI approach - most reliable cross-browser download method for text
+      const dataUri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
+      const a = document.createElement('a');
+      a.href = dataUri;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => document.body.removeChild(a), 500);
       toast.success(`${format.toUpperCase()} downloaded`);
     } catch (error) {
       console.error('Download error:', error);
@@ -231,18 +240,9 @@ const EditorPage = () => {
     }
   };
 
-  const triggerBlobDownload = (blob, filename) => {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    }, 1000);
+  const downloadExportedVideo = (url) => {
+    // Open in new tab - most reliable for binary file downloads
+    window.open(url, '_blank');
   };
 
   const triggerTranscription = async () => {
@@ -304,16 +304,9 @@ const EditorPage = () => {
       const fullDownloadUrl = `${BACKEND_URL}${response.data.download_url}`;
       setDownloadUrl(fullDownloadUrl);
       
-      // Download via blob to handle cross-origin
-      try {
-        const fileRes = await axios.get(fullDownloadUrl, { responseType: 'blob' });
-        const blob = new Blob([fileRes.data], { type: 'video/mp4' });
-        triggerBlobDownload(blob, `exported_${project?.original_filename || 'video'}.${exportFormat}`);
-        toast.success('Export complete! Download started.');
-      } catch (downloadError) {
-        console.error('Auto-download error:', downloadError);
-        toast.success('Export complete! Click the Download button below to get your video.');
-      }
+      // Open in new tab for reliable download
+      window.open(fullDownloadUrl, '_blank');
+      toast.success('Export complete! Download started in a new tab.');
       
     } catch (error) {
       clearInterval(progressInterval);
@@ -875,15 +868,7 @@ const EditorPage = () => {
               {downloadUrl ? (
                 <>
                   <button
-                    onClick={async () => {
-                      try {
-                        const fileRes = await axios.get(downloadUrl, { responseType: 'blob' });
-                        const blob = new Blob([fileRes.data], { type: 'video/mp4' });
-                        triggerBlobDownload(blob, `exported_${project?.original_filename || 'video'}.${exportFormat}`);
-                      } catch (e) {
-                        window.open(downloadUrl, '_blank');
-                      }
-                    }}
+                    onClick={() => downloadExportedVideo(downloadUrl)}
                     className="btn-primary"
                     style={{ padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     data-testid="download-button"
