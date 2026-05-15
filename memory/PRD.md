@@ -7,6 +7,7 @@ Build a web app named "Gappy Describe" that generates a "video voice description
 **Status:** App fully functional with AI scene merging, manual scene merging in editor, shared navigation, and improved error handling.
 
 ### What's Been Implemented
+- **Reliable File Downloads + CC Burn-in Fix** (Feb 2026): Replaced fragile `window.open` / Data URI download patterns in EditorPage with unified Blob + `URL.createObjectURL` anchor-click downloads. Fixed backend EXDEV cross-device link error in CC burn-in path (`shutil.move` + same-filesystem captioned output). Trash 'Delete Forever' bulk action verified working E2E. All three previously-failing P0/P1 issues now pass Playwright `expect_download()` tests.
 - **Manual Scene Merging in Editor** (Feb 2026): Checkbox-based selection on scene cards with "Merge Scenes" toolbar button. Keeps earliest scene's description/thumbnail, deletes the rest. Backend endpoint: POST /api/scenes/merge.
 - **AI-Powered Scene Merging** (Feb 2026): After detecting scene cuts, AI vision (GPT-4o) compares consecutive frames to determine if they're from the same setting/event (e.g., concert from different angles). Falls back to histogram comparison.
 - **Shared Navbar** (Feb 2026): Consistent top navigation across ALL pages. Shows Pricing/Login/SignUp when unauthenticated; Pricing/Dashboard/LogOut when authenticated.
