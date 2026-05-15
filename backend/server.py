@@ -1549,12 +1549,15 @@ async def export_video(project_id: str, export_req: ExportRequest, current_user:
             srt_content = project_data.get("transcript_srt") if project_data else None
             
             if srt_content:
-                captioned_output = UPLOADS_DIR / f"captioned_{project_id}.{output_format}"
+                # Place captioned output on the same filesystem as output_path to avoid
+                # EXDEV (cross-device link) errors when /tmp and /app/backend/uploads are
+                # mounted on different filesystems.
+                captioned_output = output_path.parent / f"captioned_{project_id}.{output_format}"
                 from services.transcription import embed_captions_in_video
                 success = await embed_captions_in_video(str(output_path), srt_content, str(captioned_output))
                 if success and captioned_output.exists():
-                    # Replace original with captioned version
-                    os.replace(str(captioned_output), str(output_path))
+                    # Replace original with captioned version (same filesystem -> safe os.replace)
+                    shutil.move(str(captioned_output), str(output_path))
                     logging.info("Captions embedded successfully")
                 else:
                     logging.warning("Caption embedding failed, exporting without captions")

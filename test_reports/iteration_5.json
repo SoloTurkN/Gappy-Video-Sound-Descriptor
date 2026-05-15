@@ -1,0 +1,67 @@
+{
+  "summary": "E2E verification of P0/P1 fixes: (1) Blob-based downloads for TXT/SRT/VTT/MP4, (2) Trash 'Delete Forever' bulk action, (3) CC burn-in on MP4 export. All UI flows verified via Playwright expect_download() (real file landing on disk, not just toasts). Found and FIXED a critical backend bug: CC burn-in path used os.replace() across /app/backend/uploads -> /tmp causing [Errno 18] Invalid cross-device link, returning 500 to UI. After fix, full export+CC+download cycle works end-to-end with zero console errors.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Login via /login (tester1@gappylabs.com) -> redirects to /dashboard - PASS",
+    "Upload sample.mp4 + analyze -> 2 scenes + transcript+SRT+VTT generated - PASS",
+    "EditorPage loads with scene cards and Transcript & CC panel - PASS",
+    "data-testid=download-txt -> real .txt file downloaded to disk (Playwright expect_download verified, suggested_filename=sample.txt, size>0) - PASS",
+    "data-testid=download-srt -> real .srt file downloaded to disk (sample.srt, size=36) - PASS",
+    "data-testid=download-vtt -> real .vtt file downloaded to disk (sample.vtt, size=44) - PASS",
+    "Export modal: format-mp4 selected, embed-captions-checkbox checked -> data-testid=start-export-button triggers backend export with embed_captions=true - PASS",
+    "MP4 download fires automatically after export completes (downloadExportedVideo blob anchor-click) - PASS (size=132022 bytes, valid H.264 + AAC, duration 11.65s via ffprobe)",
+    "data-testid=download-button (post-export re-download) -> downloads same MP4 reliably - PASS (size matches)",
+    "Backend log confirms 'Captions embedded successfully' for embed_captions=true path - PASS",
+    "Dashboard Trash flow: select project -> 'Move to Trash' bulk action -> project appears in Trash folder - PASS",
+    "Trash folder: select project -> 'Delete Forever' (window.confirm auto-accepted via dialog handler) -> project permanently removed (count goes 1->0, toast 'Permanently deleted 1 project(s)') - PASS",
+    "Zero console errors across all Editor and Dashboard flows after fix - PASS"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_gappy_api.py"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "FIXED in this iteration: /app/backend/server.py line ~1551 — embed_captions branch used os.replace() between /app/backend/uploads and /tmp which are separate filesystems in this container (EXDEV: Invalid cross-device link). Replaced with shutil.move() and placed captioned_output under output_path.parent so the move stays on the same filesystem.",
+    "Minor: Default voice_id 'alloy' triggers ElevenLabs 404 (voice_not_found) and silently falls back to gTTS. Not blocking exports, but consider validating voice_id at upload time or seeding ElevenLabs voice catalog so users get a clear error instead of silent fallback.",
+    "Minor: passlib bcrypt warning on backend startup ('module bcrypt has no attribute __about__') — cosmetic, but worth pinning bcrypt<5 or upgrading passlib to remove the trapped exception spam."
+  ],
+
+  "updated_files": [
+    "/app/backend/server.py (lines ~1551-1560: cross-device-safe CC burn-in replace)"
+  ],
+
+  "success_rate": {
+    "backend": "100% (export, captions, transcript, trash bulk actions all green)",
+    "frontend": "100% (all download/export/trash UI flows verified end-to-end with real on-disk files)"
+  },
+
+  "test_credentials": {
+    "email": "tester1@gappylabs.com",
+    "password": "GappyTest2024!",
+    "tier": "pro"
+  },
+
+  "seed_data_creation": "Uploaded /tmp/sample.mp4 (copy of an existing 11KB test mp4 from uploads dir), analyzed -> 2 scenes + transcript. Project was move_to_trash + delete_permanent at end of test for cleanup. No residual data left in DB or filesystem.",
+
+  "retest_needed": false,
+
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Cross-device-link bug in CC burn-in was the root cause of the previously reported 'MP4 export silently fails / no download' P0. After shutil.move fix, the full pipeline (analyze -> export with embed_captions=true -> auto-download via blob anchor) works end-to-end with no console errors. Playwright must use page.expect_download() (not toast assertions) to truly verify downloads — confirmed working. window.confirm() in Delete Forever requires page.on('dialog', accept) handler. Test user tester1@gappylabs.com is PRO tier with 50-video quota.",
+
+  "rca of the issue": "Root cause: /app/backend/server.py embed_captions branch wrote captioned MP4 to UPLOADS_DIR (/app/backend/uploads, overlay fs) and then called os.replace() to rename it onto the export output_path which lives in /tmp (tmpfs). os.replace == rename(2), which fails with EXDEV (errno 18) when source and destination are on different filesystems. FastAPI then returned 500, frontend showed 'Video export failed' toast and never reached downloadExportedVideo. Reproduction: POST /api/export/{id} with embed_captions=true on this container. Mitigation applied: (a) write captioned_output to output_path.parent (same fs), (b) use shutil.move (handles EXDEV via copy+unlink fallback) instead of os.replace. Verified: backend log now shows 'Captions embedded successfully' and download returns 132KB valid MP4."
+}

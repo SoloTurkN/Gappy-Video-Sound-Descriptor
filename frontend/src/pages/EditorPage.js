@@ -205,34 +205,55 @@ const EditorPage = () => {
     }
   };
 
+  // Reliable blob-based file download. Avoids popup blockers and Data URI size limits.
+  const saveBlob = (blob, filename) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      try { document.body.removeChild(a); } catch (_) {}
+      URL.revokeObjectURL(url);
+    }, 1500);
+  };
+
+  const baseFilename = (fallback) => {
+    const raw = project?.original_filename || fallback;
+    return raw.replace(/\.[^/.]+$/, '') || fallback;
+  };
+
   const downloadCaption = async (format) => {
     try {
-      let content, filename;
-      
+      let blob, filename;
+
       if (format === 'txt') {
         const res = await axios.get(`${API}/transcript/${projectId}`, { withCredentials: true });
-        content = res.data.transcript_text || '';
-        filename = `${project?.original_filename || 'transcript'}.txt`;
+        const text = res.data?.transcript_text || '';
+        if (!text) {
+          toast.error('No transcript content available. Generate transcript first.');
+          return;
+        }
+        blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        filename = `${baseFilename('transcript')}.txt`;
       } else {
-        const res = await axios.get(`${API}/captions/${projectId}/${format}`, { withCredentials: true });
-        content = typeof res.data === 'string' ? res.data : JSON.stringify(res.data);
-        filename = `${project?.original_filename || 'captions'}.${format}`;
+        const res = await axios.get(`${API}/captions/${projectId}/${format}`, {
+          withCredentials: true,
+          responseType: 'blob'
+        });
+        if (!res.data || res.data.size === 0) {
+          toast.error(`No ${format.toUpperCase()} content available. Generate transcript first.`);
+          return;
+        }
+        const mime = format === 'srt' ? 'application/x-subrip' : 'text/vtt';
+        blob = new Blob([res.data], { type: mime });
+        filename = `${baseFilename('captions')}.${format}`;
       }
-      
-      if (!content) {
-        toast.error(`No ${format.toUpperCase()} content available. Generate transcript first.`);
-        return;
-      }
-      
-      // Data URI approach - most reliable cross-browser download method for text
-      const dataUri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
-      const a = document.createElement('a');
-      a.href = dataUri;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => document.body.removeChild(a), 500);
+
+      saveBlob(blob, filename);
       toast.success(`${format.toUpperCase()} downloaded`);
     } catch (error) {
       console.error('Download error:', error);
@@ -240,9 +261,22 @@ const EditorPage = () => {
     }
   };
 
-  const downloadExportedVideo = (url) => {
-    // Open in new tab - most reliable for binary file downloads
-    window.open(url, '_blank');
+  const downloadExportedVideo = async (url) => {
+    try {
+      toast.info('Preparing download...');
+      const res = await axios.get(url, {
+        responseType: 'blob',
+        withCredentials: true
+      });
+      const urlFilename = url.split('/').pop() || `${baseFilename('video')}.${exportFormat}`;
+      const filename = decodeURIComponent(urlFilename);
+      const blob = new Blob([res.data], { type: 'video/mp4' });
+      saveBlob(blob, filename);
+      toast.success('Download started');
+    } catch (e) {
+      console.error('Video download error:', e);
+      toast.error('Failed to download exported video');
+    }
   };
 
   const triggerTranscription = async () => {
@@ -303,10 +337,10 @@ const EditorPage = () => {
       
       const fullDownloadUrl = `${BACKEND_URL}${response.data.download_url}`;
       setDownloadUrl(fullDownloadUrl);
-      
-      // Open in new tab for reliable download
-      window.open(fullDownloadUrl, '_blank');
-      toast.success('Export complete! Download started in a new tab.');
+
+      // Auto-trigger reliable blob-based download
+      await downloadExportedVideo(fullDownloadUrl);
+      toast.success('Export complete!');
       
     } catch (error) {
       clearInterval(progressInterval);
