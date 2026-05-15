@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Mail, Lock, User, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -14,6 +14,8 @@ const SignupPage = () => {
   const [processingSession, setProcessingSession] = useState(false);
   const navigate = useNavigate();
   const { authenticated, processSessionId, signupWithEmail } = useAuth();
+  // Guard against StrictMode double-invocation; session_id is single-use.
+  const sessionProcessedRef = useRef(false);
 
   // Check if user is already authenticated
   useEffect(() => {
@@ -27,15 +29,18 @@ const SignupPage = () => {
     const handleSessionId = async () => {
       const fragment = window.location.hash;
       const sessionIdMatch = fragment.match(/session_id=([^&]+)/);
-      
+
       if (sessionIdMatch) {
+        if (sessionProcessedRef.current) return;
+        sessionProcessedRef.current = true;
+
         const sessionId = sessionIdMatch[1];
+        // Clear the fragment immediately so a re-render can't see it again
+        window.history.replaceState(null, '', window.location.pathname);
         setProcessingSession(true);
-        
+
         try {
           await processSessionId(sessionId);
-          // Clean URL fragment
-          window.history.replaceState(null, '', window.location.pathname);
           toast.success('Account created successfully! Welcome to Gappy! 🎉');
           navigate('/dashboard');
         } catch (error) {
@@ -44,9 +49,9 @@ const SignupPage = () => {
         }
       }
     };
-    
+
     handleSessionId();
-  }, [processSessionId, navigate]);
+  }, []); // eslint-disable-line
 
   const handleEmailSignup = async (e) => {
     e.preventDefault();

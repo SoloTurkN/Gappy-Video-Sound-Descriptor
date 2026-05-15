@@ -12,6 +12,12 @@ export function AuthProvider({ children }) {
 
   // Check existing authentication on mount
   useEffect(() => {
+    // If returning from OAuth callback, skip the /auth/check race.
+    // LoginPage/SignupPage will exchange the session_id and establish the session.
+    if (typeof window !== 'undefined' && window.location.hash?.includes('session_id=')) {
+      setLoading(false);
+      return;
+    }
     checkAuth();
   }, []);
 

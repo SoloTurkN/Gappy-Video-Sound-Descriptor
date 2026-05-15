@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,6 +12,10 @@ const LoginPage = () => {
   const [processingSession, setProcessingSession] = useState(false);
   const navigate = useNavigate();
   const { authenticated, processSessionId, loginWithEmail } = useAuth();
+  // Guard against React StrictMode double-invocation and AuthContext re-renders
+  // that would otherwise call processSessionId twice with the same single-use
+  // Emergent Auth session_id (second call returns 401 from upstream).
+  const sessionProcessedRef = useRef(false);
 
   // Check if user is already authenticated
   useEffect(() => {
@@ -25,15 +29,20 @@ const LoginPage = () => {
     const handleSessionId = async () => {
       const fragment = window.location.hash;
       const sessionIdMatch = fragment.match(/session_id=([^&]+)/);
-      
+
       if (sessionIdMatch) {
+        // Guard: single-use session_id, ensure we never POST it more than once
+        // (StrictMode mounts effect twice; AuthContext value identity changes also re-run effects)
+        if (sessionProcessedRef.current) return;
+        sessionProcessedRef.current = true;
+
         const sessionId = sessionIdMatch[1];
+        // Clear the fragment IMMEDIATELY so a re-render/re-mount can't see it again
+        window.history.replaceState(null, '', window.location.pathname);
         setProcessingSession(true);
-        
+
         try {
           await processSessionId(sessionId);
-          // Clean URL fragment
-          window.history.replaceState(null, '', window.location.pathname);
           toast.success('Welcome to Gappy Descripe! 🎉');
           navigate('/dashboard');
         } catch (error) {
@@ -42,9 +51,9 @@ const LoginPage = () => {
         }
       }
     };
-    
+
     handleSessionId();
-  }, [processSessionId, navigate]);
+  }, []); // eslint-disable-line
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
