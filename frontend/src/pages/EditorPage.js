@@ -205,78 +205,49 @@ const EditorPage = () => {
     }
   };
 
-  // Reliable blob-based file download. Avoids popup blockers and Data URI size limits.
-  const saveBlob = (blob, filename) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.rel = 'noopener';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      try { document.body.removeChild(a); } catch (_) {}
-      URL.revokeObjectURL(url);
-    }, 1500);
-  };
-
   const baseFilename = (fallback) => {
     const raw = project?.original_filename || fallback;
     return raw.replace(/\.[^/.]+$/, '') || fallback;
   };
 
-  const downloadCaption = async (format) => {
-    try {
-      let blob, filename;
-
-      if (format === 'txt') {
-        const res = await axios.get(`${API}/transcript/${projectId}`, { withCredentials: true });
-        const text = res.data?.transcript_text || '';
-        if (!text) {
-          toast.error('No transcript content available. Generate transcript first.');
-          return;
-        }
-        blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-        filename = `${baseFilename('transcript')}.txt`;
-      } else {
-        const res = await axios.get(`${API}/captions/${projectId}/${format}`, {
-          withCredentials: true,
-          responseType: 'blob'
-        });
-        if (!res.data || res.data.size === 0) {
-          toast.error(`No ${format.toUpperCase()} content available. Generate transcript first.`);
-          return;
-        }
-        const mime = format === 'srt' ? 'application/x-subrip' : 'text/vtt';
-        blob = new Blob([res.data], { type: mime });
-        filename = `${baseFilename('captions')}.${format}`;
-      }
-
-      saveBlob(blob, filename);
-      toast.success(`${format.toUpperCase()} downloaded`);
-    } catch (error) {
-      console.error('Download error:', error);
-      toast.error(error.response?.data?.detail || `Failed to download ${format.toUpperCase()}`);
-    }
+  // Direct-link download. Backend endpoints already send Content-Disposition: attachment,
+  // so the browser downloads natively when the user clicks an <a> element. This preserves
+  // the user-gesture flag (critical in Chrome) and works even when extensions interfere
+  // with async/programmatic blob downloads.
+  const directDownload = (href, filename) => {
+    const a = document.createElement('a');
+    a.href = href;
+    if (filename) a.download = filename;
+    a.rel = 'noopener';
+    a.target = '_self';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      try { document.body.removeChild(a); } catch (_) {}
+    }, 200);
   };
 
-  const downloadExportedVideo = async (url) => {
-    try {
-      toast.info('Preparing download...');
-      const res = await axios.get(url, {
-        responseType: 'blob',
-        withCredentials: true
-      });
-      const urlFilename = url.split('/').pop() || `${baseFilename('video')}.${exportFormat}`;
-      const filename = decodeURIComponent(urlFilename);
-      const blob = new Blob([res.data], { type: 'video/mp4' });
-      saveBlob(blob, filename);
-      toast.success('Download started');
-    } catch (e) {
-      console.error('Video download error:', e);
-      toast.error('Failed to download exported video');
+  const downloadCaption = (format) => {
+    // Captions endpoint supports srt/vtt/txt and sends Content-Disposition: attachment.
+    // Same-origin httpOnly cookies are sent automatically with anchor navigation.
+    if (!transcriptData?.transcript_text) {
+      toast.error('No transcript content available. Generate transcript first.');
+      return;
     }
+    if ((format === 'srt' && !transcriptData.has_srt) || (format === 'vtt' && !transcriptData.has_vtt)) {
+      toast.error(`No ${format.toUpperCase()} content available. Generate transcript first.`);
+      return;
+    }
+    const filename = `${baseFilename(format === 'txt' ? 'transcript' : 'captions')}.${format}`;
+    directDownload(`${API}/captions/${projectId}/${format}`, filename);
+    toast.success(`${format.toUpperCase()} download started`);
+  };
+
+  const downloadExportedVideo = (url) => {
+    const urlFilename = url.split('/').pop() || `${baseFilename('video')}.${exportFormat}`;
+    const filename = decodeURIComponent(urlFilename);
+    directDownload(url, filename);
+    toast.success('Download started');
   };
 
   const triggerTranscription = async () => {
@@ -901,15 +872,18 @@ const EditorPage = () => {
             <div style={styles.modalActions}>
               {downloadUrl ? (
                 <>
-                  <button
-                    onClick={() => downloadExportedVideo(downloadUrl)}
+                  <a
+                    href={downloadUrl}
+                    download={decodeURIComponent(downloadUrl.split('/').pop() || 'video.mp4')}
+                    rel="noopener"
+                    target="_self"
                     className="btn-primary"
-                    style={{ padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    style={{ padding: '14px 32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}
                     data-testid="download-button"
                   >
                     <Download size={18} />
                     Download Video
-                  </button>
+                  </a>
                   <button
                     onClick={() => {
                       setShowExportDialog(false);
