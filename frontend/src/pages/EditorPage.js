@@ -713,36 +713,45 @@ const EditorPage = () => {
                 </div>
 
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => downloadCaption('txt')}
+                  <a
+                    href={`${API}/captions/${projectId}/txt`}
+                    download={`${baseFilename('transcript')}.txt`}
+                    rel="noopener"
+                    target="_self"
                     className="btn-secondary"
-                    style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
+                    style={{ padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, textDecoration: 'none' }}
                     data-testid="download-txt"
                   >
                     <Download size={14} />
                     Download TXT
-                  </button>
+                  </a>
                   {transcriptData.has_srt && (
-                    <button
-                      onClick={() => downloadCaption('srt')}
+                    <a
+                      href={`${API}/captions/${projectId}/srt`}
+                      download={`${baseFilename('captions')}.srt`}
+                      rel="noopener"
+                      target="_self"
                       className="btn-secondary"
-                      style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
+                      style={{ padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, textDecoration: 'none' }}
                       data-testid="download-srt"
                     >
                       <Download size={14} />
                       Download SRT
-                    </button>
+                    </a>
                   )}
                   {transcriptData.has_vtt && (
-                    <button
-                      onClick={() => downloadCaption('vtt')}
+                    <a
+                      href={`${API}/captions/${projectId}/vtt`}
+                      download={`${baseFilename('captions')}.vtt`}
+                      rel="noopener"
+                      target="_self"
                       className="btn-secondary"
-                      style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
+                      style={{ padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, textDecoration: 'none' }}
                       data-testid="download-vtt"
                     >
                       <Download size={14} />
                       Download VTT
-                    </button>
+                    </a>
                   )}
                 </div>
               </>
