@@ -1,4 +1,0 @@
-file '/app/backend/uploads/9a688cbb-e380-4749-b338-92ee415ed308/still_0.mp4'
-file '/app/backend/uploads/9a688cbb-e380-4749-b338-92ee415ed308/segment_0.mp4'
-file '/app/backend/uploads/9a688cbb-e380-4749-b338-92ee415ed308/still_1.mp4'
-file '/app/backend/uploads/9a688cbb-e380-4749-b338-92ee415ed308/segment_1.mp4'
